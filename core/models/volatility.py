@@ -59,22 +59,37 @@ def _garch_negative_log_likelihood(params: np.ndarray, returns: np.ndarray) -> f
 
 def _fit_garch(returns: np.ndarray) -> tuple[float, float, float, float]:
     sample_var = returns.var()
-    initial = np.array([sample_var * 0.1, 0.08, 0.90])
-    bounds = ((1e-12, None), (0.0, 1.0), (0.0, 1.0))
-    constraint = {"type": "ineq", "fun": lambda p: 0.999 - p[1] - p[2]}
+    if not np.isfinite(sample_var) or sample_var <= 0:
+        raise InsufficientDataError("Variance empirique non exploitable pour l'ajustement GARCH.")
+
+    # Variance targeting: omega est contraint pour que la variance de long terme
+    # omega / (1 - alpha - beta) soit exactement la variance empirique. On optimise
+    # donc uniquement (alpha, beta), un problème bien mieux conditionne que la
+    # recherche jointe en (omega, alpha, beta), qui restait piegee a son point de
+    # depart et surestimait la volatilite d'un facteur 2 a 5.
+    def neg_log_likelihood(persistence_params: np.ndarray) -> float:
+        alpha, beta = persistence_params
+        if alpha < 0 or beta < 0 or alpha + beta >= 1.0:
+            return 1e12
+        omega = sample_var * (1.0 - alpha - beta)
+        return _garch_negative_log_likelihood(np.array([omega, alpha, beta]), returns)
+
+    initial = np.array([0.05, 0.90])
+    bounds = ((0.0, 1.0), (0.0, 1.0))
+    constraint = {"type": "ineq", "fun": lambda p: 0.999 - p[0] - p[1]}
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         result = minimize(
-            _garch_negative_log_likelihood,
+            neg_log_likelihood,
             initial,
-            args=(returns,),
             method="SLSQP",
             bounds=bounds,
             constraints=(constraint,),
             options={"maxiter": settings.GARCH_MAX_ITER, "ftol": 1e-9},
         )
-    omega, alpha, beta = result.x
-    if not result.success or alpha + beta >= 1.0 or omega <= 0:
+    alpha, beta = result.x
+    omega = sample_var * (1.0 - alpha - beta)
+    if not result.success or alpha < 0 or beta < 0 or alpha + beta >= 1.0 or omega <= 0:
         raise InsufficientDataError("Ajustement GARCH non convergent.")
     last_variance = _garch_variance_path(returns, omega, alpha, beta)[-1]
     return float(omega), float(alpha), float(beta), float(last_variance)

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-07-03
+
+### Fixed
+
+- **GARCH volatility estimator systematically overstated volatility by 2×–5×.**
+  On well-behaved series the SLSQP optimizer stayed pinned at its initial guess
+  (`omega = 0.1 × var`, `alpha = 0.08`, `beta = 0.90`), which implies a long-run
+  variance of 5× the sample variance. The estimator now uses **variance
+  targeting** — `omega` is constrained so the long-run variance equals the
+  empirical variance and only `(alpha, beta)` are optimized — recovering the true
+  sigma to within a few percent. Added a regression test that checks recovery of
+  a known sigma across seeds.
+
 ## [0.6.0] - 2026-07-03
 
 ### Added
@@ -37,5 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AI narrative.** Optional `Groq` narrative generation (import-guarded).
 - **Tooling.** Test suite (361 tests) and GitHub Actions CI on Python 3.11/3.12.
 
-[Unreleased]: https://github.com/zak-li/Parity/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/zak-li/Parity/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/zak-li/Parity/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/zak-li/Parity/releases/tag/v0.6.0
