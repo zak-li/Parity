@@ -49,6 +49,15 @@ def test_garch_falls_back_gracefully_on_short_clean_series():
     assert np.isfinite(result) and result > 0
 
 
+@pytest.mark.parametrize("seed", range(6))
+def test_garch_recovers_known_sigma_via_variance_targeting(seed):
+    # Regression: sur une serie a volatilite constante, l'estimateur GARCH doit
+    # retrouver le sigma vrai. Avant le variance targeting, il surestimait d'un
+    # facteur 2 a 5 (optimiseur piege a une init impliquant long_run = 5 x var).
+    result = garch_annualized_volatility(_series(0.20, n=1200, seed=seed), horizon_days=90)
+    assert result == pytest.approx(0.20, abs=0.03)
+
+
 @pytest.mark.parametrize("model", list(VolatilityModel))
 def test_dispatcher_supports_all_models(model):
     result = estimate_volatility(_series(0.15, seed=3), model, horizon_days=45)
