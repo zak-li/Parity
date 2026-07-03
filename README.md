@@ -3,7 +3,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/svg/logo_vl.svg">
-    <img src="assets/svg/logo.svg" alt="Parity" width="300">
+    <img src="assets/svg/logo.svg" alt="Parity" width="340">
   </picture>
 </p>
 
@@ -156,8 +156,6 @@ The `options` block of `POST /simulations` selects the modeling method. All fiel
 
 All variables are optional and prefixed with `XI_`. The full list lives in [`.env.example`](.env.example).
 
-**Application and security**
-
 | Variable | Default | Description |
 |---|---|---|
 | `XI_API_KEY` | | When set, the `X-API-Key` header becomes mandatory |
@@ -165,22 +163,12 @@ All variables are optional and prefixed with `XI_`. The full list lives in [`.en
 | `XI_HTTP_TIMEOUT_SECONDS` | `10.0` | Data call timeout |
 | `XI_RATE_LIMIT_PER_SECOND` | `10.0` | Max request rate to the rate provider |
 | `XI_CACHE_TTL_SECONDS` | `3600.0` | Exchange rate cache lifetime |
-
-**Persistence**
-
-| Variable | Default | Description |
-|---|---|---|
 | `XI_POSTGRES_DSN` | | PostgreSQL DSN for structured history |
 | `XI_MONGODB_URI` | | MongoDB URI for result documents |
 | `XI_MONGODB_DATABASE` | `xi` | Mongo database name |
 | `XI_NEO4J_URI` | | Neo4j URI for the exposure graph |
 | `XI_NEO4J_USERNAME`, `XI_NEO4J_PASSWORD` | | Neo4j credentials |
 | `XI_NEO4J_DATABASE` | `neo4j` | Neo4j database (the instance ID on Aura) |
-
-**AI**
-
-| Variable | Default | Description |
-|---|---|---|
 | `XI_GROQ_API_KEY` | | Groq key for the AI narrative |
 | `XI_GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model |
 
