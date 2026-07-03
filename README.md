@@ -7,14 +7,6 @@
   </picture>
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/version-0.6.0-4AAFFD.svg" alt="Version">
-  <img src="https://img.shields.io/badge/python-3.11%2B-50B8FD.svg" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/tests-361%20passing-53BCFD.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/coverage-98%25-56C0FD.svg" alt="Coverage">
-  <img src="https://img.shields.io/badge/license-Proprietary-4DB3FD.svg" alt="License">
-</p>
-
 <br>
 
 ## Parity
