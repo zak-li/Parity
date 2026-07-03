@@ -17,18 +17,17 @@ Currency risk decision engine for importers and e-commerce merchants (codename `
 
 ## Table of Contents
 
-| Section | Description |
-|---|---|
-| [Overview](#overview) | What Parity does and who it serves |
-| [Capabilities](#capabilities) | Quantitative and platform features |
-| [Requirements](#requirements) | Runtime and stack versions |
-| [Quick Start](#quick-start) | Install, test, and run |
-| [API](#api) | REST endpoints |
-| [Model Options](#model-options) | Simulation and volatility parameters |
-| [Configuration](#configuration) | Environment variables |
-| [Architecture](#architecture) | Package layout and dependencies |
-| [Testing](#testing) | Test suite and coverage |
-| [License](#license) | Usage terms |
+| Section |
+|---|
+| [Overview](#overview) |
+| [Capabilities](#capabilities) |
+| [Requirements](#requirements) |
+| [Quick Start](#quick-start) |
+| [API](#api) |
+| [Model Options](#model-options) |
+| [Configuration](#configuration) |
+| [Architecture](#architecture) |
+| [License](#license) |
 
 ## Overview
 
@@ -38,15 +37,13 @@ The engine is built as a strict hexagonal architecture: a pure computation core 
 
 ## Capabilities
 
-| Area | Techniques |
-|---|---|
-| Simulation | Risk-neutral `GBM` with covered interest rate parity drift, `Heston` stochastic volatility, `Student-t` fat tails, `Merton` jumps, `Sobol` sampling with antithetic variates |
-| Volatility | `historical`, `EWMA` (RiskMetrics), `GARCH(1,1)` by maximum likelihood, with automatic fallback |
-| Hedging | `CVaR` optimal hedge ratio, `Garman-Kohlhagen` and smile-consistent `Monte Carlo` pricing, comparison of unhedged, forward, option, and collar |
-| Portfolio | Multi-currency netting, correlated simulation with `Cholesky`, portfolio `VaR` and `CVaR`, diversification benefit, dynamic `DCC-GARCH` correlations |
-| Governance | `Kupiec` backtesting, deterministic stress tests, `2008` and `COVID-19` historical replay, reverse stress test, Office des Changes rules engine |
-| Monitoring | Inter-run comparison (risk escalation, score jump, spot move) with console, webhook, and email alert sinks |
-| Platform | Hardened `FastAPI` service, `PostgreSQL`, `MongoDB`, and `Neo4j` persistence, optional `Groq` AI narrative |
+The simulation core prices the delivery-date exchange rate under a risk-neutral `GBM` whose drift respects covered interest rate parity, with optional `Heston` stochastic volatility, `Student-t` fat tails, and `Merton` jumps, sampled with `Sobol` sequences and antithetic variates. Volatility is estimated by `historical`, `EWMA`, or `GARCH(1,1)` with automatic fallback, and portfolio correlations by dynamic `DCC-GARCH`. The resulting margin distribution yields percentiles, loss probability, Expected Shortfall (`CVaR`), and the Vulnerability Score.
+
+On top of that distribution, the hedging engine computes the `CVaR` optimal hedge ratio and compares the unhedged position against a forward, an option, and a collar, priced with `Garman-Kohlhagen` or with smile-consistent `Monte Carlo` under Heston. Portfolios of several multi-currency orders are aggregated with per-currency netting, correlated simulation, portfolio `VaR` and `CVaR`, and a diversification benefit.
+
+Governance and monitoring are built in. The engine backtests its `VaR` model with the `Kupiec` test, runs deterministic stress tests with `2008` and `COVID-19` historical replay and a reverse stress test, and evaluates hedging eligibility through a versioned Office des Changes rules engine. An inter-run monitor compares each new result against the previous one and dispatches typed alerts to console, webhook, or email sinks.
+
+Everything is exposed through a hardened `FastAPI` service with API key authentication, an anti-`SSRF` host allowlist, token-bucket rate limiting, and security headers. Results persist on `PostgreSQL` for structured history, `MongoDB` for full documents, and `Neo4j` for the currency exposure graph, with an optional `Groq` AI narrative.
 
 ## Requirements
 
@@ -64,15 +61,44 @@ Optional integrations: `SQLAlchemy` with `psycopg2` for PostgreSQL, `pymongo` fo
 
 ## Quick Start
 
+**1. Clone the repository**
+
 ```bash
-cp .env.example .env                                # all variables optional
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -e ".[api,db,ai,dotenv,dev]"
-pytest -q                                           # 361 tests
-uvicorn api.main:app --port 8000                    # docs at /docs
+git clone https://github.com/zak-li/Parity.git
+cd Parity
 ```
 
-The engine runs with zero configuration, using free ECB rates and in-memory storage. Fill in `.env` to enable persistence, the AI narrative, or API authentication. A first request:
+**2. Create the environment file**
+
+```bash
+cp .env.example .env
+```
+
+All variables are optional. The engine runs with zero configuration using free ECB rates and in-memory storage. Fill in `.env` to enable persistence, the AI narrative, or API authentication.
+
+**3. Create a virtual environment and install**
+
+```bash
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -e ".[api,db,ai,dotenv,dev]"
+```
+
+**4. Run the test suite**
+
+```bash
+pytest -q
+```
+
+**5. Start the API**
+
+```bash
+uvicorn api.main:app --host 0.0.0.0 --port 8000
+```
+
+The API is live at `http://localhost:8000` and the interactive documentation at `/docs`.
+
+**6. Send a first request**
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/simulations \
@@ -154,16 +180,6 @@ Strict hexagonal layering with no circular dependencies. The computation core is
 | `db` | Persistence (in-memory, PostgreSQL, MongoDB, Neo4j, composite) | `core` |
 | `ai` | AI narrative (Groq, import-guarded) | `core` |
 | `api` | FastAPI service and `api/monitoring` (scheduler, alert sinks) | `core`, `db`, `ai` |
-
-## Testing
-
-| Metric | Value |
-|---|---|
-| Tests | 361 |
-| Coverage | 98% |
-| Runner | pytest |
-
-Run the full suite with `pytest -q`. Tests use mocked providers and in-memory storage, so no network access or live database is required.
 
 ## License
 
