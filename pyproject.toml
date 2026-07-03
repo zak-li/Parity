@@ -1,0 +1,50 @@
+[project]
+name = "xi"
+version = "0.6.0"
+description = "Moteur de simulation de risque de change pour importateurs et e-commercants"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26,<3",
+    "pandas>=2.2,<4",
+    "scipy>=1.13,<2",
+    "requests>=2.31,<3",
+]
+
+[project.optional-dependencies]
+dotenv = [
+    "python-dotenv>=1,<2",
+]
+api = [
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.34,<1",
+]
+db = [
+    "sqlalchemy>=2,<3",
+    "psycopg2-binary>=2.9,<3",
+    "pymongo>=4.6,<5",
+    "neo4j>=5.16,<6",
+]
+ai = [
+    "groq>=1.2,<2",
+]
+dev = [
+    "pytest>=8,<9",
+    "pytest-cov>=5,<6",
+    "python-dotenv>=1,<2",
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.34,<1",
+    "httpx>=0.28,<1",
+    "sqlalchemy>=2,<3",
+    "psycopg2-binary>=2.9,<3",
+    "pymongo>=4.6,<5",
+    "neo4j>=5.16,<6",
+    "groq>=1.2,<2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["core/tests", "api/tests", "db/tests", "ai/tests"]
+pythonpath = ["."]
+addopts = "--strict-markers"
+
+[tool.setuptools.packages.find]
+include = ["core*", "api*", "db*", "ai*"]
