@@ -9,8 +9,11 @@ from ai import Narrator
 from core.app.portfolio_engine import PortfolioRiskEngine
 from core.app.risk_engine import MarginRiskEngine
 from core.io.fx import FxDataProvider
-from core.models.backtesting import backtest_parametric_var
+from core.models import market_stats, volatility
+from core.models.backtesting import backtest_expected_shortfall, backtest_parametric_var
 from core.models.compliance import evaluate_compliance
+from core.models.instruments import garman_kohlhagen_greeks
+from core.models.ladder import CashflowTranche, simulate_ladder
 from core.models.models import OrderInput, SimulationResult
 from core.models.monitoring import change_alerts, evaluate_result_alerts
 from core.models.monte_carlo import JumpParams
@@ -23,7 +26,12 @@ from .schemas import (
     ComplianceResponse,
     CurrencyExposureResponse,
     EngineOptions,
+    ESBacktestResponse,
     HealthResponse,
+    HedgeGreeksRequest,
+    HedgeGreeksResponse,
+    LadderRequest,
+    LadderResponse,
     OrderRequest,
     PortfolioRequest,
     PortfolioResponse,
@@ -226,6 +234,7 @@ def run_portfolio(
         vulnerability_score=result.vulnerability_score,
         risk_level=result.risk_level,
         net_exposures=result.net_exposures,
+        risk_contributions=list(result.risk_contributions),
     )
 
 
@@ -247,4 +256,80 @@ def run_backtest(
         likelihood_ratio=result.likelihood_ratio,
         p_value=result.p_value,
         rejected=result.rejected,
+    )
+
+
+@router.post("/backtests/es", response_model=ESBacktestResponse)
+def run_es_backtest(
+    request: BacktestRequest, provider: FxDataProvider = Depends(get_fx_provider)
+) -> ESBacktestResponse:
+    end = dt.date.today()
+    start = end - dt.timedelta(days=request.lookback_days)
+    series = provider.get_historical_series(
+        request.foreign_currency.upper(), request.domestic_currency.upper(), start, end
+    )
+    result = backtest_expected_shortfall(series, alpha=request.alpha, window=request.window)
+    return ESBacktestResponse(
+        n_observations=result.n_observations,
+        n_exceedances=result.n_exceedances,
+        alpha=result.alpha,
+        z2_statistic=result.z2_statistic,
+        p_value=result.p_value,
+        rejected=result.rejected,
+    )
+
+
+@router.post("/hedge/greeks", response_model=HedgeGreeksResponse)
+def hedge_greeks(request: HedgeGreeksRequest) -> HedgeGreeksResponse:
+    greeks = garman_kohlhagen_greeks(
+        request.spot,
+        request.strike,
+        request.domestic_rate,
+        request.foreign_rate,
+        request.sigma_annual,
+        request.horizon_years,
+        request.kind,
+    )
+    return HedgeGreeksResponse.model_validate(greeks)
+
+
+@router.post("/ladder/simulations", response_model=LadderResponse)
+def run_ladder(
+    request: LadderRequest, provider: FxDataProvider = Depends(get_fx_provider)
+) -> LadderResponse:
+    order_date = dt.date.today()
+    max_horizon = max(tranche.horizon_days for tranche in request.tranches)
+    lookback_start = order_date - dt.timedelta(days=request.lookback_days)
+    history = provider.get_historical_series(
+        request.foreign_currency.upper(),
+        request.domestic_currency.upper(),
+        lookback_start,
+        order_date,
+    )
+    spot = market_stats.spot_rate_on_or_before(history, order_date)
+    sigma = volatility.estimate_volatility(history, request.volatility_model, max_horizon)
+    result = simulate_ladder(
+        [CashflowTranche(t.label, t.horizon_days, t.amount_foreign) for t in request.tranches],
+        spot=spot,
+        sigma_annual=sigma,
+        domestic_rate=request.domestic_rate,
+        foreign_rate=request.foreign_rate,
+        target_margin_pct=request.target_margin_pct,
+        n_sims=request.n_simulations,
+        seed=request.seed,
+        min_acceptable_margin_pct=request.min_acceptable_margin_pct,
+    )
+    return LadderResponse(
+        total_amount_foreign=result.total_amount_foreign,
+        total_revenue_domestic=result.total_revenue_domestic,
+        budgeted_margin_pct=result.budgeted_margin_pct,
+        unhedged_expected_margin_pct=result.unhedged_expected_margin_pct,
+        unhedged_cvar_margin_pct=result.unhedged_cvar_margin_pct,
+        layered_hedged_margin_pct=result.layered_hedged_margin_pct,
+        cvar_improvement_pct=result.cvar_improvement_pct,
+        probability_below_threshold=result.probability_below_threshold,
+        vulnerability_score=result.vulnerability_score,
+        risk_level=result.risk_level,
+        margin_pct_percentiles=result.margin_pct_percentiles,
+        tranches=list(result.tranches),
     )

@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Portfolio risk attribution**: per-currency component/marginal CVaR (Euler
+  allocation) exposing each currency's share of the tail shortfall
+  (`POST /api/v1/portfolio/simulations`).
+- **Expected Shortfall backtest** (Acerbi-Szekely Test 2) with a Monte-Carlo null
+  distribution, complementing the Kupiec VaR test
+  (`POST /api/v1/backtests/es`).
+- **Closed-form FX option Greeks** (Garman-Kohlhagen delta, gamma, vega, theta,
+  domestic/foreign rho) (`POST /api/v1/hedge/greeks`).
+- **Cashflow ladder**: multi-date exposure simulated from one shared Brownian
+  path with layered per-tranche forward hedging
+  (`POST /api/v1/ladder/simulations`).
 - Advanced CI/CD and quality gates: `ruff` lint + format, `mypy` type checking,
   a 90% coverage gate, packaged build verification, **CodeQL** analysis,
   dependency review, `pip-audit`, **Dependabot**, and automated GitHub Releases

@@ -29,6 +29,14 @@ class PortfolioPosition:
 
 
 @dataclass(frozen=True, slots=True)
+class CurrencyRiskContribution:
+    currency: str
+    net_exposure: float
+    component_cvar_margin_pct: float
+    contribution_pct: float
+
+
+@dataclass(frozen=True, slots=True)
 class PortfolioResult:
     total_revenue_domestic: float
     total_budgeted_cost_domestic: float
@@ -44,7 +52,51 @@ class PortfolioResult:
     vulnerability_score: int
     risk_level: RiskLevel
     net_exposures: dict[str, float]
+    risk_contributions: tuple[CurrencyRiskContribution, ...]
     simulated_margin_pct: np.ndarray = field(repr=False)
+
+
+def _tail_indices(values: np.ndarray, alpha: float) -> np.ndarray:
+    n = values.size
+    k = min(n, max(1, int(np.ceil(alpha * n))))
+    return np.argpartition(values, k - 1)[:k]
+
+
+def currency_risk_contributions(
+    position_currencies: list[str],
+    weights: np.ndarray,
+    standalone_margins: np.ndarray,
+    portfolio_margin: np.ndarray,
+    net_exposure: dict[str, float],
+    alpha: float = settings.EXPECTED_SHORTFALL_ALPHA,
+) -> tuple[CurrencyRiskContribution, ...]:
+    """Euler allocation of the portfolio tail shortfall to each currency.
+
+    ``standalone_margins`` has shape ``(n_positions, n_sims)``. Component CVaRs
+    sum to the portfolio CVaR; ``contribution_pct`` is each currency's share of
+    the tail shortfall (expected margin minus CVaR) and sums to ~100%.
+    """
+    tail = _tail_indices(portfolio_margin, alpha)
+    component: dict[str, float] = {}
+    shortfall: dict[str, float] = {}
+    for i, currency in enumerate(position_currencies):
+        w = float(weights[i])
+        tail_mean = float(standalone_margins[i, tail].mean())
+        full_mean = float(standalone_margins[i].mean())
+        component[currency] = component.get(currency, 0.0) + w * tail_mean
+        shortfall[currency] = shortfall.get(currency, 0.0) + w * (full_mean - tail_mean)
+
+    total_shortfall = sum(shortfall.values())
+    contributions = [
+        CurrencyRiskContribution(
+            currency=currency,
+            net_exposure=net_exposure.get(currency, 0.0),
+            component_cvar_margin_pct=component[currency],
+            contribution_pct=(shortfall[currency] / total_shortfall) if total_shortfall else 0.0,
+        )
+        for currency in sorted(component)
+    ]
+    return tuple(sorted(contributions, key=lambda c: c.contribution_pct, reverse=True))
 
 
 def net_exposures(positions: list[PortfolioPosition]) -> dict[str, float]:
@@ -99,8 +151,11 @@ def simulate_portfolio(
     total_cost = np.zeros(n_sims)
     undiversified_cvar_weighted = 0.0
     threshold_numerator = 0.0
+    position_currencies: list[str] = []
+    weights = np.empty(len(positions))
+    standalone_margins = np.empty((len(positions), n_sims))
 
-    for position in positions:
+    for i, position in enumerate(positions):
         column = shocks[:, index_of[position.foreign_currency]]
         exponent = (position.drift_annual - 0.5 * position.sigma_annual**2) * position.horizon_years
         exponent = exponent + position.sigma_annual * np.sqrt(position.horizon_years) * column
@@ -124,10 +179,17 @@ def simulate_portfolio(
         weight = position.revenue_domestic / total_revenue
         undiversified_cvar_weighted += weight * conditional_value_at_risk(standalone_margin)
         threshold_numerator += position.min_acceptable_margin_pct * position.revenue_domestic
+        position_currencies.append(position.foreign_currency)
+        weights[i] = weight
+        standalone_margins[i] = standalone_margin
 
     margin_domestic = total_revenue - total_cost
     margin_pct = margin_domestic / total_revenue
     aggregate_threshold = threshold_numerator / total_revenue
+    exposures = net_exposures(positions)
+    contributions = currency_risk_contributions(
+        position_currencies, weights, standalone_margins, margin_pct, exposures
+    )
 
     budgeted_margin_pct = (total_revenue - total_budgeted_cost) / total_revenue
     portfolio_cvar = conditional_value_at_risk(margin_pct)
@@ -148,6 +210,7 @@ def simulate_portfolio(
         probability_below_threshold=probability_below,
         vulnerability_score=score,
         risk_level=RiskLevel.from_score(score),
-        net_exposures=net_exposures(positions),
+        net_exposures=exposures,
+        risk_contributions=contributions,
         simulated_margin_pct=margin_pct,
     )
