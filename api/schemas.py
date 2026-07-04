@@ -90,6 +90,28 @@ class BacktestRequest(StrictModel):
     lookback_days: int = Field(default=900, ge=90, le=1825)
 
 
+class CashflowTrancheRequest(StrictModel):
+    label: str = Field(min_length=1, max_length=64)
+    horizon_days: int = Field(ge=1, le=1825)
+    amount_foreign: float = Field(gt=0.0)
+
+
+class LadderRequest(StrictModel):
+    foreign_currency: CurrencyCode
+    domestic_currency: CurrencyCode
+    tranches: list[CashflowTrancheRequest] = Field(
+        min_length=1, max_length=API_MAX_PORTFOLIO_ORDERS
+    )
+    target_margin_pct: float = Field(gt=-1.0)
+    domestic_rate: float = Field(default=0.0, ge=-1.0, le=1.0)
+    foreign_rate: float = Field(default=0.0, ge=-1.0, le=1.0)
+    min_acceptable_margin_pct: float = 0.0
+    n_simulations: int = Field(default=50_000, ge=1000, le=API_MAX_SIMULATIONS)
+    lookback_days: int = Field(default=365, ge=30, le=1825)
+    volatility_model: VolatilityModel = VolatilityModel.HISTORICAL
+    seed: int | None = Field(default=None, ge=0)
+
+
 class HedgeResponse(DomainModel):
     theoretical_forward_rate: float
     forward_points: float
@@ -214,6 +236,13 @@ class StressResponse(BaseModel):
     reverse_stress: ReverseStressResponse
 
 
+class CurrencyRiskContributionResponse(DomainModel):
+    currency: str
+    net_exposure: float
+    component_cvar_margin_pct: float
+    contribution_pct: float
+
+
 class PortfolioResponse(BaseModel):
     total_revenue_domestic: float
     total_budgeted_cost_domestic: float
@@ -229,6 +258,7 @@ class PortfolioResponse(BaseModel):
     vulnerability_score: int
     risk_level: RiskLevel
     net_exposures: dict[str, float]
+    risk_contributions: list[CurrencyRiskContributionResponse]
 
 
 class BacktestResponse(BaseModel):
@@ -239,6 +269,57 @@ class BacktestResponse(BaseModel):
     likelihood_ratio: float
     p_value: float
     rejected: bool
+
+
+class ESBacktestResponse(BaseModel):
+    n_observations: int
+    n_exceedances: int
+    alpha: float
+    z2_statistic: float
+    p_value: float
+    rejected: bool
+
+
+class HedgeGreeksRequest(StrictModel):
+    spot: float = Field(gt=0.0)
+    strike: float = Field(gt=0.0)
+    domestic_rate: float = Field(ge=-1.0, le=1.0)
+    foreign_rate: float = Field(ge=-1.0, le=1.0)
+    sigma_annual: float = Field(gt=0.0, le=10.0)
+    horizon_years: float = Field(gt=0.0, le=30.0)
+    kind: str = Field(default="call", pattern=r"^(call|put)$")
+
+
+class HedgeGreeksResponse(DomainModel):
+    delta: float
+    gamma: float
+    vega: float
+    theta: float
+    rho_domestic: float
+    rho_foreign: float
+
+
+class LadderTrancheResponse(DomainModel):
+    label: str
+    horizon_days: int
+    amount_foreign: float
+    forward_rate: float
+    expected_rate: float
+
+
+class LadderResponse(BaseModel):
+    total_amount_foreign: float
+    total_revenue_domestic: float
+    budgeted_margin_pct: float
+    unhedged_expected_margin_pct: float
+    unhedged_cvar_margin_pct: float
+    layered_hedged_margin_pct: float
+    cvar_improvement_pct: float
+    probability_below_threshold: float
+    vulnerability_score: int
+    risk_level: RiskLevel
+    margin_pct_percentiles: dict[str, float]
+    tranches: list[LadderTrancheResponse]
 
 
 class HealthResponse(BaseModel):

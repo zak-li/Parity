@@ -76,6 +76,52 @@ def garman_kohlhagen_put(spot, strike, rd, rf, sigma, t):
     return float(strike * np.exp(-rd * t) * norm.cdf(-d2) - spot * np.exp(-rf * t) * norm.cdf(-d1))
 
 
+@dataclass(frozen=True, slots=True)
+class OptionGreeks:
+    delta: float
+    gamma: float
+    vega: float
+    theta: float
+    rho_domestic: float
+    rho_foreign: float
+
+
+def garman_kohlhagen_greeks(spot, strike, rd, rf, sigma, t, kind: str = "call") -> OptionGreeks:
+    """Closed-form FX (Garman-Kohlhagen) Greeks. ``vega``/``rho`` are per 1.00
+    (100%) move in volatility / rates; ``theta`` is per year."""
+    if sigma <= 0 or t <= 0:
+        raise ValueError("Greeks require strictly positive volatility and maturity.")
+    d1, d2 = _d1_d2(spot, strike, rd, rf, sigma, t)
+    disc_f = np.exp(-rf * t)
+    disc_d = np.exp(-rd * t)
+    pdf_d1 = norm.pdf(d1)
+    gamma = disc_f * pdf_d1 / (spot * sigma * np.sqrt(t))
+    vega = spot * disc_f * pdf_d1 * np.sqrt(t)
+    common_theta = -spot * disc_f * pdf_d1 * sigma / (2.0 * np.sqrt(t))
+    if kind == "call":
+        delta = disc_f * norm.cdf(d1)
+        theta = (
+            common_theta + rf * spot * disc_f * norm.cdf(d1) - rd * strike * disc_d * norm.cdf(d2)
+        )
+        rho_domestic = strike * t * disc_d * norm.cdf(d2)
+        rho_foreign = -spot * t * disc_f * norm.cdf(d1)
+    else:
+        delta = -disc_f * norm.cdf(-d1)
+        theta = (
+            common_theta - rf * spot * disc_f * norm.cdf(-d1) + rd * strike * disc_d * norm.cdf(-d2)
+        )
+        rho_domestic = -strike * t * disc_d * norm.cdf(-d2)
+        rho_foreign = spot * t * disc_f * norm.cdf(-d1)
+    return OptionGreeks(
+        delta=float(delta),
+        gamma=float(gamma),
+        vega=float(vega),
+        theta=float(theta),
+        rho_domestic=float(rho_domestic),
+        rho_foreign=float(rho_foreign),
+    )
+
+
 def zero_cost_collar_cap(spot, floor, rd, rf, sigma, t):
     put_premium = garman_kohlhagen_put(spot, floor, rd, rf, sigma, t)
 

@@ -186,6 +186,10 @@ def test_portfolio_endpoint(client):
     body = response.json()
     assert body["net_exposures"]["USD"] == pytest.approx(150_000.0)
     assert 0 <= body["vulnerability_score"] <= 100
+    contributions = body["risk_contributions"]
+    assert contributions
+    assert sum(c["contribution_pct"] for c in contributions) == pytest.approx(1.0, abs=1e-6)
+    assert {c["currency"] for c in contributions} == {"USD"}
 
 
 def test_portfolio_rejects_empty_orders(client):
@@ -206,6 +210,89 @@ def test_backtest_endpoint(client):
     body = response.json()
     assert body["n_observations"] > 0
     assert 0.0 <= body["observed_exceedance_rate"] <= 1.0
+
+
+def test_es_backtest_endpoint(client):
+    payload = {
+        "foreign_currency": "USD",
+        "domestic_currency": "MAD",
+        "alpha": 0.05,
+        "window": 250,
+        "lookback_days": 1000,
+    }
+    response = client.post("/api/v1/backtests/es", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["n_observations"] > 0
+    assert body["alpha"] == pytest.approx(0.05)
+    assert 0.0 <= body["p_value"] <= 1.0
+    assert isinstance(body["rejected"], bool)
+
+
+def test_hedge_greeks_endpoint(client):
+    payload = {
+        "spot": 10.0,
+        "strike": 10.2,
+        "domestic_rate": 0.03,
+        "foreign_rate": 0.05,
+        "sigma_annual": 0.15,
+        "horizon_years": 0.5,
+        "kind": "call",
+    }
+    response = client.post("/api/v1/hedge/greeks", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert 0.0 < body["delta"] < 1.0
+    assert body["gamma"] > 0
+    assert body["vega"] > 0
+
+
+def test_hedge_greeks_rejects_bad_kind(client):
+    payload = {
+        "spot": 10.0,
+        "strike": 10.2,
+        "domestic_rate": 0.03,
+        "foreign_rate": 0.05,
+        "sigma_annual": 0.15,
+        "horizon_years": 0.5,
+        "kind": "swap",
+    }
+    assert client.post("/api/v1/hedge/greeks", json=payload).status_code == 422
+
+
+def test_ladder_endpoint(client):
+    payload = {
+        "foreign_currency": "USD",
+        "domestic_currency": "MAD",
+        "tranches": [
+            {"label": "30d", "horizon_days": 30, "amount_foreign": 50_000.0},
+            {"label": "60d", "horizon_days": 60, "amount_foreign": 50_000.0},
+            {"label": "90d", "horizon_days": 90, "amount_foreign": 100_000.0},
+        ],
+        "target_margin_pct": 0.15,
+        "domestic_rate": 0.03,
+        "foreign_rate": 0.05,
+        "min_acceptable_margin_pct": 0.05,
+        "n_simulations": 20_000,
+        "seed": 1,
+    }
+    response = client.post("/api/v1/ladder/simulations", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total_amount_foreign"] == pytest.approx(200_000.0)
+    assert len(body["tranches"]) == 3
+    assert body["layered_hedged_margin_pct"] > body["unhedged_cvar_margin_pct"]
+    assert 0 <= body["vulnerability_score"] <= 100
+
+
+def test_ladder_rejects_empty_tranches(client):
+    payload = {
+        "foreign_currency": "USD",
+        "domestic_currency": "MAD",
+        "tranches": [],
+        "target_margin_pct": 0.15,
+    }
+    assert client.post("/api/v1/ladder/simulations", json=payload).status_code == 422
 
 
 def test_api_key_required_when_configured(client, monkeypatch):

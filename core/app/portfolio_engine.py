@@ -51,7 +51,7 @@ class PortfolioRiskEngine:
             revenue = self._resolve_revenue(order, spot)
             positions.append(
                 PortfolioPosition(
-                    label=f"commande_{index + 1}",
+                    label=f"order_{index + 1}",
                     foreign_currency=order.foreign_currency,
                     amount_foreign=order.amount_foreign,
                     revenue_domestic=revenue,
