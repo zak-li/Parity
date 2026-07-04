@@ -2,7 +2,7 @@
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/svg/logo_vl.svg">
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/svg/logo_2.svg">
     <img src=".github/assets/svg/logo.svg" alt="Parity" width="340">
   </picture>
 </p>
