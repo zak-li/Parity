@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/zak-li/Parity/releases"><img src="https://img.shields.io/github/v/tag/zak-li/Parity?label=version&color=4AAFFD" alt="Version"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Proprietary-4DB3FD.svg" alt="License: Proprietary"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL_3.0-4DB3FD.svg" alt="License: AGPL 3.0"></a>
   <a href="https://github.com/zak-li/Parity/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/zak-li/Parity/ci.yml?label=CI&color=50B8FD" alt="CI"></a>
   <a href="https://github.com/zak-li/Parity/issues"><img src="https://img.shields.io/github/issues/zak-li/Parity?color=53BCFD" alt="Issues"></a><br>
   <a href="https://github.com/zak-li/Parity/commits/main"><img src="https://img.shields.io/github/last-commit/zak-li/Parity?color=56C0FD" alt="Last Commit"></a>
@@ -25,8 +25,6 @@
 > **Parity** (codename `Xi`): a currency risk decision engine for importers and e-commerce merchants. It quantifies FX exposure, scores vulnerability, and recommends the optimal hedge directly from the numbers.
 
 Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerability Score** from 0 to 100, and recommends the optimal hedge such as a forward, an option, or a collar, with its cost and benefit fully quantified.
-
-> **Private and proprietary.** Not licensed for redistribution. Internal use only.
 
 ## Table of Contents
 
@@ -174,4 +172,4 @@ These variables are all optional and share the `XI_` prefix. The complete refere
 
 ## License
 
-Proprietary. All rights reserved. No use, copy, or distribution without written permission from the owner.
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).
