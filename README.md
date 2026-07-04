@@ -2,8 +2,8 @@
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/svg/logo_vl.svg">
-    <img src="assets/svg/logo.svg" alt="Parity" width="340">
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/svg/logo_vl.svg">
+    <img src=".github/assets/svg/logo.svg" alt="Parity" width="340">
   </picture>
 </p>
 
@@ -31,22 +31,22 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerab
 ## Table of Contents
 
 - [Features](#features)
-- [Requirements](#requirements)
+- [Dependencies](#dependencies)
 - [Quick Start](#quick-start)
 - [Core API](#core-api)
-- [Model Options](#model-options)
+- [Options](#options)
 - [Environment](#environment)
 - [License](#license)
 
 ## Features
 
-The simulation core prices the delivery-date exchange rate under a risk-neutral `GBM` whose drift respects covered interest rate parity, with optional `Heston` stochastic volatility, `Student-t` fat tails, and `Merton` jumps, sampled with `Sobol` sequences and antithetic variates. Volatility is estimated by `historical`, `EWMA`, or `GARCH(1,1)` with automatic fallback, and portfolio correlations by dynamic `DCC-GARCH`. The resulting margin distribution yields percentiles, loss probability, Expected Shortfall (`CVaR`), and the Vulnerability Score. On top of that distribution, the hedging engine computes the `CVaR` optimal hedge ratio and compares the unhedged position against a forward, an option, and a collar, priced with `Garman-Kohlhagen` or with smile-consistent `Monte Carlo` under Heston.
+The core simulates the delivery-date exchange rate by `Monte Carlo` (`GBM` with covered interest rate parity, optional `Heston`, `Student-t`, and `Merton` jumps), with volatility from `historical`, `EWMA`, or `GARCH(1,1)`. It turns the margin distribution into percentiles, loss probability, Expected Shortfall (`CVaR`), and a Vulnerability Score, then compares an unhedged position against a forward, an option, and a collar to recommend the optimal hedge.
 
-Portfolios of several multi-currency orders are aggregated with per-currency netting, correlated simulation, portfolio `VaR` and `CVaR`, and a diversification benefit. Governance and monitoring are built in: the engine backtests its `VaR` model with the `Kupiec` test, runs deterministic stress tests with `2008` and `COVID-19` historical replay and a reverse stress test, and evaluates hedging eligibility through a versioned Office des Changes rules engine. An inter-run monitor compares each new result against the previous one and dispatches typed alerts to console, webhook, or email sinks. Everything is exposed through a hardened `FastAPI` service with API key authentication, an anti-`SSRF` host allowlist, token-bucket rate limiting, and security headers, with results persisted on `PostgreSQL`, `MongoDB`, and `Neo4j`, plus an optional `Groq` AI narrative.
+It also aggregates multi-currency portfolios and runs stress tests, `VaR` backtesting, and Office des Changes compliance checks. Everything is exposed through a hardened `FastAPI` service with optional `PostgreSQL`, `MongoDB`, and `Neo4j` persistence and a `Groq` AI narrative.
 
-## Requirements
+## Dependencies
 
-**Core**
+The engine core requires the following packages:
 
 | Package | Version |
 |---|---|
@@ -58,7 +58,7 @@ Portfolios of several multi-currency orders are aggregated with per-currency net
 | Uvicorn | 0.34+ |
 | pydantic | 2.10+ |
 
-**Optional Integrations**
+The following are optional and enable extra capabilities:
 
 | Component | Role |
 |---|---|
@@ -93,7 +93,7 @@ source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -e ".[api,db,ai,dotenv,dev]"
 ```
 
-**Step 4: Run the test suite**
+**Step 4: Verify the install with the test suite**
 
 ```bash
 pytest -q
@@ -119,9 +119,9 @@ curl -X POST http://localhost:8000/api/v1/simulations \
 
 ## Core API
 
-REST root: `/api/v1`. Interactive documentation is served at `/docs`. When `XI_API_KEY` is set, every route requires the `X-API-Key` header, except the public `/health` check.
+The API is rooted at `/api/v1` with Swagger docs at `/docs`. Every route requires the `X-API-Key` header once `XI_API_KEY` is configured, except the public `/health` check.
 
-**Simulations**
+These endpoints run simulations and expose their results:
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -131,7 +131,7 @@ REST root: `/api/v1`. Interactive documentation is served at `/docs`. When `XI_A
 | GET | `/api/v1/simulations/{id}` | Fetch a single persisted simulation |
 | GET | `/api/v1/exposure` | Currency exposure graph |
 
-**Portfolio, Stress and Compliance**
+These endpoints cover portfolio risk, stress testing, compliance, and backtesting:
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -140,7 +140,7 @@ REST root: `/api/v1`. Interactive documentation is served at `/docs`. When `XI_A
 | POST | `/api/v1/compliance` | Office des Changes assessment (indicative) |
 | POST | `/api/v1/backtests/var` | VaR model backtesting with the Kupiec test |
 
-## Model Options
+## Options
 
 The `options` block of `POST /simulations` selects the modeling method. All fields are optional and default to the fastest baseline.
 
@@ -154,7 +154,7 @@ The `options` block of `POST /simulations` selects the modeling method. All fiel
 
 ## Environment
 
-All variables are optional and prefixed with `XI_`. The full list lives in [`.env.example`](.env.example).
+These variables are all optional and share the `XI_` prefix. The complete reference is in [`.env.example`](.env.example).
 
 | Variable | Default | Description |
 |---|---|---|
