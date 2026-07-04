@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import db
 import db.mongo as mongo_module
 import db.neo4j_graph as neo4j_module
 import db.postgres as postgres_module

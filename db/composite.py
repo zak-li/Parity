@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import logging
 from typing import Protocol
 
@@ -63,7 +64,5 @@ class CompositeSimulationRepository:
     def close(self) -> None:
         self._primary.close()
         for sink in self._secondaries:
-            try:
+            with contextlib.suppress(Exception):
                 sink.close()
-            except Exception:
-                pass

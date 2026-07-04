@@ -40,7 +40,9 @@ def ewma_annualized_volatility(
     return float(np.sqrt(variance * trading_days_per_year))
 
 
-def _garch_variance_path(returns: np.ndarray, omega: float, alpha: float, beta: float) -> np.ndarray:
+def _garch_variance_path(
+    returns: np.ndarray, omega: float, alpha: float, beta: float
+) -> np.ndarray:
     driver = np.empty_like(returns)
     driver[0] = returns.var()
     driver[1:] = omega + alpha * returns[:-1] ** 2

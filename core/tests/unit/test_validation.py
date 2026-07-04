@@ -3,8 +3,7 @@ from __future__ import annotations
 import pytest
 
 from core.models.exceptions import InvalidOrderError
-from core.models.validation import validate_currency_code
-from core.models.validation import normalize_currency_code
+from core.models.validation import normalize_currency_code, validate_currency_code
 
 
 def test_normalizes_lowercase_and_whitespace():

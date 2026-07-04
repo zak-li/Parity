@@ -59,16 +59,28 @@ class WebhookAlertSink:
             ],
         }
         try:
-            self._session.post(self._url, data=json.dumps(payload), timeout=self._timeout,
-                               headers={"Content-Type": "application/json"})
+            self._session.post(
+                self._url,
+                data=json.dumps(payload),
+                timeout=self._timeout,
+                headers={"Content-Type": "application/json"},
+            )
         except Exception as exc:
             logger.warning("webhook_dispatch_failed", extra={"error": str(exc)})
 
 
 class EmailAlertSink:
-    def __init__(self, host: str, port: int, sender: str, recipients: list[str],
-                 username: str | None = None, password: str | None = None,
-                 use_tls: bool = True, smtp_factory=None) -> None:
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        sender: str,
+        recipients: list[str],
+        username: str | None = None,
+        password: str | None = None,
+        use_tls: bool = True,
+        smtp_factory=None,
+    ) -> None:
         self._host = host
         self._port = port
         self._sender = sender

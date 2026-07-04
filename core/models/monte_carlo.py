@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
+from typing import Any
 
 import numpy as np
-from scipy.stats import norm, qmc, t as student_t
+from scipy.stats import norm, qmc
+from scipy.stats import t as student_t
 
 from ..config import settings
 from .enums import ReturnDistribution, SamplingMethod
@@ -36,6 +39,7 @@ def _standardized_shocks(
     distribution: ReturnDistribution,
     dof: float | None,
 ) -> np.ndarray:
+    draw: Callable[..., Any]
     if distribution is ReturnDistribution.NORMAL:
         draw = rng.standard_normal
         scale = 1.0
@@ -49,10 +53,10 @@ def _standardized_shocks(
 
     if antithetic and n_sims > 1:
         half = (n_sims + 1) // 2
-        base = draw(half)
+        base = np.asarray(draw(half))
         shocks = np.concatenate((base, -base))[:n_sims]
     else:
-        shocks = draw(n_sims)
+        shocks = np.asarray(draw(n_sims))
     return shocks * scale
 
 
@@ -122,7 +126,9 @@ def simulate_terminal_rates(
         jump_total, drift_adjustment = _jump_component(jumps, horizon_years, n_sims, rng)
         exponent += jump_total + drift_adjustment
 
-    np.clip(exponent, -settings.MAX_LOG_GROWTH_EXPONENT, settings.MAX_LOG_GROWTH_EXPONENT, out=exponent)
+    np.clip(
+        exponent, -settings.MAX_LOG_GROWTH_EXPONENT, settings.MAX_LOG_GROWTH_EXPONENT, out=exponent
+    )
     return spot * np.exp(exponent)
 
 

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Advanced CI/CD and quality gates: `ruff` lint + format, `mypy` type checking,
+  a 90% coverage gate, packaged build verification, **CodeQL** analysis,
+  dependency review, `pip-audit`, **Dependabot**, and automated GitHub Releases
+  on `v*` tags.
+
+### Fixed
+- Date-fragile API test fixture that failed on non-business days; the FX series
+  is now anchored to a fixed business day instead of `date.today()`.
+
 ## [0.6.1] - 2026-07-03
 
 ### Fixed

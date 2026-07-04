@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import datetime as dt
 
-import pytest
-
 from core.models.compliance import ComplianceConfig, evaluate_compliance
 from core.models.models import OrderInput
 

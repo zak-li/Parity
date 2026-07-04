@@ -14,7 +14,7 @@ def _new_id() -> str:
 
 
 def _utc_now() -> dt.datetime:
-    return dt.datetime.now(dt.timezone.utc)
+    return dt.datetime.now(dt.UTC)
 
 
 @dataclass(frozen=True, slots=True)

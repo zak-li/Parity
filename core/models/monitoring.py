@@ -42,9 +42,7 @@ def evaluate_result_alerts(
             if result.risk_level is RiskLevel.CRITICAL
             else AlertSeverity.WARNING
         )
-        alerts.append(
-            Alert("risk_level", severity, f"Niveau de risque {result.risk_level.value}.")
-        )
+        alerts.append(Alert("risk_level", severity, f"Niveau de risque {result.risk_level.value}."))
 
     if result.vulnerability_score >= thresholds.max_score:
         alerts.append(
@@ -66,9 +64,9 @@ def evaluate_result_alerts(
             )
         )
 
-    if (
-        result.horizon_days <= thresholds.delivery_proximity_days
-        and result.risk_level in (RiskLevel.HIGH, RiskLevel.CRITICAL)
+    if result.horizon_days <= thresholds.delivery_proximity_days and result.risk_level in (
+        RiskLevel.HIGH,
+        RiskLevel.CRITICAL,
     ):
         alerts.append(
             Alert(

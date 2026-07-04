@@ -9,14 +9,14 @@ from core.models.models import OrderInput
 
 
 def _base_kwargs(**overrides):
-    kwargs = dict(
-        amount_foreign=100_000.0,
-        foreign_currency="USD",
-        domestic_currency="MAD",
-        order_date=dt.date(2026, 1, 1),
-        delivery_date=dt.date(2026, 3, 1),
-        target_margin_pct=0.30,
-    )
+    kwargs = {
+        "amount_foreign": 100_000.0,
+        "foreign_currency": "USD",
+        "domestic_currency": "MAD",
+        "order_date": dt.date(2026, 1, 1),
+        "delivery_date": dt.date(2026, 3, 1),
+        "target_margin_pct": 0.30,
+    }
     kwargs.update(overrides)
     return kwargs
 
@@ -60,12 +60,16 @@ def test_rejects_non_finite_amount():
 
 def test_rejects_delivery_before_order():
     with pytest.raises(InvalidOrderError):
-        OrderInput(**_base_kwargs(order_date=dt.date(2026, 3, 1), delivery_date=dt.date(2026, 1, 1)))
+        OrderInput(
+            **_base_kwargs(order_date=dt.date(2026, 3, 1), delivery_date=dt.date(2026, 1, 1))
+        )
 
 
 def test_rejects_horizon_exceeding_maximum():
     with pytest.raises(InvalidOrderError):
-        OrderInput(**_base_kwargs(order_date=dt.date(2020, 1, 1), delivery_date=dt.date(2030, 1, 1)))
+        OrderInput(
+            **_base_kwargs(order_date=dt.date(2020, 1, 1), delivery_date=dt.date(2030, 1, 1))
+        )
 
 
 def test_rejects_missing_revenue_and_margin():

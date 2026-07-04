@@ -5,7 +5,6 @@ import json
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from api.monitoring import CollectingAlertSink, MonitoringScheduler
 from api.monitoring.sinks import EmailAlertSink, WebhookAlertSink
@@ -29,12 +28,18 @@ def _provider(sigma=0.12, seed=42):
 def _order(**overrides):
     from core.models.models import OrderInput
 
-    params = dict(
-        amount_foreign=100_000.0, foreign_currency="USD", domestic_currency="MAD",
-        order_date=ORDER_DATE, delivery_date=ORDER_DATE + dt.timedelta(days=90),
-        target_margin_pct=0.15, domestic_rate=0.03, foreign_rate=0.05,
-        n_simulations=5_000, seed=7,
-    )
+    params = {
+        "amount_foreign": 100_000.0,
+        "foreign_currency": "USD",
+        "domestic_currency": "MAD",
+        "order_date": ORDER_DATE,
+        "delivery_date": ORDER_DATE + dt.timedelta(days=90),
+        "target_margin_pct": 0.15,
+        "domestic_rate": 0.03,
+        "foreign_rate": 0.05,
+        "n_simulations": 5_000,
+        "seed": 7,
+    }
     params.update(overrides)
     return OrderInput(**params)
 
@@ -68,7 +73,9 @@ def test_scheduler_detects_inter_run_change():
     scheduler = MonitoringScheduler(engine, repo, [sink])
 
     scheduler.run_once([_order()])
-    scheduler.run_once([_order(foreign_rate=0.30, min_acceptable_margin_pct=0.10, target_margin_pct=0.05)])
+    scheduler.run_once(
+        [_order(foreign_rate=0.30, min_acceptable_margin_pct=0.10, target_margin_pct=0.05)]
+    )
 
     all_codes = {a.code for _, alerts in sink.dispatched for a in alerts}
     assert all_codes
@@ -134,8 +141,13 @@ def test_email_sink_sends_via_smtp_factory():
             sent["body"] = message.get_content()
 
     sink = EmailAlertSink(
-        "smtp.example.com", 587, "from@x.com", ["to@x.com"],
-        username="u", password="p", smtp_factory=_FakeSMTP,
+        "smtp.example.com",
+        587,
+        "from@x.com",
+        ["to@x.com"],
+        username="u",
+        password="p",
+        smtp_factory=_FakeSMTP,
     )
     sink.dispatch("Alerte risque", [Alert("score_jump", AlertSeverity.WARNING, "score +20")])
 

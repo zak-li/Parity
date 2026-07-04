@@ -60,7 +60,7 @@ class OrderRequest(StrictModel):
     seed: int | None = Field(default=None, ge=0)
 
     @model_validator(mode="after")
-    def _require_revenue_or_margin(self) -> "OrderRequest":
+    def _require_revenue_or_margin(self) -> OrderRequest:
         if self.expected_revenue_domestic is None and self.target_margin_pct is None:
             raise ValueError("Précisez expected_revenue_domestic ou target_margin_pct.")
         return self

@@ -18,14 +18,22 @@ def test_returns_array_of_requested_length():
 
 
 def test_reproducible_with_same_seed():
-    a = simulate_terminal_rates(spot=10.0, sigma_annual=0.15, horizon_years=0.5, n_sims=2000, seed=99)
-    b = simulate_terminal_rates(spot=10.0, sigma_annual=0.15, horizon_years=0.5, n_sims=2000, seed=99)
+    a = simulate_terminal_rates(
+        spot=10.0, sigma_annual=0.15, horizon_years=0.5, n_sims=2000, seed=99
+    )
+    b = simulate_terminal_rates(
+        spot=10.0, sigma_annual=0.15, horizon_years=0.5, n_sims=2000, seed=99
+    )
     np.testing.assert_array_equal(a, b)
 
 
 def test_different_seeds_produce_different_paths():
-    a = simulate_terminal_rates(spot=10.0, sigma_annual=0.15, horizon_years=0.5, n_sims=2000, seed=1)
-    b = simulate_terminal_rates(spot=10.0, sigma_annual=0.15, horizon_years=0.5, n_sims=2000, seed=2)
+    a = simulate_terminal_rates(
+        spot=10.0, sigma_annual=0.15, horizon_years=0.5, n_sims=2000, seed=1
+    )
+    b = simulate_terminal_rates(
+        spot=10.0, sigma_annual=0.15, horizon_years=0.5, n_sims=2000, seed=2
+    )
     assert not np.array_equal(a, b)
 
 
@@ -49,7 +57,12 @@ def test_nonzero_drift_shifts_expected_terminal_rate_to_forward():
 
 def test_sobol_method_accepts_enum_and_string():
     from_enum = simulate_terminal_rates(
-        spot=10.0, sigma_annual=0.2, horizon_years=1.0, n_sims=4096, seed=1, method=SamplingMethod.SOBOL
+        spot=10.0,
+        sigma_annual=0.2,
+        horizon_years=1.0,
+        n_sims=4096,
+        seed=1,
+        method=SamplingMethod.SOBOL,
     )
     from_string = simulate_terminal_rates(
         spot=10.0, sigma_annual=0.2, horizon_years=1.0, n_sims=4096, seed=1, method="sobol"
@@ -60,7 +73,11 @@ def test_sobol_method_accepts_enum_and_string():
 def test_sobol_mean_is_accurate():
     spot, sigma, horizon, n = 10.0, 0.2, 1.0, 4096
     sobol = simulate_terminal_rates(
-        spot=spot, sigma_annual=sigma, horizon_years=horizon, n_sims=n, seed=1,
+        spot=spot,
+        sigma_annual=sigma,
+        horizon_years=horizon,
+        n_sims=n,
+        seed=1,
         method=SamplingMethod.SOBOL,
     )
     assert sobol.mean() == pytest.approx(spot, rel=0.02)
@@ -72,10 +89,20 @@ def test_antithetic_variates_reduce_variance_of_mean_estimate():
     anti_means = []
     for trial in range(trials):
         plain = simulate_terminal_rates(
-            spot=spot, sigma_annual=sigma, horizon_years=horizon, n_sims=n, seed=trial, antithetic=False
+            spot=spot,
+            sigma_annual=sigma,
+            horizon_years=horizon,
+            n_sims=n,
+            seed=trial,
+            antithetic=False,
         )
         anti = simulate_terminal_rates(
-            spot=spot, sigma_annual=sigma, horizon_years=horizon, n_sims=n, seed=trial, antithetic=True
+            spot=spot,
+            sigma_annual=sigma,
+            horizon_years=horizon,
+            n_sims=n,
+            seed=trial,
+            antithetic=True,
         )
         plain_means.append(plain.mean())
         anti_means.append(anti.mean())
@@ -85,7 +112,12 @@ def test_antithetic_variates_reduce_variance_of_mean_estimate():
 
 def test_extreme_parameters_stay_finite_due_to_clipping():
     result = simulate_terminal_rates(
-        spot=10.0, sigma_annual=5.0, horizon_years=5.0, n_sims=10_000, seed=3, method=SamplingMethod.SOBOL
+        spot=10.0,
+        sigma_annual=5.0,
+        horizon_years=5.0,
+        n_sims=10_000,
+        seed=3,
+        method=SamplingMethod.SOBOL,
     )
     assert np.all(np.isfinite(result))
     assert np.all(result > 0)

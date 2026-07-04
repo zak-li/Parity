@@ -11,7 +11,9 @@ from core.models.portfolio import (
 )
 
 
-def _position(currency, amount=100_000.0, revenue=1_150_000.0, sigma=0.15, drift=-0.02, horizon=0.5):
+def _position(
+    currency, amount=100_000.0, revenue=1_150_000.0, sigma=0.15, drift=-0.02, horizon=0.5
+):
     return PortfolioPosition(
         label=f"pos_{currency}",
         foreign_currency=currency,
@@ -44,8 +46,12 @@ def test_simulate_portfolio_basic_consistency():
 
 def test_diversification_reduces_tail_risk_versus_perfect_correlation():
     positions = [_position("USD"), _position("EUR")]
-    low = simulate_portfolio(positions, np.array([[1.0, 0.0], [0.0, 1.0]]), ["EUR", "USD"], 40_000, 2)
-    high = simulate_portfolio(positions, np.array([[1.0, 0.99], [0.99, 1.0]]), ["EUR", "USD"], 40_000, 2)
+    low = simulate_portfolio(
+        positions, np.array([[1.0, 0.0], [0.0, 1.0]]), ["EUR", "USD"], 40_000, 2
+    )
+    high = simulate_portfolio(
+        positions, np.array([[1.0, 0.99], [0.99, 1.0]]), ["EUR", "USD"], 40_000, 2
+    )
 
     assert low.cvar_margin_pct > high.cvar_margin_pct
     assert low.diversification_benefit_pct > high.diversification_benefit_pct
@@ -64,7 +70,9 @@ def test_rejects_empty_portfolio():
 
 def test_rejects_mismatched_correlation_matrix():
     with pytest.raises(InvalidOrderError):
-        simulate_portfolio([_position("USD")], np.array([[1.0, 0.0], [0.0, 1.0]]), ["USD"], 20_000, 1)
+        simulate_portfolio(
+            [_position("USD")], np.array([[1.0, 0.0], [0.0, 1.0]]), ["USD"], 20_000, 1
+        )
 
 
 def test_rejects_invalid_n_sims():
@@ -74,11 +82,13 @@ def test_rejects_invalid_n_sims():
 
 def test_non_psd_correlation_falls_back_to_eigen_clipping():
     positions = [_position("USD"), _position("EUR"), _position("GBP")]
-    non_psd = np.array([
-        [1.0, 0.9, -0.9],
-        [0.9, 1.0, 0.9],
-        [-0.9, 0.9, 1.0],
-    ])
+    non_psd = np.array(
+        [
+            [1.0, 0.9, -0.9],
+            [0.9, 1.0, 0.9],
+            [-0.9, 0.9, 1.0],
+        ]
+    )
     assert np.min(np.linalg.eigvalsh(non_psd)) < 0
 
     result = simulate_portfolio(positions, non_psd, ["EUR", "GBP", "USD"], 20_000, 4)

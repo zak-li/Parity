@@ -9,7 +9,7 @@ def percentiles(
     values: np.ndarray, points: tuple[int, ...] = settings.PERCENTILE_POINTS
 ) -> dict[str, float]:
     computed = np.percentile(values, points)
-    return {f"P{p}": float(v) for p, v in zip(points, np.atleast_1d(computed))}
+    return {f"P{p}": float(v) for p, v in zip(points, np.atleast_1d(computed), strict=False)}
 
 
 def probability_below_threshold(values: np.ndarray, threshold: float) -> float:

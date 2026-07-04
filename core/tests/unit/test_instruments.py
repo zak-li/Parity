@@ -119,9 +119,16 @@ def test_comparison_accepts_custom_pricer():
     rates = 10.0 * np.exp(rng.normal(-0.02, 0.2, 40_000))
     pricer = mc_option_pricer(rates, 0.03, 0.5)
     outcomes = compare_instruments(
-        revenue=1_150_000.0, amount_foreign=100_000.0, spot=10.0, forward=9.8,
-        sigma_annual=0.2, domestic_rate=0.03, foreign_rate=0.05, horizon_years=0.5,
-        simulated_rates=rates, option_pricer=pricer,
+        revenue=1_150_000.0,
+        amount_foreign=100_000.0,
+        spot=10.0,
+        forward=9.8,
+        sigma_annual=0.2,
+        domestic_rate=0.03,
+        foreign_rate=0.05,
+        horizon_years=0.5,
+        simulated_rates=rates,
+        option_pricer=pricer,
     )
     option = next(o for o in outcomes if o.instrument is HedgeInstrument.OPTION)
     assert option.upfront_premium_domestic > 0

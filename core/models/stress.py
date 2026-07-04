@@ -93,9 +93,7 @@ def worst_adverse_move(series: pd.Series, horizon_days: int) -> float:
     return float(np.max(ratios) - 1.0)
 
 
-def historical_stress_scenario(
-    series: pd.Series, horizon_days: int, name: str
-) -> StressScenario:
+def historical_stress_scenario(series: pd.Series, horizon_days: int, name: str) -> StressScenario:
     return StressScenario(name=name, rate_shock_pct=worst_adverse_move(series, horizon_days))
 
 

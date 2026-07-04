@@ -18,7 +18,7 @@ def _kurtosis(sample):
 
 
 def _params(**overrides):
-    base = dict(v0=0.04, kappa=2.0, theta=0.04, xi=0.4, rho=-0.3)
+    base = {"v0": 0.04, "kappa": 2.0, "theta": 0.04, "xi": 0.4, "rho": -0.3}
     base.update(overrides)
     return HestonParams(**base)
 
@@ -38,7 +38,9 @@ def test_martingale_mean_matches_forward():
 
 def test_realized_volatility_tracks_initial_variance():
     spot, horizon = 10.0, 1.0
-    result = simulate_heston_terminal_rates(spot, horizon, 200_000, _params(v0=0.04, theta=0.04), seed=3)
+    result = simulate_heston_terminal_rates(
+        spot, horizon, 200_000, _params(v0=0.04, theta=0.04), seed=3
+    )
     realized = np.log(result / spot).std(ddof=1) / np.sqrt(horizon)
     assert realized == pytest.approx(0.20, rel=0.1)
 
@@ -84,8 +86,14 @@ def test_explicit_steps_override():
 @pytest.mark.parametrize(
     "overrides",
     [
-        {"v0": 0.0}, {"v0": -0.1}, {"theta": 0.0}, {"kappa": 0.0},
-        {"kappa": -1.0}, {"xi": 0.0}, {"rho": 1.5}, {"rho": -1.5},
+        {"v0": 0.0},
+        {"v0": -0.1},
+        {"theta": 0.0},
+        {"kappa": 0.0},
+        {"kappa": -1.0},
+        {"xi": 0.0},
+        {"rho": 1.5},
+        {"rho": -1.5},
     ],
 )
 def test_params_validation(overrides):

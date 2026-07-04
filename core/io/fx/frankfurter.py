@@ -10,10 +10,10 @@ from ...config import load_runtime_config
 from ...config.settings import RuntimeConfig
 from ...models.exceptions import FxDataError, InvalidOrderError, RateLimitError
 from ...models.validation import validate_currency_code
-from ..rate_limiter import TokenBucketRateLimiter
-from ..ssrf import HostAllowlist
 from ..cache import TTLCache
 from ..http import build_secure_session
+from ..rate_limiter import TokenBucketRateLimiter
+from ..ssrf import HostAllowlist
 
 
 class FrankfurterFxDataProvider:
@@ -46,10 +46,14 @@ class FrankfurterFxDataProvider:
         base = validate_currency_code(base)
         quote = validate_currency_code(quote)
         if end < start:
-            raise InvalidOrderError("La date de fin doit être postérieure ou égale à la date de début.")
+            raise InvalidOrderError(
+                "La date de fin doit être postérieure ou égale à la date de début."
+            )
 
         cache_key = (base, quote, start.isoformat(), end.isoformat())
-        return self._cache.get_or_set(cache_key, lambda: self._fetch(base, quote, start, end)).copy()
+        return self._cache.get_or_set(
+            cache_key, lambda: self._fetch(base, quote, start, end)
+        ).copy()
 
     def _fetch(self, base: str, quote: str, start: dt.date, end: dt.date) -> pd.Series:
         if not self._rate_limiter.try_acquire():
@@ -67,7 +71,9 @@ class FrankfurterFxDataProvider:
                     )
                 body = self._read_capped(response)
         except requests.RequestException as exc:
-            raise FxDataError(f"Échec de connexion au fournisseur de taux de change: {exc}") from exc
+            raise FxDataError(
+                f"Échec de connexion au fournisseur de taux de change: {exc}"
+            ) from exc
 
         try:
             payload = json.loads(body)

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import datetime as dt
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from core.models.models import OrderInput
 from core.io.fx.static import StaticFxDataProvider
+from core.models.models import OrderInput
 
 SeriesFactory = Callable[..., pd.Series]
 

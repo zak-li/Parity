@@ -31,9 +31,7 @@ def optimal_hedge_ratio(
     grid_step: float = settings.HEDGE_RATIO_GRID_STEP,
 ) -> tuple[float, float]:
     def cvar_at(ratio: float) -> float:
-        return conditional_value_at_risk(
-            unhedged_margin_pct + ratio * marginal_hedge_effect, alpha
-        )
+        return conditional_value_at_risk(unhedged_margin_pct + ratio * marginal_hedge_effect, alpha)
 
     grid = np.arange(0.0, 1.0 + 1e-9, grid_step)
     coarse = [cvar_at(float(r)) for r in grid]

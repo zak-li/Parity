@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .app import MarginRiskEngine, PortfolioRiskEngine
 from .config import RuntimeConfig, load_runtime_config
+from .io import FrankfurterFxDataProvider, FxDataProvider, StaticFxDataProvider
 from .models import (
     Alert,
     AlertSeverity,
@@ -35,7 +36,6 @@ from .models import (
     evaluate_result_alerts,
     kupiec_pof_test,
 )
-from .io import FrankfurterFxDataProvider, FxDataProvider, StaticFxDataProvider
 
 __all__ = [
     "Alert",

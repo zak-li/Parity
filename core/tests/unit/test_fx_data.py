@@ -9,16 +9,16 @@ import pytest
 import requests
 
 from core.config.settings import RuntimeConfig
+from core.io.cache import TTLCache
+from core.io.fx.frankfurter import FrankfurterFxDataProvider
+from core.io.fx.static import StaticFxDataProvider
+from core.io.rate_limiter import TokenBucketRateLimiter
 from core.models.exceptions import (
     FxDataError,
     InsufficientDataError,
     InvalidOrderError,
     RateLimitError,
 )
-from core.io.cache import TTLCache
-from core.io.fx.frankfurter import FrankfurterFxDataProvider
-from core.io.fx.static import StaticFxDataProvider
-from core.io.rate_limiter import TokenBucketRateLimiter
 
 
 class _FakeResponse:
@@ -98,7 +98,9 @@ def test_oversized_actual_content_without_header_raises_fx_data_error():
 def test_malformed_content_length_header_is_ignored():
     payload = {"rates": {"2026-01-02": {"MAD": 10.1}}}
     session = MagicMock()
-    session.get.return_value = _FakeResponse(200, payload, headers={"Content-Length": "not-a-number"})
+    session.get.return_value = _FakeResponse(
+        200, payload, headers={"Content-Length": "not-a-number"}
+    )
     provider = _make_provider(session)
 
     result = provider.get_historical_series("USD", "MAD", dt.date(2026, 1, 1), dt.date(2026, 1, 5))

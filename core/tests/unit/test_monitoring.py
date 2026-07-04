@@ -78,7 +78,9 @@ def test_no_change_alerts_when_stable(base_result):
 
 def test_custom_thresholds_are_respected(base_result):
     result = dataclasses.replace(
-        base_result, risk_level=RiskLevel.LOW, vulnerability_score=40,
+        base_result,
+        risk_level=RiskLevel.LOW,
+        vulnerability_score=40,
         probability_margin_below_threshold=0.05,
     )
     strict = MonitoringThresholds(max_score=30)

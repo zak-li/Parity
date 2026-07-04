@@ -3,9 +3,9 @@ from __future__ import annotations
 import pytest
 
 from core.config.settings import RuntimeConfig
-from core.models.exceptions import DisallowedHostError
 from core.io.http import build_secure_session
 from core.io.ssrf import HostAllowlist
+from core.models.exceptions import DisallowedHostError
 
 
 def test_build_secure_session_configures_retries():

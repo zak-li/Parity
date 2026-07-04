@@ -5,6 +5,8 @@ import datetime as dt
 import numpy as np
 import pytest
 
+from core.app.risk_engine import MarginRiskEngine
+from core.io.fx.static import StaticFxDataProvider
 from core.models.enums import (
     HedgeInstrument,
     ReturnDistribution,
@@ -15,8 +17,6 @@ from core.models.enums import (
 from core.models.exceptions import InsufficientDataError
 from core.models.models import OrderInput
 from core.models.monte_carlo import JumpParams
-from core.io.fx.static import StaticFxDataProvider
-from core.app.risk_engine import MarginRiskEngine
 
 
 def test_result_fields_are_internally_consistent(static_provider, sample_order):
@@ -49,7 +49,9 @@ def test_sobol_sampling_method_runs_end_to_end(static_provider, sample_order):
 
 
 def test_median_rate_close_to_spot_under_low_volatility(make_series, reference_order_date):
-    series = make_series(base_rate=10.0, n_days=200, annual_sigma=0.05, end_date=reference_order_date, seed=1)
+    series = make_series(
+        base_rate=10.0, n_days=200, annual_sigma=0.05, end_date=reference_order_date, seed=1
+    )
     provider = StaticFxDataProvider(series)
     order = OrderInput(
         amount_foreign=50_000.0,
@@ -66,8 +68,12 @@ def test_median_rate_close_to_spot_under_low_volatility(make_series, reference_o
 
 
 def test_higher_volatility_and_longer_horizon_increase_risk(make_series, reference_order_date):
-    low_vol = make_series(base_rate=10.0, n_days=200, annual_sigma=0.03, end_date=reference_order_date, seed=5)
-    high_vol = make_series(base_rate=10.0, n_days=200, annual_sigma=0.35, end_date=reference_order_date, seed=5)
+    low_vol = make_series(
+        base_rate=10.0, n_days=200, annual_sigma=0.03, end_date=reference_order_date, seed=5
+    )
+    high_vol = make_series(
+        base_rate=10.0, n_days=200, annual_sigma=0.35, end_date=reference_order_date, seed=5
+    )
 
     def order(offset):
         return OrderInput(
@@ -85,7 +91,9 @@ def test_higher_volatility_and_longer_horizon_increase_risk(make_series, referen
     high_risk = MarginRiskEngine(StaticFxDataProvider(high_vol)).run(order(180))
 
     assert high_risk.vulnerability_score > low_risk.vulnerability_score
-    assert high_risk.probability_margin_below_threshold >= low_risk.probability_margin_below_threshold
+    assert (
+        high_risk.probability_margin_below_threshold >= low_risk.probability_margin_below_threshold
+    )
 
 
 def test_target_margin_path_computes_revenue_from_spot(static_provider, reference_order_date):
@@ -122,7 +130,9 @@ def test_expected_revenue_path_uses_provided_value(static_provider, reference_or
 
 
 def test_propagates_insufficient_data_error(make_series, reference_order_date):
-    series = make_series(base_rate=10.0, n_days=200, annual_sigma=0.1, end_date=reference_order_date, seed=1)
+    series = make_series(
+        base_rate=10.0, n_days=200, annual_sigma=0.1, end_date=reference_order_date, seed=1
+    )
     provider = StaticFxDataProvider(series)
     order = OrderInput(
         amount_foreign=10_000.0,
@@ -142,7 +152,9 @@ def test_mad_recommendation_mentions_office_des_changes(static_provider, sample_
 
 
 def test_cip_drift_makes_expected_terminal_rate_match_forward(make_series, reference_order_date):
-    series = make_series(base_rate=10.0, n_days=200, annual_sigma=0.08, end_date=reference_order_date, seed=4)
+    series = make_series(
+        base_rate=10.0, n_days=200, annual_sigma=0.08, end_date=reference_order_date, seed=4
+    )
     provider = StaticFxDataProvider(series)
     order = OrderInput(
         amount_foreign=100_000.0,
@@ -170,7 +182,11 @@ def test_hedge_analysis_is_populated_and_consistent(static_provider, sample_orde
     assert 0.0 <= hedge.optimal_hedge_ratio <= 1.0
     assert 0.0 <= hedge.probability_unhedged_beats_hedge <= 1.0
     assert hedge.optimal_hedge_cvar_margin_pct >= hedge.unhedged_cvar_margin_pct
-    reconstructed = 1.0 - (sample_order.amount_foreign / (result.breakeven_rate * sample_order.amount_foreign)) * hedge.theoretical_forward_rate
+    reconstructed = (
+        1.0
+        - (sample_order.amount_foreign / (result.breakeven_rate * sample_order.amount_foreign))
+        * hedge.theoretical_forward_rate
+    )
     assert hedge.hedged_margin_pct == pytest.approx(reconstructed)
 
 
@@ -187,7 +203,9 @@ def test_instrument_comparison_is_populated(static_provider, sample_order):
     forward = instruments[HedgeInstrument.FORWARD]
     assert forward.cvar_margin_pct == pytest.approx(forward.worst_case_margin_pct)
     for hedged in (HedgeInstrument.FORWARD, HedgeInstrument.OPTION, HedgeInstrument.COLLAR):
-        assert instruments[hedged].cvar_margin_pct >= instruments[HedgeInstrument.NONE].cvar_margin_pct
+        assert (
+            instruments[hedged].cvar_margin_pct >= instruments[HedgeInstrument.NONE].cvar_margin_pct
+        )
 
 
 @pytest.mark.parametrize("model", list(VolatilityModel))
@@ -197,7 +215,9 @@ def test_engine_runs_with_each_volatility_model(static_provider, sample_order, m
 
 
 def test_student_t_engine_widens_downside_tail(make_series, reference_order_date):
-    series = make_series(base_rate=10.0, n_days=220, annual_sigma=0.2, end_date=reference_order_date, seed=8)
+    series = make_series(
+        base_rate=10.0, n_days=220, annual_sigma=0.2, end_date=reference_order_date, seed=8
+    )
     provider = StaticFxDataProvider(series)
     order = OrderInput(
         amount_foreign=100_000.0,
@@ -220,7 +240,8 @@ def test_student_t_engine_widens_downside_tail(make_series, reference_order_date
 
 def test_jump_diffusion_engine_runs(static_provider, sample_order):
     engine = MarginRiskEngine(
-        static_provider, jumps=JumpParams(intensity_annual=2.0, mean_log_jump=-0.03, std_log_jump=0.05)
+        static_provider,
+        jumps=JumpParams(intensity_annual=2.0, mean_log_jump=-0.03, std_log_jump=0.05),
     )
     result = engine.run(sample_order)
     assert np.all(np.isfinite(result.simulated_rates))
@@ -240,12 +261,21 @@ def test_heston_produces_fatter_tails_than_gbm(make_series, reference_order_date
     from core.models.enums import MarketModel
     from core.models.heston import HestonParams
 
-    series = make_series(base_rate=10.0, n_days=220, annual_sigma=0.2, end_date=reference_order_date, seed=8)
+    series = make_series(
+        base_rate=10.0, n_days=220, annual_sigma=0.2, end_date=reference_order_date, seed=8
+    )
     provider = StaticFxDataProvider(series)
     order = OrderInput(
-        amount_foreign=100_000.0, foreign_currency="USD", domestic_currency="MAD",
-        order_date=reference_order_date, delivery_date=reference_order_date + dt.timedelta(days=180),
-        target_margin_pct=0.10, domestic_rate=0.03, foreign_rate=0.05, n_simulations=100_000, seed=5,
+        amount_foreign=100_000.0,
+        foreign_currency="USD",
+        domestic_currency="MAD",
+        order_date=reference_order_date,
+        delivery_date=reference_order_date + dt.timedelta(days=180),
+        target_margin_pct=0.10,
+        domestic_rate=0.03,
+        foreign_rate=0.05,
+        n_simulations=100_000,
+        seed=5,
     )
 
     def kurtosis(rates):
@@ -262,7 +292,9 @@ def test_heston_produces_fatter_tails_than_gbm(make_series, reference_order_date
 
 
 def test_full_hedge_recommended_under_high_risk(make_series, reference_order_date):
-    series = make_series(base_rate=10.0, n_days=200, annual_sigma=0.40, end_date=reference_order_date, seed=6)
+    series = make_series(
+        base_rate=10.0, n_days=200, annual_sigma=0.40, end_date=reference_order_date, seed=6
+    )
     provider = StaticFxDataProvider(series)
     order = OrderInput(
         amount_foreign=100_000.0,

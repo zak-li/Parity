@@ -3,7 +3,8 @@ from __future__ import annotations
 import threading
 import time
 from collections import OrderedDict
-from typing import Any, Callable, Hashable
+from collections.abc import Callable, Hashable
+from typing import Any
 
 
 class TTLCache:
