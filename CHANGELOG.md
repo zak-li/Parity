@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-04
+
 ### Added
 - **Portfolio risk attribution**: per-currency component/marginal CVaR (Euler
   allocation) exposing each currency's share of the tail shortfall
@@ -71,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AI narrative.** Optional `Groq` narrative generation (import-guarded).
 - **Tooling.** Test suite (361 tests) and GitHub Actions CI on Python 3.11/3.12.
 
-[Unreleased]: https://github.com/zak-li/Parity/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/zak-li/Parity/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/zak-li/Parity/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/zak-li/Parity/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/zak-li/Parity/releases/tag/v0.6.0
