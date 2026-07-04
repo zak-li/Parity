@@ -10,12 +10,12 @@
 <br>
 
 <p align="center">
-  <a href="https://github.com/zak-li/Parity/releases"><img src="https://img.shields.io/github/v/tag/zak-li/Parity?label=version&color=4AAFFD" alt="Version"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL_3.0-4DB3FD.svg" alt="License: AGPL 3.0"></a>
-  <a href="https://github.com/zak-li/Parity/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/zak-li/Parity/ci.yml?label=CI&color=50B8FD" alt="CI"></a>
-  <a href="https://github.com/zak-li/Parity/issues"><img src="https://img.shields.io/github/issues/zak-li/Parity?color=53BCFD" alt="Issues"></a><br>
-  <a href="https://github.com/zak-li/Parity/commits/main"><img src="https://img.shields.io/github/last-commit/zak-li/Parity?color=56C0FD" alt="Last Commit"></a>
-  <a href="https://docs.pytest.org/"><img src="https://img.shields.io/badge/tested_with-pytest-5CC9FD.svg" alt="Tested with pytest"></a>
+  <a href="https://github.com/zak-li/Parity/releases"><img src="https://img.shields.io/github/v/tag/zak-li/Parity?label=version&color=3A60F0" alt="Version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL_3.0-2E77F3.svg" alt="License: AGPL 3.0"></a>
+  <a href="https://github.com/zak-li/Parity/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/zak-li/Parity/ci.yml?label=CI&color=238EF6" alt="CI"></a>
+  <a href="https://github.com/zak-li/Parity/issues"><img src="https://img.shields.io/github/issues/zak-li/Parity?color=17A6F9" alt="Issues"></a><br>
+  <a href="https://github.com/zak-li/Parity/commits/main"><img src="https://img.shields.io/github/last-commit/zak-li/Parity?color=0CBDFC" alt="Last Commit"></a>
+  <a href="https://docs.pytest.org/"><img src="https://img.shields.io/badge/tested_with-pytest-00D4FF.svg" alt="Tested with pytest"></a>
 </p>
 
 <br>
