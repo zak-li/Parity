@@ -14,9 +14,9 @@ class TokenBucketRateLimiter:
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         if rate_per_second <= 0:
-            raise ValueError("rate_per_second doit être strictement positif.")
+            raise ValueError("rate_per_second must be strictly positive.")
         if capacity <= 0:
-            raise ValueError("capacity doit être strictement positif.")
+            raise ValueError("capacity must be strictly positive.")
         self._rate = rate_per_second
         self._capacity = float(capacity)
         self._clock = clock
@@ -26,7 +26,7 @@ class TokenBucketRateLimiter:
 
     def try_acquire(self, tokens: float = 1.0) -> bool:
         if tokens <= 0:
-            raise ValueError("tokens doit être strictement positif.")
+            raise ValueError("tokens must be strictly positive.")
         with self._lock:
             now = self._clock()
             elapsed = now - self._last

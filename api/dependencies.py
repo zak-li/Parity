@@ -37,5 +37,5 @@ def require_api_key(provided: str | None = Security(_api_key_header)) -> None:
     if provided is None or not secrets.compare_digest(provided, expected):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Clé API invalide ou manquante.",
+            detail="Invalid or missing API key.",
         )

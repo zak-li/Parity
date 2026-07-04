@@ -49,8 +49,8 @@ def evaluate_compliance(
                 ComplianceCheck(
                     "not_applicable",
                     True,
-                    f"Réglementation Office des Changes non applicable "
-                    f"(devise locale {order.domestic_currency} ≠ {config.regulated_domestic_currency}).",
+                    f"Office des Changes regulation not applicable "
+                    f"(domestic currency {order.domestic_currency} ≠ {config.regulated_domestic_currency}).",
                 ),
             ),
             required_documents=(),
@@ -64,8 +64,8 @@ def evaluate_compliance(
         ComplianceCheck(
             "operation_eligibility",
             operation_ok,
-            f"Type d'opération '{operation}' "
-            + ("éligible à la couverture de change." if operation_ok else "non reconnu."),
+            f"Operation type '{operation}' "
+            + ("is eligible for FX hedging." if operation_ok else "is not recognized."),
         )
     )
 
@@ -74,9 +74,9 @@ def evaluate_compliance(
         ComplianceCheck(
             "forward_horizon",
             horizon_ok,
-            f"Échéance de couverture ({order.horizon_days} j) "
-            f"{'dans' if horizon_ok else 'au-delà de'} la limite usuelle "
-            f"de {config.max_forward_horizon_days} j.",
+            f"Hedge maturity ({order.horizon_days} d) "
+            f"{'within' if horizon_ok else 'beyond'} the usual limit "
+            f"of {config.max_forward_horizon_days} d.",
         )
     )
 
@@ -84,7 +84,7 @@ def evaluate_compliance(
         ComplianceCheck(
             "commercial_operation",
             order.amount_foreign > oc.MIN_HEDGE_AMOUNT_FOREIGN,
-            "Opération commerciale avec montant en devise justifiable.",
+            "Commercial operation with a justifiable foreign-currency amount.",
         )
     )
 
@@ -93,8 +93,8 @@ def evaluate_compliance(
             ComplianceCheck(
                 "repatriation_delay",
                 True,
-                f"Rapatriement des devises exigé sous {config.max_repatriation_days} j "
-                f"après encaissement.",
+                f"Currency repatriation required within {config.max_repatriation_days} d "
+                f"of collection.",
             )
         )
 
@@ -103,7 +103,7 @@ def evaluate_compliance(
         ComplianceCheck(
             "documentation",
             True,
-            "Pièces justificatives à réunir avant la mise en place de la couverture.",
+            "Supporting documents to gather before putting the hedge in place.",
         )
     )
 

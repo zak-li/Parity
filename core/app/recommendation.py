@@ -6,37 +6,36 @@ from ..models.models import OrderInput
 
 _ACTIONS: dict[RiskLevel, str] = {
     RiskLevel.LOW: (
-        "Risque limité: surveillez le taux mais une couverture n'est probablement pas "
-        "nécessaire pour cette commande."
+        "Limited risk: monitor the rate, but hedging is probably not necessary for this order."
     ),
     RiskLevel.MODERATE: (
-        "Envisagez de bloquer une partie de l'exposition via un contrat à terme (forward) "
-        "auprès de votre banque, ou surveillez de près jusqu'à la livraison."
+        "Consider locking part of the exposure with a forward contract "
+        "at your bank, or monitor closely until delivery."
     ),
     RiskLevel.HIGH: (
-        "Recommandation: bloquez le taux de change dès maintenant auprès de votre banque "
-        "(contrat à terme) pour sécuriser votre marge."
+        "Recommendation: lock in the exchange rate now with your bank "
+        "(forward contract) to protect your margin."
     ),
     RiskLevel.CRITICAL: (
-        "Risque critique: bloquez le taux immédiatement. Contactez votre banque pour un "
-        "contrat à terme ou une option de change avant toute nouvelle exposition."
+        "Critical risk: lock the rate immediately. Contact your bank for a "
+        "forward contract or a currency option before taking on any new exposure."
     ),
 }
 
 _MAD_NOTICE = (
-    " Au Maroc, la couverture de change est encadrée par l'Office des Changes: vérifiez "
-    "l'éligibilité de votre opération avant de contacter votre banque."
+    " In Morocco, currency hedging is regulated by the Office des Changes: check "
+    "your operation's eligibility before contacting your bank."
 )
 
 
 def _hedge_advice(hedge: HedgeAnalysis) -> str:
-    points_sign = "prime" if hedge.forward_points >= 0 else "décote"
+    points_sign = "premium" if hedge.forward_points >= 0 else "discount"
     return (
-        f"Taux à terme théorique (parité des taux): {hedge.theoretical_forward_rate:.4f} "
-        f"({points_sign} de {abs(hedge.forward_points):.4f}). En le bloquant, votre marge est "
-        f"figée à {hedge.hedged_margin_pct * 100:.1f}%. Couverture optimale conseillée: "
-        f"{hedge.optimal_hedge_ratio * 100:.0f}% de l'exposition. Probabilité que ne pas "
-        f"couvrir soit plus favorable: {hedge.probability_unhedged_beats_hedge * 100:.0f}%."
+        f"Theoretical forward rate (interest rate parity): {hedge.theoretical_forward_rate:.4f} "
+        f"({points_sign} of {abs(hedge.forward_points):.4f}). Locking it fixes your margin "
+        f"at {hedge.hedged_margin_pct * 100:.1f}%. Recommended optimal hedge: "
+        f"{hedge.optimal_hedge_ratio * 100:.0f}% of the exposure. Probability that staying "
+        f"unhedged beats the hedge: {hedge.probability_unhedged_beats_hedge * 100:.0f}%."
     )
 
 
@@ -50,9 +49,9 @@ def build_recommendation(
 ) -> str:
     pair = f"{order.foreign_currency}/{order.domestic_currency}"
     base = (
-        f"Taux actuel {pair}: {spot_rate:.4f}. Taux de rupture de marge: {breakeven_rate:.4f} "
-        f"(marge nulle si ce niveau est dépassé d'ici {order.horizon_days} jours). "
-        f"Probabilité de passer sous le seuil de marge acceptable: {probability_below * 100:.0f}%."
+        f"Current {pair} rate: {spot_rate:.4f}. Margin breakeven rate: {breakeven_rate:.4f} "
+        f"(margin is zero if this level is exceeded within {order.horizon_days} days). "
+        f"Probability of falling below the acceptable margin threshold: {probability_below * 100:.0f}%."
     )
     action = _ACTIONS[risk_level]
     if order.domestic_currency == "MAD":

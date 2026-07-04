@@ -21,7 +21,7 @@ def conditional_value_at_risk(
 ) -> float:
     n = values.size
     if n == 0:
-        raise ValueError("La série de valeurs ne peut pas être vide.")
+        raise ValueError("The value series cannot be empty.")
     k = min(n, max(1, int(np.ceil(alpha * n))))
     tail = np.partition(values, k - 1)[:k]
     return float(tail.mean())

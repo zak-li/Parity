@@ -39,10 +39,10 @@ def _hedge(forward=11.05, points=0.05, hedged_pct=0.28, ratio=0.6, prob=0.45):
 @pytest.mark.parametrize(
     "level,expected_fragment",
     [
-        (RiskLevel.LOW, "surveillez le taux"),
-        (RiskLevel.MODERATE, "Envisagez de bloquer"),
-        (RiskLevel.HIGH, "bloquez le taux de change dès maintenant"),
-        (RiskLevel.CRITICAL, "bloquez le taux immédiatement"),
+        (RiskLevel.LOW, "monitor the rate"),
+        (RiskLevel.MODERATE, "Consider locking"),
+        (RiskLevel.HIGH, "lock in the exchange rate now"),
+        (RiskLevel.CRITICAL, "lock the rate immediately"),
     ],
 )
 def test_recommendation_action_matches_risk_level(level, expected_fragment):
@@ -85,5 +85,5 @@ def test_forward_premium_and_discount_wording():
     discount = build_recommendation(
         _order("EUR"), RiskLevel.LOW, 10.5, 11.0, 0.4, _hedge(points=-0.05)
     )
-    assert "prime" in premium
-    assert "décote" in discount
+    assert "premium" in premium
+    assert "discount" in discount

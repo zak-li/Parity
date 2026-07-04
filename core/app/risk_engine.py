@@ -198,7 +198,7 @@ class MarginRiskEngine:
         with contextlib.suppress(InsufficientDataError):
             scenarios.append(
                 historical_stress_scenario(
-                    history, order.horizon_days, "Pire mouvement historique (fenêtre récente)"
+                    history, order.horizon_days, "Worst historical move (recent window)"
                 )
             )
         scenarios.extend(self._crisis_scenarios(order))
@@ -225,7 +225,7 @@ class MarginRiskEngine:
                     dt.date.fromisoformat(end),
                 )
                 scenarios.append(
-                    historical_stress_scenario(window, order.horizon_days, f"Rejeu {name}")
+                    historical_stress_scenario(window, order.horizon_days, f"Replay {name}")
                 )
             except (FxDataError, InsufficientDataError, InvalidOrderError):
                 continue

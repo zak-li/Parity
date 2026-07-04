@@ -28,11 +28,11 @@ def kupiec_pof_test(
     significance: float = settings.KUPIEC_SIGNIFICANCE,
 ) -> KupiecResult:
     if n_observations <= 0:
-        raise InsufficientDataError("Le nombre d'observations doit être strictement positif.")
+        raise InsufficientDataError("The number of observations must be strictly positive.")
     if not (0 <= n_exceedances <= n_observations):
-        raise InsufficientDataError("Le nombre de dépassements est incohérent.")
+        raise InsufficientDataError("The number of exceedances is inconsistent.")
     if not (0.0 < alpha < 1.0):
-        raise InsufficientDataError("Le niveau alpha doit être dans (0, 1).")
+        raise InsufficientDataError("The alpha level must be in (0, 1).")
 
     n, x, p = n_observations, n_exceedances, alpha
     observed = x / n
@@ -67,9 +67,7 @@ def backtest_parametric_var(
 ) -> KupiecResult:
     returns = pd.Series(np.log(series / series.shift(1)).dropna().to_numpy())
     if len(returns) <= window:
-        raise InsufficientDataError(
-            "La série est trop courte pour la fenêtre de backtest demandée."
-        )
+        raise InsufficientDataError("The series is too short for the requested backtest window.")
     z = norm.ppf(alpha)
     rolling = returns.rolling(window)
     threshold = (rolling.mean() + z * rolling.std(ddof=1)).shift(1)

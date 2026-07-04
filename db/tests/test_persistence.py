@@ -26,7 +26,7 @@ def test_record_summary_is_json_serializable(simulation_result):
     summary = record_from_result(simulation_result).summary()
     assert "details" not in summary
     assert isinstance(summary["created_at"], str)
-    assert summary["risk_level"] in ("Faible", "Modéré", "Élevé", "Critique")
+    assert summary["risk_level"] in ("Low", "Moderate", "High", "Critical")
 
 
 def test_in_memory_save_and_get(simulation_result):

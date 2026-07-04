@@ -9,10 +9,10 @@ from core.models.models import SimulationResult
 logger = logging.getLogger(__name__)
 
 _SYSTEM_PROMPT = (
-    "Tu es un conseiller en gestion du risque de change pour des PME importatrices. "
-    "À partir des indicateurs fournis, rédige une explication claire et actionnable en "
-    "français (3 à 5 phrases), sans jargon inutile. N'invente aucun chiffre: utilise "
-    "uniquement les données fournies. Termine par une recommandation concrète."
+    "You are a currency-risk management advisor for importing SMEs. "
+    "From the indicators provided, write a clear, actionable explanation in "
+    "English (3 to 5 sentences), without unnecessary jargon. Do not invent any "
+    "figures: use only the data provided. End with one concrete recommendation."
 )
 
 
@@ -28,17 +28,17 @@ class NullNarrator:
 def _build_prompt(result: SimulationResult) -> str:
     order = result.order
     return (
-        f"Paire: {order.foreign_currency}/{order.domestic_currency}. "
-        f"Montant: {order.amount_foreign:.0f} {order.foreign_currency}. "
-        f"Horizon: {result.horizon_days} jours. "
-        f"Taux comptant: {result.spot_rate_order_date:.4f}, "
-        f"taux à terme théorique: {result.expected_terminal_rate:.4f}. "
-        f"Volatilité annualisée: {result.annualized_volatility * 100:.1f}%. "
-        f"Score de vulnérabilité: {result.vulnerability_score}/100 ({result.risk_level.value}). "
-        f"Probabilité de marge insuffisante: {result.probability_margin_below_threshold * 100:.0f}%. "
-        f"Perte moyenne dans les pires cas (CVaR): {result.expected_shortfall_margin_pct * 100:.1f}%. "
-        f"Couverture optimale conseillée: {result.hedge.optimal_hedge_ratio * 100:.0f}% "
-        f"(marge figée à {result.hedge.hedged_margin_pct * 100:.1f}%)."
+        f"Pair: {order.foreign_currency}/{order.domestic_currency}. "
+        f"Amount: {order.amount_foreign:.0f} {order.foreign_currency}. "
+        f"Horizon: {result.horizon_days} days. "
+        f"Spot rate: {result.spot_rate_order_date:.4f}, "
+        f"theoretical forward rate: {result.expected_terminal_rate:.4f}. "
+        f"Annualized volatility: {result.annualized_volatility * 100:.1f}%. "
+        f"Vulnerability score: {result.vulnerability_score}/100 ({result.risk_level.value}). "
+        f"Probability of insufficient margin: {result.probability_margin_below_threshold * 100:.0f}%. "
+        f"Average loss in the worst cases (CVaR): {result.expected_shortfall_margin_pct * 100:.1f}%. "
+        f"Recommended optimal hedge: {result.hedge.optimal_hedge_ratio * 100:.0f}% "
+        f"(margin locked at {result.hedge.hedged_margin_pct * 100:.1f}%)."
     )
 
 

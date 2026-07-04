@@ -84,7 +84,7 @@ def zero_cost_collar_cap(spot, floor, rd, rf, sigma, t):
 
     lower, upper = floor, floor * 5.0
     if objective(lower) * objective(upper) > 0:
-        raise ValueError("Impossible de construire un collar à coût nul dans les bornes.")
+        raise ValueError("Unable to construct a zero-cost collar within the bounds.")
     return float(brentq(objective, lower, upper, maxiter=200))
 
 
@@ -124,14 +124,14 @@ def compare_instruments(
 
     unhedged = _summarize(
         HedgeInstrument.NONE,
-        "Aucune couverture: exposition totale au marché.",
+        "No hedge: fully exposed to the market.",
         0.0,
         margin_pct(amount_foreign * simulated_rates, 0.0),
         min_acceptable_margin_pct,
     )
     forward_outcome = _summarize(
         HedgeInstrument.FORWARD,
-        f"Contrat à terme au taux {forward:.4f}: marge figée.",
+        f"Forward contract at {forward:.4f}: margin locked in.",
         0.0,
         margin_pct(np.full_like(simulated_rates, amount_foreign * forward), 0.0),
         min_acceptable_margin_pct,
@@ -141,7 +141,7 @@ def compare_instruments(
     option_cost = amount_foreign * np.minimum(simulated_rates, forward)
     option_outcome = _summarize(
         HedgeInstrument.OPTION,
-        f"Option d'achat (strike {forward:.4f}): plafonne le coût, garde le potentiel favorable.",
+        f"Call option (strike {forward:.4f}): caps the cost, keeps the upside.",
         call_premium,
         margin_pct(option_cost, call_premium),
         min_acceptable_margin_pct,
@@ -158,7 +158,7 @@ def compare_instruments(
     collar_cost = amount_foreign * np.clip(simulated_rates, floor, cap)
     collar_outcome = _summarize(
         HedgeInstrument.COLLAR,
-        f"Collar à coût nul (plancher {floor:.4f}, plafond {cap:.4f}): coût borné sans prime.",
+        f"Zero-cost collar (floor {floor:.4f}, cap {cap:.4f}): cost bounded with no premium.",
         net_premium,
         margin_pct(collar_cost, net_premium),
         min_acceptable_margin_pct,

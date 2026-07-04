@@ -85,7 +85,7 @@ def test_simulation_returns_full_analysis(client):
     body = response.json()
 
     assert 0 <= body["vulnerability_score"] <= 100
-    assert body["risk_level"] in ("Faible", "Modéré", "Élevé", "Critique")
+    assert body["risk_level"] in ("Low", "Moderate", "High", "Critical")
     assert body["expected_terminal_rate"] < body["spot_rate_order_date"]
     assert len(body["instruments"]) == 4
     assert 0.0 <= body["hedge"]["optimal_hedge_ratio"] <= 1.0
@@ -144,7 +144,7 @@ def test_domain_validation_error_maps_to_422(client):
 def test_rate_limit_error_maps_to_429(client):
     class ThrottledProvider:
         def get_historical_series(self, *args, **kwargs):
-            raise RateLimitError("limite atteinte")
+            raise RateLimitError("rate limit reached")
 
     app = create_app()
     app.dependency_overrides[get_fx_provider] = lambda: ThrottledProvider()
@@ -286,7 +286,7 @@ def test_get_unknown_record_returns_404(client):
 def test_narrative_included_when_requested(client):
     class StubNarrator:
         def narrate(self, result):
-            return "Analyse: risque maîtrisé, couverture conseillée."
+            return "Analysis: risk under control, hedging recommended."
 
     app = create_app()
     provider = StaticFxDataProvider(_series(ORDER_DATE))
@@ -297,7 +297,7 @@ def test_narrative_included_when_requested(client):
         response = narrated_client.post(
             "/api/v1/simulations", json={"order": _order_payload(), "narrative": True}
         )
-    assert response.json()["narrative"].startswith("Analyse")
+    assert response.json()["narrative"].startswith("Analysis")
 
 
 def test_exposure_endpoint_returns_list(client):

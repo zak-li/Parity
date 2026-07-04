@@ -81,14 +81,14 @@ def simulate_portfolio(
     seed: int | None = None,
 ) -> PortfolioResult:
     if not positions:
-        raise InvalidOrderError("Le portefeuille doit contenir au moins une position.")
+        raise InvalidOrderError("The portfolio must contain at least one position.")
     if not (settings.MIN_N_SIMULATIONS <= n_sims <= settings.MAX_N_SIMULATIONS):
         raise InvalidOrderError(
-            f"Le nombre de simulations doit être compris entre {settings.MIN_N_SIMULATIONS} "
-            f"et {settings.MAX_N_SIMULATIONS}."
+            f"The number of simulations must be between {settings.MIN_N_SIMULATIONS} "
+            f"and {settings.MAX_N_SIMULATIONS}."
         )
     if correlation.shape != (len(currencies), len(currencies)):
-        raise InvalidOrderError("La matrice de corrélation ne correspond pas aux devises fournies.")
+        raise InvalidOrderError("The correlation matrix does not match the provided currencies.")
 
     index_of = {currency: i for i, currency in enumerate(currencies)}
     shocks = _correlated_normals(correlation, n_sims, seed)

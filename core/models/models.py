@@ -40,59 +40,53 @@ class OrderInput:
         )
 
         if self.foreign_currency == self.domestic_currency:
-            raise InvalidOrderError(
-                "La devise de la commande et la devise locale doivent être différentes."
-            )
+            raise InvalidOrderError("The order currency and the domestic currency must differ.")
         if not _is_finite_number(self.amount_foreign) or self.amount_foreign <= 0:
-            raise InvalidOrderError(
-                "Le montant de la commande doit être un nombre fini strictement positif."
-            )
+            raise InvalidOrderError("The order amount must be a finite, strictly positive number.")
         if not isinstance(self.order_date, date) or not isinstance(self.delivery_date, date):
-            raise InvalidOrderError("Les dates doivent être des objets date.")
+            raise InvalidOrderError("Dates must be date objects.")
         if self.delivery_date <= self.order_date:
-            raise InvalidOrderError(
-                "La date de livraison doit être postérieure à la date de commande."
-            )
+            raise InvalidOrderError("The delivery date must be after the order date.")
         if self.horizon_days > settings.MAX_HORIZON_DAYS:
             raise InvalidOrderError(
-                f"L'horizon de simulation ne peut pas dépasser {settings.MAX_HORIZON_DAYS} jours."
+                f"The simulation horizon cannot exceed {settings.MAX_HORIZON_DAYS} days."
             )
         if self.expected_revenue_domestic is None and self.target_margin_pct is None:
-            raise InvalidOrderError("Précisez soit le prix de vente attendu, soit une marge cible.")
+            raise InvalidOrderError("Provide either the expected sale revenue or a target margin.")
         if self.expected_revenue_domestic is not None and (
             not _is_finite_number(self.expected_revenue_domestic)
             or self.expected_revenue_domestic <= 0
         ):
             raise InvalidOrderError(
-                "Le prix de vente attendu doit être un nombre fini strictement positif."
+                "The expected sale revenue must be a finite, strictly positive number."
             )
         if self.target_margin_pct is not None and (
             not _is_finite_number(self.target_margin_pct) or self.target_margin_pct <= -1
         ):
-            raise InvalidOrderError("La marge cible doit être un nombre fini supérieur à -100%.")
+            raise InvalidOrderError("The target margin must be a finite number greater than -100%.")
         if not _is_finite_number(self.min_acceptable_margin_pct):
-            raise InvalidOrderError("Le seuil de marge acceptable doit être un nombre fini.")
-        for label, rate in (("locale", self.domestic_rate), ("étrangère", self.foreign_rate)):
+            raise InvalidOrderError("The acceptable margin threshold must be a finite number.")
+        for label, rate in (("domestic", self.domestic_rate), ("foreign", self.foreign_rate)):
             if not _is_finite_number(rate) or not (
                 settings.MIN_RISK_FREE_RATE <= rate <= settings.MAX_RISK_FREE_RATE
             ):
                 raise InvalidOrderError(
-                    f"Le taux d'intérêt de la devise {label} doit être compris entre "
+                    f"The {label} currency interest rate must be between "
                     f"{settings.MIN_RISK_FREE_RATE} et {settings.MAX_RISK_FREE_RATE}."
                 )
         if not _is_finite_number(self.n_simulations) or not (
             settings.MIN_N_SIMULATIONS <= self.n_simulations <= settings.MAX_N_SIMULATIONS
         ):
             raise InvalidOrderError(
-                f"Le nombre de simulations doit être compris entre {settings.MIN_N_SIMULATIONS} "
-                f"et {settings.MAX_N_SIMULATIONS}."
+                f"The number of simulations must be between {settings.MIN_N_SIMULATIONS} "
+                f"and {settings.MAX_N_SIMULATIONS}."
             )
         if not _is_finite_number(self.lookback_days) or not (
             settings.MIN_LOOKBACK_DAYS <= self.lookback_days <= settings.MAX_LOOKBACK_DAYS
         ):
             raise InvalidOrderError(
-                f"La fenêtre historique doit être comprise entre {settings.MIN_LOOKBACK_DAYS} "
-                f"et {settings.MAX_LOOKBACK_DAYS} jours."
+                f"The lookback window must be between {settings.MIN_LOOKBACK_DAYS} "
+                f"and {settings.MAX_LOOKBACK_DAYS} days."
             )
 
     @property

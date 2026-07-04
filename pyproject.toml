@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "xi"
 version = "0.6.1"
-description = "Moteur de simulation de risque de change pour importateurs et e-commercants"
+description = "Currency risk simulation engine for importers and e-commerce merchants"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]

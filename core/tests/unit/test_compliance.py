@@ -61,7 +61,7 @@ def test_report_carries_disclaimer():
 def test_report_carries_ruleset_version():
     report = evaluate_compliance(_order("MAD"))
     assert report.ruleset_version
-    assert report.operation == "import_biens"
+    assert report.operation == "import_goods"
 
 
 def test_unknown_operation_is_flagged():
@@ -72,13 +72,13 @@ def test_unknown_operation_is_flagged():
 
 
 def test_export_operation_adds_repatriation_check_and_documents():
-    report = evaluate_compliance(_order("MAD"), operation="export_biens")
+    report = evaluate_compliance(_order("MAD"), operation="export_goods")
     codes = {c.code for c in report.checks}
     assert "repatriation_delay" in codes
-    assert any("rapatriement" in d.lower() for d in report.required_documents)
+    assert any("repatriation" in d.lower() for d in report.required_documents)
 
 
 def test_documents_depend_on_operation():
-    imp = evaluate_compliance(_order("MAD"), operation="import_biens")
+    imp = evaluate_compliance(_order("MAD"), operation="import_goods")
     svc = evaluate_compliance(_order("MAD"), operation="import_services")
     assert imp.required_documents != svc.required_documents
