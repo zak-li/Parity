@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 import numpy as np
 from scipy.optimize import brentq
@@ -14,16 +14,24 @@ from .scoring import conditional_value_at_risk, probability_below_threshold
 OptionPricer = Callable[[str, float], float]
 
 
-def gk_option_pricer(spot, domestic_rate, foreign_rate, sigma_annual, horizon_years) -> OptionPricer:
+def gk_option_pricer(
+    spot, domestic_rate, foreign_rate, sigma_annual, horizon_years
+) -> OptionPricer:
     def price(kind: str, strike: float) -> float:
         if kind == "call":
-            return garman_kohlhagen_call(spot, strike, domestic_rate, foreign_rate, sigma_annual, horizon_years)
-        return garman_kohlhagen_put(spot, strike, domestic_rate, foreign_rate, sigma_annual, horizon_years)
+            return garman_kohlhagen_call(
+                spot, strike, domestic_rate, foreign_rate, sigma_annual, horizon_years
+            )
+        return garman_kohlhagen_put(
+            spot, strike, domestic_rate, foreign_rate, sigma_annual, horizon_years
+        )
 
     return price
 
 
-def mc_option_pricer(simulated_rates: np.ndarray, domestic_rate: float, horizon_years: float) -> OptionPricer:
+def mc_option_pricer(
+    simulated_rates: np.ndarray, domestic_rate: float, horizon_years: float
+) -> OptionPricer:
     discount = float(np.exp(-domestic_rate * horizon_years))
 
     def price(kind: str, strike: float) -> float:
@@ -141,7 +149,9 @@ def compare_instruments(
 
     floor = forward * (1.0 - collar_floor_width)
     try:
-        cap = zero_cost_collar_cap(spot, floor, domestic_rate, foreign_rate, sigma_annual, horizon_years)
+        cap = zero_cost_collar_cap(
+            spot, floor, domestic_rate, foreign_rate, sigma_annual, horizon_years
+        )
     except ValueError:
         cap = forward * (1.0 + collar_floor_width)
     net_premium = amount_foreign * (pricer("call", cap) - pricer("put", floor))

@@ -66,9 +66,7 @@ def _correlation_factor(correlation: np.ndarray) -> np.ndarray:
         return eigenvectors * np.sqrt(np.clip(eigenvalues, 0.0, None))
 
 
-def _correlated_normals(
-    correlation: np.ndarray, n_sims: int, seed: int | None
-) -> np.ndarray:
+def _correlated_normals(correlation: np.ndarray, n_sims: int, seed: int | None) -> np.ndarray:
     factor = _correlation_factor(correlation)
     rng = np.random.default_rng(seed)
     independent = rng.standard_normal((n_sims, correlation.shape[0]))
@@ -106,14 +104,21 @@ def simulate_portfolio(
         column = shocks[:, index_of[position.foreign_currency]]
         exponent = (position.drift_annual - 0.5 * position.sigma_annual**2) * position.horizon_years
         exponent = exponent + position.sigma_annual * np.sqrt(position.horizon_years) * column
-        np.clip(exponent, -settings.MAX_LOG_GROWTH_EXPONENT, settings.MAX_LOG_GROWTH_EXPONENT, out=exponent)
+        np.clip(
+            exponent,
+            -settings.MAX_LOG_GROWTH_EXPONENT,
+            settings.MAX_LOG_GROWTH_EXPONENT,
+            out=exponent,
+        )
         rate = position.spot * np.exp(exponent)
         cost = position.amount_foreign * rate
         total_cost += cost
 
         total_budgeted_cost += position.amount_foreign * position.spot
-        expected_cost += position.amount_foreign * position.spot * float(
-            np.exp(position.drift_annual * position.horizon_years)
+        expected_cost += (
+            position.amount_foreign
+            * position.spot
+            * float(np.exp(position.drift_annual * position.horizon_years))
         )
         standalone_margin = 1.0 - cost / position.revenue_domestic
         weight = position.revenue_domestic / total_revenue

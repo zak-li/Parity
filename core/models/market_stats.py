@@ -18,7 +18,9 @@ def annualized_volatility(
         )
     log_returns = np.log(series / series.shift(1)).dropna()
     if log_returns.empty:
-        raise InsufficientDataError("Impossible de calculer des rendements à partir des données fournies.")
+        raise InsufficientDataError(
+            "Impossible de calculer des rendements à partir des données fournies."
+        )
     std = float(log_returns.std(ddof=1))
     if not np.isfinite(std) or std <= 0:
         raise InsufficientDataError(

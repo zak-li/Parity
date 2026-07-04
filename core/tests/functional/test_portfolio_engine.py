@@ -7,7 +7,6 @@ import pandas as pd
 import pytest
 
 from core.app.portfolio_engine import PortfolioRiskEngine
-from core.io.fx.static import StaticFxDataProvider
 from core.models.exceptions import InvalidOrderError
 from core.models.models import OrderInput
 
@@ -116,7 +115,9 @@ def test_correlation_matrix_raises_on_insufficient_common_history():
 
     idx_a = pd.bdate_range("2026-01-01", periods=5)
     idx_b = pd.bdate_range("2020-01-01", periods=5)
-    series = {"USD": pd.Series(range(5), index=idx_a, dtype="float64"),
-              "EUR": pd.Series(range(5), index=idx_b, dtype="float64")}
+    series = {
+        "USD": pd.Series(range(5), index=idx_a, dtype="float64"),
+        "EUR": pd.Series(range(5), index=idx_b, dtype="float64"),
+    }
     with pytest.raises(InsufficientDataError):
         PortfolioRiskEngine()._correlation_matrix(series, ["EUR", "USD"])

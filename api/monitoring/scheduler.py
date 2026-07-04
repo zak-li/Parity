@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import datetime as dt
 import logging
 from dataclasses import dataclass
 
@@ -45,9 +44,7 @@ class MonitoringScheduler:
         return outcomes
 
     def _process(self, order: OrderInput) -> MonitoringOutcome:
-        previous = self._repository.latest_for_pair(
-            order.foreign_currency, order.domestic_currency
-        )
+        previous = self._repository.latest_for_pair(order.foreign_currency, order.domestic_currency)
         result = self._engine.run(order)
 
         alerts = list(evaluate_result_alerts(result, self._thresholds))

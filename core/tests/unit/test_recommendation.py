@@ -66,7 +66,12 @@ def test_recommendation_includes_key_figures():
 
 def test_recommendation_includes_hedge_advice():
     text = build_recommendation(
-        _order("EUR"), RiskLevel.HIGH, 10.5, 11.0, 0.4, _hedge(forward=11.0500, ratio=0.6, prob=0.45)
+        _order("EUR"),
+        RiskLevel.HIGH,
+        10.5,
+        11.0,
+        0.4,
+        _hedge(forward=11.0500, ratio=0.6, prob=0.45),
     )
     assert "11.0500" in text
     assert "60%" in text
@@ -74,7 +79,11 @@ def test_recommendation_includes_hedge_advice():
 
 
 def test_forward_premium_and_discount_wording():
-    premium = build_recommendation(_order("EUR"), RiskLevel.LOW, 10.5, 11.0, 0.4, _hedge(points=0.05))
-    discount = build_recommendation(_order("EUR"), RiskLevel.LOW, 10.5, 11.0, 0.4, _hedge(points=-0.05))
+    premium = build_recommendation(
+        _order("EUR"), RiskLevel.LOW, 10.5, 11.0, 0.4, _hedge(points=0.05)
+    )
+    discount = build_recommendation(
+        _order("EUR"), RiskLevel.LOW, 10.5, 11.0, 0.4, _hedge(points=-0.05)
+    )
     assert "prime" in premium
     assert "décote" in discount

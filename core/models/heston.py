@@ -93,6 +93,7 @@ def simulate_heston_terminal_rates(
 
     terminal = np.exp(log_spot)
     if antithetic:
+        assert log_spot_anti is not None
         terminal = np.concatenate((terminal, np.exp(log_spot_anti)))[:n_sims]
     np.clip(terminal, 0.0, spot * np.exp(settings.MAX_LOG_GROWTH_EXPONENT), out=terminal)
     return terminal
@@ -101,6 +102,8 @@ def simulate_heston_terminal_rates(
 def _euler_step(log_spot, variance, z1, z2, mu_annual, params, dt, sqrt_dt):
     v_plus = np.maximum(variance, 0.0)
     sqrt_v = np.sqrt(v_plus)
-    next_variance = variance + params.kappa * (params.theta - v_plus) * dt + params.xi * sqrt_v * sqrt_dt * z2
+    next_variance = (
+        variance + params.kappa * (params.theta - v_plus) * dt + params.xi * sqrt_v * sqrt_dt * z2
+    )
     next_log_spot = log_spot + (mu_annual - 0.5 * v_plus) * dt + sqrt_v * sqrt_dt * z1
     return next_log_spot, next_variance

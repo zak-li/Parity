@@ -44,7 +44,9 @@ class PortfolioRiskEngine:
                 order.foreign_currency, order.domestic_currency, lookback_start, order.order_date
             )
             spot = market_stats.spot_rate_on_or_before(history, order.order_date)
-            sigma = volatility.estimate_volatility(history, self._volatility_model, order.horizon_days)
+            sigma = volatility.estimate_volatility(
+                history, self._volatility_model, order.horizon_days
+            )
             drift = rates.cip_drift(order.domestic_rate, order.foreign_rate)
             revenue = self._resolve_revenue(order, spot)
             positions.append(
@@ -100,4 +102,5 @@ class PortfolioRiskEngine:
     def _resolve_revenue(order: OrderInput, spot_rate: float) -> float:
         if order.expected_revenue_domestic is not None:
             return order.expected_revenue_domestic
+        assert order.target_margin_pct is not None
         return order.amount_foreign * spot_rate * (1 + order.target_margin_pct)

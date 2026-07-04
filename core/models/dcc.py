@@ -9,7 +9,7 @@ from scipy.optimize import minimize
 
 from ..config import settings
 from .exceptions import InsufficientDataError
-from .volatility import _garch_variance_path, _fit_garch
+from .volatility import _fit_garch, _garch_variance_path
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,7 +30,9 @@ def _standardized_residuals(returns: np.ndarray) -> np.ndarray:
     return returns / np.sqrt(variance)
 
 
-def _dcc_negative_log_likelihood(params: np.ndarray, residuals: np.ndarray, q_bar: np.ndarray) -> float:
+def _dcc_negative_log_likelihood(
+    params: np.ndarray, residuals: np.ndarray, q_bar: np.ndarray
+) -> float:
     a, b = params
     if a < 0 or b < 0 or a + b >= 0.999:
         return 1e12
@@ -75,7 +77,7 @@ def estimate_dcc(returns: pd.DataFrame) -> DccResult:
             constraints=({"type": "ineq", "fun": lambda p: 0.999 - p[0] - p[1]},),
             options={"maxiter": settings.GARCH_MAX_ITER, "ftol": 1e-8},
         )
-    a, b = (result.x if result.success else (settings.DCC_DEFAULT_A, settings.DCC_DEFAULT_B))
+    a, b = result.x if result.success else (settings.DCC_DEFAULT_A, settings.DCC_DEFAULT_B)
 
     q = q_bar.copy()
     for t in range(residuals.shape[0]):

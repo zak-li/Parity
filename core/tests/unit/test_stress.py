@@ -29,7 +29,9 @@ def test_margin_at_rate_rejects_non_positive_revenue():
 
 def test_apply_scenarios_shocks_rate_and_measures_change():
     scenarios = (StressScenario("choc +10%", 0.10), StressScenario("choc -10%", -0.10))
-    outcomes = apply_scenarios(1_150_000.0, 100_000.0, 10.0, budgeted_margin_pct=0.13, scenarios=scenarios)
+    outcomes = apply_scenarios(
+        1_150_000.0, 100_000.0, 10.0, budgeted_margin_pct=0.13, scenarios=scenarios
+    )
 
     assert outcomes[0].shocked_rate == pytest.approx(11.0)
     assert outcomes[1].shocked_rate == pytest.approx(9.0)

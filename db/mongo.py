@@ -85,7 +85,7 @@ class MongoSimulationRepository:
     def _from_document(document: dict) -> SimulationRecord:
         created = document["created_at"]
         if created.tzinfo is None:
-            created = created.replace(tzinfo=dt.timezone.utc)
+            created = created.replace(tzinfo=dt.UTC)
         return SimulationRecord(
             id=document["_id"],
             created_at=created,

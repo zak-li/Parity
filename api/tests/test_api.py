@@ -7,9 +7,9 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
+from ai.groq_narrator import NullNarrator
 from api import create_app
 from api.dependencies import get_fx_provider, get_narrator, get_repository
-from ai.groq_narrator import NullNarrator
 from core.io.fx.static import StaticFxDataProvider
 from core.models.exceptions import RateLimitError
 from db.memory import InMemorySimulationRepository
@@ -33,7 +33,7 @@ def repository():
 @pytest.fixture
 def client(repository):
     app = create_app()
-    provider = StaticFxDataProvider(_series(dt.date.today()))
+    provider = StaticFxDataProvider(_series(ORDER_DATE))
     app.dependency_overrides[get_fx_provider] = lambda: provider
     app.dependency_overrides[get_repository] = lambda: repository
     app.dependency_overrides[get_narrator] = lambda: NullNarrator()
@@ -117,9 +117,7 @@ def test_simulation_with_advanced_options(client):
 
 
 def test_simulation_rejects_unknown_fields(client):
-    response = client.post(
-        "/api/v1/simulations", json={"order": _order_payload(hacker_field="x")}
-    )
+    response = client.post("/api/v1/simulations", json={"order": _order_payload(hacker_field="x")})
     assert response.status_code == 422
 
 
@@ -151,9 +149,7 @@ def test_rate_limit_error_maps_to_429(client):
     app = create_app()
     app.dependency_overrides[get_fx_provider] = lambda: ThrottledProvider()
     with TestClient(app) as throttled_client:
-        response = throttled_client.post(
-            "/api/v1/simulations", json={"order": _order_payload()}
-        )
+        response = throttled_client.post("/api/v1/simulations", json={"order": _order_payload()})
     assert response.status_code == 429
 
 
@@ -175,9 +171,7 @@ def test_compliance_endpoint_mad_applicable(client):
 
 
 def test_compliance_endpoint_eur_not_applicable(client):
-    response = client.post(
-        "/api/v1/compliance", json=_order_payload(domestic_currency="EUR")
-    )
+    response = client.post("/api/v1/compliance", json=_order_payload(domestic_currency="EUR"))
     assert response.status_code == 200
     assert response.json()["applicable"] is False
 
@@ -259,7 +253,9 @@ def test_inter_run_change_alerts_detected(client):
     first = client.post("/api/v1/simulations", json={"order": calm})
     assert first.json()["change_alerts"] == []
 
-    risky = _order_payload(seed=1, foreign_rate=0.30, min_acceptable_margin_pct=0.10, target_margin_pct=0.05)
+    risky = _order_payload(
+        seed=1, foreign_rate=0.30, min_acceptable_margin_pct=0.10, target_margin_pct=0.05
+    )
     second = client.post("/api/v1/simulations", json={"order": risky})
     codes = {alert["code"] for alert in second.json()["change_alerts"]}
     assert codes  # au moins une alerte de variation entre les deux runs
@@ -293,7 +289,7 @@ def test_narrative_included_when_requested(client):
             return "Analyse: risque maîtrisé, couverture conseillée."
 
     app = create_app()
-    provider = StaticFxDataProvider(_series(dt.date.today()))
+    provider = StaticFxDataProvider(_series(ORDER_DATE))
     app.dependency_overrides[get_fx_provider] = lambda: provider
     app.dependency_overrides[get_repository] = lambda: InMemorySimulationRepository()
     app.dependency_overrides[get_narrator] = lambda: StubNarrator()

@@ -1,18 +1,25 @@
 from __future__ import annotations
 
+import contextlib
 import datetime as dt
 import logging
 
 from ..config import settings
+from ..io.fx import FrankfurterFxDataProvider, FxDataProvider
+from ..models import hedging, instruments, market_stats, monte_carlo, rates, scoring, volatility
 from ..models.enums import (
     MarketModel,
-    RiskLevel,
     ReturnDistribution,
+    RiskLevel,
     SamplingMethod,
     VolatilityModel,
 )
 from ..models.exceptions import FxDataError, InsufficientDataError, InvalidOrderError
-from ..models.heston import HestonParams, default_params_from_volatility, simulate_heston_terminal_rates
+from ..models.heston import (
+    HestonParams,
+    default_params_from_volatility,
+    simulate_heston_terminal_rates,
+)
 from ..models.models import OrderInput, SimulationResult
 from ..models.monte_carlo import JumpParams
 from ..models.stress import (
@@ -23,8 +30,6 @@ from ..models.stress import (
     historical_stress_scenario,
     reverse_stress_test,
 )
-from ..io.fx import FrankfurterFxDataProvider, FxDataProvider
-from ..models import hedging, instruments, market_stats, monte_carlo, rates, scoring, volatility
 from .recommendation import build_recommendation
 
 logger = logging.getLogger(__name__)
@@ -141,7 +146,9 @@ class MarginRiskEngine:
             risk_level=level,
             hedge=hedge,
             instrument_comparison=instrument_comparison,
-            recommendation=build_recommendation(order, level, spot, breakeven_rate, probability_below, hedge),
+            recommendation=build_recommendation(
+                order, level, spot, breakeven_rate, probability_below, hedge
+            ),
             simulated_rates=simulated_rates,
             simulated_margin_pct=simulated_margin_pct,
         )
@@ -175,6 +182,7 @@ class MarginRiskEngine:
         if order.expected_revenue_domestic is not None:
             return order.expected_revenue_domestic
         budgeted_cost_at_order = order.amount_foreign * spot_rate
+        assert order.target_margin_pct is not None
         return budgeted_cost_at_order * (1 + order.target_margin_pct)
 
     def stress_test(self, order: OrderInput) -> StressReport:
@@ -187,14 +195,12 @@ class MarginRiskEngine:
         budgeted_margin_pct = (revenue - order.amount_foreign * spot) / revenue
 
         scenarios: list[StressScenario] = list(canonical_scenarios())
-        try:
+        with contextlib.suppress(InsufficientDataError):
             scenarios.append(
                 historical_stress_scenario(
                     history, order.horizon_days, "Pire mouvement historique (fenêtre récente)"
                 )
             )
-        except InsufficientDataError:
-            pass
         scenarios.extend(self._crisis_scenarios(order))
 
         return StressReport(

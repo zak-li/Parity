@@ -14,11 +14,7 @@ from .validation import validate_currency_code
 
 
 def _is_finite_number(value: object) -> bool:
-    return (
-        isinstance(value, (int, float))
-        and not isinstance(value, bool)
-        and np.isfinite(value)
-    )
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and np.isfinite(value)
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,16 +35,24 @@ class OrderInput:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "foreign_currency", validate_currency_code(self.foreign_currency))
-        object.__setattr__(self, "domestic_currency", validate_currency_code(self.domestic_currency))
+        object.__setattr__(
+            self, "domestic_currency", validate_currency_code(self.domestic_currency)
+        )
 
         if self.foreign_currency == self.domestic_currency:
-            raise InvalidOrderError("La devise de la commande et la devise locale doivent être différentes.")
+            raise InvalidOrderError(
+                "La devise de la commande et la devise locale doivent être différentes."
+            )
         if not _is_finite_number(self.amount_foreign) or self.amount_foreign <= 0:
-            raise InvalidOrderError("Le montant de la commande doit être un nombre fini strictement positif.")
+            raise InvalidOrderError(
+                "Le montant de la commande doit être un nombre fini strictement positif."
+            )
         if not isinstance(self.order_date, date) or not isinstance(self.delivery_date, date):
             raise InvalidOrderError("Les dates doivent être des objets date.")
         if self.delivery_date <= self.order_date:
-            raise InvalidOrderError("La date de livraison doit être postérieure à la date de commande.")
+            raise InvalidOrderError(
+                "La date de livraison doit être postérieure à la date de commande."
+            )
         if self.horizon_days > settings.MAX_HORIZON_DAYS:
             raise InvalidOrderError(
                 f"L'horizon de simulation ne peut pas dépasser {settings.MAX_HORIZON_DAYS} jours."
@@ -56,9 +60,12 @@ class OrderInput:
         if self.expected_revenue_domestic is None and self.target_margin_pct is None:
             raise InvalidOrderError("Précisez soit le prix de vente attendu, soit une marge cible.")
         if self.expected_revenue_domestic is not None and (
-            not _is_finite_number(self.expected_revenue_domestic) or self.expected_revenue_domestic <= 0
+            not _is_finite_number(self.expected_revenue_domestic)
+            or self.expected_revenue_domestic <= 0
         ):
-            raise InvalidOrderError("Le prix de vente attendu doit être un nombre fini strictement positif.")
+            raise InvalidOrderError(
+                "Le prix de vente attendu doit être un nombre fini strictement positif."
+            )
         if self.target_margin_pct is not None and (
             not _is_finite_number(self.target_margin_pct) or self.target_margin_pct <= -1
         ):

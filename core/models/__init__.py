@@ -17,18 +17,6 @@ from .enums import (
     SamplingMethod,
     VolatilityModel,
 )
-from .heston import (
-    HestonParams,
-    default_params_from_volatility,
-    simulate_heston_terminal_rates,
-)
-from .monitoring import (
-    Alert,
-    MonitoringThresholds,
-    change_alerts,
-    evaluate_change_alerts,
-    evaluate_result_alerts,
-)
 from .exceptions import (
     DisallowedHostError,
     FxDataError,
@@ -40,6 +28,11 @@ from .exceptions import (
     SimulationError,
 )
 from .hedging import HedgeAnalysis, evaluate_hedge, optimal_hedge_ratio
+from .heston import (
+    HestonParams,
+    default_params_from_volatility,
+    simulate_heston_terminal_rates,
+)
 from .instruments import (
     InstrumentOutcome,
     compare_instruments,
@@ -51,6 +44,13 @@ from .instruments import (
 )
 from .market_stats import annualized_volatility, spot_rate_on_or_before
 from .models import OrderInput, SimulationResult
+from .monitoring import (
+    Alert,
+    MonitoringThresholds,
+    change_alerts,
+    evaluate_change_alerts,
+    evaluate_result_alerts,
+)
 from .monte_carlo import JumpParams, simulate_terminal_rates, standard_error
 from .portfolio import (
     PortfolioPosition,

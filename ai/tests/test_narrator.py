@@ -22,10 +22,16 @@ def result():
     lr[0] = 0.0
     series = pd.Series(10 * np.exp(np.cumsum(lr)), index=dates)
     order = OrderInput(
-        amount_foreign=100_000.0, foreign_currency="USD", domestic_currency="MAD",
-        order_date=end, delivery_date=end + dt.timedelta(days=90),
-        target_margin_pct=0.15, domestic_rate=0.03, foreign_rate=0.05,
-        n_simulations=5_000, seed=7,
+        amount_foreign=100_000.0,
+        foreign_currency="USD",
+        domestic_currency="MAD",
+        order_date=end,
+        delivery_date=end + dt.timedelta(days=90),
+        target_margin_pct=0.15,
+        domestic_rate=0.03,
+        foreign_rate=0.05,
+        n_simulations=5_000,
+        seed=7,
     )
     return MarginRiskEngine(StaticFxDataProvider(series)).run(order)
 

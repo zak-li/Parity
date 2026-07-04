@@ -155,7 +155,7 @@ class PostgresSimulationRepository:
     def _from_row(row) -> SimulationRecord:
         created = row["created_at"]
         if created.tzinfo is None:
-            created = created.replace(tzinfo=dt.timezone.utc)
+            created = created.replace(tzinfo=dt.UTC)
         return SimulationRecord(
             id=row["id"],
             created_at=created,

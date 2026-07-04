@@ -7,7 +7,6 @@ import pandas as pd
 import pytest
 
 from core.app.risk_engine import MarginRiskEngine
-from core.io.fx.static import StaticFxDataProvider
 from core.models.models import OrderInput
 from core.models.stress import StressReport, canonical_scenarios
 
@@ -54,7 +53,7 @@ def test_reverse_stress_is_consistent(static_provider, order):
 def test_crisis_replay_included_when_history_available(reference_order_date, order):
     class CrisisProvider:
         def __init__(self):
-            rng = np.random.default_rng(0)
+            np.random.default_rng(0)
 
         def get_historical_series(self, base, quote, start, end):
             dates = pd.bdate_range(start=pd.Timestamp(start), end=pd.Timestamp(end))
@@ -76,7 +75,9 @@ def test_crisis_replay_skipped_gracefully_when_unavailable(static_provider, orde
     assert len(report.scenarios) >= 4
 
 
-def test_recent_history_scenario_skipped_when_window_too_short(static_provider, reference_order_date):
+def test_recent_history_scenario_skipped_when_window_too_short(
+    static_provider, reference_order_date
+):
     short = OrderInput(
         amount_foreign=100_000.0,
         foreign_currency="USD",

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from core.models.exceptions import DisallowedHostError
 from core.io.ssrf import HostAllowlist
+from core.models.exceptions import DisallowedHostError
 
 
 def test_allows_whitelisted_https_host():

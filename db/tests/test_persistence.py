@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from core.models.enums import RiskLevel
 from db import (
     CompositeSimulationRepository,
@@ -133,8 +131,11 @@ def test_config_enabled_flags():
     assert not empty.neo4j_enabled
 
     full = PersistenceConfig(
-        postgres_dsn="postgresql://x", mongodb_uri="mongodb://x",
-        neo4j_uri="neo4j://x", neo4j_username="u", neo4j_password="p",
+        postgres_dsn="postgresql://x",
+        mongodb_uri="mongodb://x",
+        neo4j_uri="neo4j://x",
+        neo4j_username="u",
+        neo4j_password="p",
     )
     assert full.postgres_enabled and full.mongodb_enabled and full.neo4j_enabled
 

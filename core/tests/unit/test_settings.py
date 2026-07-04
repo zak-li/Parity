@@ -64,8 +64,7 @@ def test_empty_hosts_env_raises(monkeypatch):
 def test_dotenv_file_values_are_loaded(tmp_path, clean_env):
     env_file = tmp_path / ".env"
     env_file.write_text(
-        "XI_HTTP_TIMEOUT_SECONDS=7.5\n"
-        "XI_ALLOWED_FX_HOSTS=a.example.com,b.example.com\n",
+        "XI_HTTP_TIMEOUT_SECONDS=7.5\nXI_ALLOWED_FX_HOSTS=a.example.com,b.example.com\n",
         encoding="utf-8",
     )
 
