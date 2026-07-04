@@ -22,11 +22,11 @@ class JumpParams:
 
     def __post_init__(self) -> None:
         if not np.isfinite(self.intensity_annual) or self.intensity_annual < 0:
-            raise SimulationError("L'intensité des sauts doit être finie et non négative.")
+            raise SimulationError("Jump intensity must be finite and non-negative.")
         if not np.isfinite(self.mean_log_jump):
-            raise SimulationError("La moyenne des sauts doit être finie.")
+            raise SimulationError("Mean jump size must be finite.")
         if not np.isfinite(self.std_log_jump) or self.std_log_jump < 0:
-            raise SimulationError("L'écart-type des sauts doit être fini et non négatif.")
+            raise SimulationError("Jump standard deviation must be finite and non-negative.")
 
     def compensator(self) -> float:
         return float(np.exp(self.mean_log_jump + 0.5 * self.std_log_jump**2) - 1.0)
@@ -46,7 +46,7 @@ def _standardized_shocks(
     else:
         if dof is None or dof <= settings.MIN_STUDENT_T_DOF:
             raise SimulationError(
-                f"Le degré de liberté de la loi de Student doit être > {settings.MIN_STUDENT_T_DOF}."
+                f"Student-t degrees of freedom must be > {settings.MIN_STUDENT_T_DOF}."
             )
         draw = partial(rng.standard_t, dof)
         scale = np.sqrt((dof - 2.0) / dof)
@@ -71,7 +71,7 @@ def _sobol_shocks(
         return norm.ppf(uniforms)
     if dof is None or dof <= settings.MIN_STUDENT_T_DOF:
         raise SimulationError(
-            f"Le degré de liberté de la loi de Student doit être > {settings.MIN_STUDENT_T_DOF}."
+            f"Student-t degrees of freedom must be > {settings.MIN_STUDENT_T_DOF}."
         )
     return student_t.ppf(uniforms, dof) * np.sqrt((dof - 2.0) / dof)
 
@@ -100,15 +100,15 @@ def simulate_terminal_rates(
     jumps: JumpParams | None = None,
 ) -> np.ndarray:
     if not np.isfinite(spot) or spot <= 0:
-        raise SimulationError("Le taux au comptant doit être strictement positif.")
+        raise SimulationError("The spot rate must be strictly positive.")
     if not np.isfinite(sigma_annual) or sigma_annual < 0:
-        raise SimulationError("La volatilité annualisée ne peut pas être négative.")
+        raise SimulationError("Annualized volatility cannot be negative.")
     if not np.isfinite(horizon_years) or horizon_years <= 0:
-        raise SimulationError("L'horizon de simulation doit être strictement positif.")
+        raise SimulationError("The simulation horizon must be strictly positive.")
     if not (settings.MIN_N_SIMULATIONS <= n_sims <= settings.MAX_N_SIMULATIONS):
         raise SimulationError(
-            f"Le nombre de simulations doit être compris entre {settings.MIN_N_SIMULATIONS} "
-            f"et {settings.MAX_N_SIMULATIONS}."
+            f"The number of simulations must be between {settings.MIN_N_SIMULATIONS} "
+            f"and {settings.MAX_N_SIMULATIONS}."
         )
 
     method = SamplingMethod(method)
@@ -135,5 +135,5 @@ def simulate_terminal_rates(
 def standard_error(values: np.ndarray) -> float:
     n = values.size
     if n < 2:
-        raise SimulationError("Au moins 2 valeurs sont nécessaires pour estimer l'erreur standard.")
+        raise SimulationError("At least 2 values are required to estimate the standard error.")
     return float(values.std(ddof=1) / np.sqrt(n))

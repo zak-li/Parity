@@ -31,10 +31,10 @@ class PortfolioRiskEngine:
 
     def run(self, orders: list[OrderInput], seed: int | None = None) -> PortfolioResult:
         if not orders:
-            raise InvalidOrderError("Le portefeuille doit contenir au moins une commande.")
+            raise InvalidOrderError("The portfolio must contain at least one order.")
         domestic = orders[0].domestic_currency
         if any(order.domestic_currency != domestic for order in orders):
-            raise InvalidOrderError("Toutes les commandes doivent partager la même devise locale.")
+            raise InvalidOrderError("All orders must share the same domestic currency.")
 
         positions: list[PortfolioPosition] = []
         return_series: dict[str, pd.Series] = {}
@@ -88,7 +88,7 @@ class PortfolioRiskEngine:
         frame = pd.DataFrame({c: return_series[c] for c in currencies}).dropna()
         if len(frame) < 3:
             raise InsufficientDataError(
-                "Historique commun insuffisant pour estimer les corrélations."
+                "Insufficient overlapping history to estimate correlations."
             )
         if self._dynamic_correlation:
             try:

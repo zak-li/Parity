@@ -102,7 +102,7 @@ def test_webhook_sink_posts_payload():
 
     session = _FakeSession()
     sink = WebhookAlertSink("https://hooks.example.com/x", session=session)
-    sink.dispatch("sujet", [Alert("risk_level", AlertSeverity.CRITICAL, "risque critique")])
+    sink.dispatch("subject", [Alert("risk_level", AlertSeverity.CRITICAL, "critical risk")])
 
     assert session.calls[0][0] == "https://hooks.example.com/x"
     assert session.calls[0][1]["alerts"][0]["code"] == "risk_level"
@@ -114,7 +114,7 @@ def test_webhook_sink_swallows_errors():
             raise RuntimeError("network down")
 
     sink = WebhookAlertSink("https://x", session=_BoomSession())
-    sink.dispatch("s", [Alert("c", AlertSeverity.INFO, "m")])  # ne doit pas lever
+    sink.dispatch("s", [Alert("c", AlertSeverity.INFO, "m")])  # must not raise
 
 
 def test_email_sink_sends_via_smtp_factory():
@@ -149,11 +149,11 @@ def test_email_sink_sends_via_smtp_factory():
         password="p",
         smtp_factory=_FakeSMTP,
     )
-    sink.dispatch("Alerte risque", [Alert("score_jump", AlertSeverity.WARNING, "score +20")])
+    sink.dispatch("Risk alert", [Alert("score_jump", AlertSeverity.WARNING, "score +20")])
 
     assert sent["endpoint"] == ("smtp.example.com", 587)
     assert sent["tls"] is True
-    assert sent["subject"] == "Alerte risque"
+    assert sent["subject"] == "Risk alert"
     assert "score_jump" in sent["body"]
 
 
@@ -163,7 +163,7 @@ def test_email_sink_swallows_errors():
             raise RuntimeError("smtp down")
 
     sink = EmailAlertSink("h", 25, "f@x", ["t@x"], smtp_factory=_BoomSMTP)
-    sink.dispatch("s", [Alert("c", AlertSeverity.INFO, "m")])  # ne doit pas lever
+    sink.dispatch("s", [Alert("c", AlertSeverity.INFO, "m")])  # must not raise
 
 
 def test_console_sink_logs(caplog):
@@ -171,5 +171,5 @@ def test_console_sink_logs(caplog):
 
     sink = ConsoleAlertSink()
     with caplog.at_level("WARNING"):
-        sink.dispatch("sujet", [Alert("risk_level", AlertSeverity.WARNING, "risque")])
+        sink.dispatch("subject", [Alert("risk_level", AlertSeverity.WARNING, "risk")])
     assert any("alert" in r.message for r in caplog.records)

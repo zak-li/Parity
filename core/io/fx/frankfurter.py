@@ -46,9 +46,7 @@ class FrankfurterFxDataProvider:
         base = validate_currency_code(base)
         quote = validate_currency_code(quote)
         if end < start:
-            raise InvalidOrderError(
-                "La date de fin doit être postérieure ou égale à la date de début."
-            )
+            raise InvalidOrderError("The end date must be on or after the start date.")
 
         cache_key = (base, quote, start.isoformat(), end.isoformat())
         return self._cache.get_or_set(
@@ -57,7 +55,7 @@ class FrankfurterFxDataProvider:
 
     def _fetch(self, base: str, quote: str, start: dt.date, end: dt.date) -> pd.Series:
         if not self._rate_limiter.try_acquire():
-            raise RateLimitError("Limite de débit atteinte pour le fournisseur de taux de change.")
+            raise RateLimitError("Rate limit reached for the FX rate provider.")
 
         url = f"{self._BASE_URL}/{start.isoformat()}..{end.isoformat()}"
         try:
@@ -66,32 +64,30 @@ class FrankfurterFxDataProvider:
             ) as response:
                 if response.status_code != 200:
                     raise FxDataError(
-                        f"Le fournisseur de taux de change a retourné une erreur "
-                        f"{response.status_code} pour {base}/{quote}."
+                        f"The FX rate provider returned an error "
+                        f"{response.status_code} for {base}/{quote}."
                     )
                 body = self._read_capped(response)
         except requests.RequestException as exc:
-            raise FxDataError(
-                f"Échec de connexion au fournisseur de taux de change: {exc}"
-            ) from exc
+            raise FxDataError(f"Failed to connect to the FX rate provider: {exc}") from exc
 
         try:
             payload = json.loads(body)
         except ValueError as exc:
-            raise FxDataError("Réponse invalide du fournisseur de taux de change.") from exc
+            raise FxDataError("Invalid response from the FX rate provider.") from exc
 
         return self._parse_series(payload, base, quote, start, end)
 
     def _read_capped(self, response: requests.Response) -> bytes:
         declared = response.headers.get("Content-Length")
         if declared is not None and declared.isdigit() and int(declared) > self._max_response_bytes:
-            raise FxDataError("Réponse du fournisseur de taux de change trop volumineuse.")
+            raise FxDataError("FX rate provider response too large.")
         chunks: list[bytes] = []
         received = 0
         for chunk in response.iter_content(chunk_size=65536):
             received += len(chunk)
             if received > self._max_response_bytes:
-                raise FxDataError("Réponse du fournisseur de taux de change trop volumineuse.")
+                raise FxDataError("FX rate provider response too large.")
             chunks.append(chunk)
         return b"".join(chunks)
 
@@ -102,13 +98,13 @@ class FrankfurterFxDataProvider:
         rates = payload.get("rates", {}) if isinstance(payload, dict) else {}
         if not rates:
             raise FxDataError(
-                f"Aucune donnée historique disponible pour {base}/{quote} entre {start} et {end}."
+                f"No historical data available for {base}/{quote} between {start} and {end}."
             )
         dates = sorted(rates)
         try:
             values = [rates[d][quote] for d in dates]
         except (KeyError, TypeError) as exc:
-            raise FxDataError(f"Données incomplètes reçues pour {base}/{quote}.") from exc
+            raise FxDataError(f"Incomplete data received for {base}/{quote}.") from exc
         return pd.Series(
             values, index=pd.to_datetime(dates), name=f"{base}{quote}", dtype="float64"
         )

@@ -51,22 +51,22 @@ KUPIEC_SIGNIFICANCE = 0.05
 CORRELATION_JITTER = 1e-10
 
 CANONICAL_STRESS_SHOCKS: tuple[tuple[str, float], ...] = (
-    ("Choc favorable -10%", -0.10),
-    ("Choc modéré +7%", 0.07),
-    ("Choc sévère +15%", 0.15),
-    ("Choc extrême +25%", 0.25),
+    ("Favorable shock -10%", -0.10),
+    ("Moderate shock +7%", 0.07),
+    ("Severe shock +15%", 0.15),
+    ("Extreme shock +25%", 0.25),
 )
 CRISIS_WINDOWS: tuple[tuple[str, str, str], ...] = (
-    ("Crise financière 2008", "2008-09-01", "2009-03-31"),
+    ("2008 financial crisis", "2008-09-01", "2009-03-31"),
     ("COVID-19 2020", "2020-02-01", "2020-05-31"),
 )
 
 COMPLIANCE_MAX_FORWARD_HORIZON_DAYS = 365
 COMPLIANCE_REGULATED_DOMESTIC_CURRENCY = "MAD"
 COMPLIANCE_REQUIRED_DOCUMENTS: tuple[str, ...] = (
-    "Facture proforma ou contrat commercial",
-    "Titre d'importation domicilié",
-    "Engagement d'importation auprès de la banque",
+    "Proforma invoice or commercial contract",
+    "Domiciled import license",
+    "Import commitment registered with the bank",
 )
 
 MONITORING_MAX_PROBABILITY_BELOW = 0.25
@@ -91,7 +91,7 @@ def _env_float(name: str, default: float, *, minimum: float | None = None) -> fl
             f"Variable d'environnement {_ENV_PREFIX}{name} invalide: {raw!r}."
         ) from exc
     if minimum is not None and value < minimum:
-        raise ValueError(f"{_ENV_PREFIX}{name} doit être >= {minimum}.")
+        raise ValueError(f"{_ENV_PREFIX}{name} must be >= {minimum}.")
     return value
 
 
@@ -106,7 +106,7 @@ def _env_int(name: str, default: int, *, minimum: int | None = None) -> int:
             f"Variable d'environnement {_ENV_PREFIX}{name} invalide: {raw!r}."
         ) from exc
     if minimum is not None and value < minimum:
-        raise ValueError(f"{_ENV_PREFIX}{name} doit être >= {minimum}.")
+        raise ValueError(f"{_ENV_PREFIX}{name} must be >= {minimum}.")
     return value
 
 
@@ -116,7 +116,7 @@ def _env_hosts(name: str, default: frozenset[str]) -> frozenset[str]:
         return default
     hosts = frozenset(h.strip().lower() for h in raw.split(",") if h.strip())
     if not hosts:
-        raise ValueError(f"{_ENV_PREFIX}{name} ne peut pas être vide.")
+        raise ValueError(f"{_ENV_PREFIX}{name} cannot be empty.")
     return hosts
 
 

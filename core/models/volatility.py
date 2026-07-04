@@ -16,9 +16,7 @@ from .market_stats import annualized_volatility
 def _log_returns(series: pd.Series) -> np.ndarray:
     returns = np.log(series / series.shift(1)).dropna().to_numpy()
     if returns.size < 3:
-        raise InsufficientDataError(
-            "Au moins 3 points de données sont nécessaires pour estimer la volatilité."
-        )
+        raise InsufficientDataError("At least 3 data points are required to estimate volatility.")
     return returns
 
 
@@ -28,7 +26,7 @@ def ewma_annualized_volatility(
     trading_days_per_year: int = settings.TRADING_DAYS_PER_YEAR,
 ) -> float:
     if not (0.0 < lambda_ < 1.0):
-        raise InsufficientDataError("Le facteur de lissage EWMA doit être dans (0, 1).")
+        raise InsufficientDataError("The EWMA smoothing factor must be in (0, 1).")
     returns = _log_returns(series)
     n = returns.size
     weights = lambda_ ** np.arange(n - 1, -1, -1)
@@ -36,7 +34,7 @@ def ewma_annualized_volatility(
         lambda_**n * np.var(returns, ddof=1) + (1.0 - lambda_) * weights @ (returns * returns)
     )
     if not np.isfinite(variance) or variance <= 0:
-        raise InsufficientDataError("Volatilité EWMA non estimable à partir des données fournies.")
+        raise InsufficientDataError("EWMA volatility cannot be estimated from the provided data.")
     return float(np.sqrt(variance * trading_days_per_year))
 
 
@@ -62,13 +60,13 @@ def _garch_negative_log_likelihood(params: np.ndarray, returns: np.ndarray) -> f
 def _fit_garch(returns: np.ndarray) -> tuple[float, float, float, float]:
     sample_var = returns.var()
     if not np.isfinite(sample_var) or sample_var <= 0:
-        raise InsufficientDataError("Variance empirique non exploitable pour l'ajustement GARCH.")
+        raise InsufficientDataError("Sample variance unusable for GARCH fitting.")
 
-    # Variance targeting: omega est contraint pour que la variance de long terme
-    # omega / (1 - alpha - beta) soit exactement la variance empirique. On optimise
-    # donc uniquement (alpha, beta), un problème bien mieux conditionne que la
-    # recherche jointe en (omega, alpha, beta), qui restait piegee a son point de
-    # depart et surestimait la volatilite d'un facteur 2 a 5.
+    # Variance targeting: omega is constrained so that the long-run variance
+    # omega / (1 - alpha - beta) equals the sample variance exactly. Only
+    # (alpha, beta) are optimized, a much better-conditioned problem than the
+    # joint search over (omega, alpha, beta), which stayed pinned at its
+    # starting point and overstated volatility by a factor of 2 to 5.
     def neg_log_likelihood(persistence_params: np.ndarray) -> float:
         alpha, beta = persistence_params
         if alpha < 0 or beta < 0 or alpha + beta >= 1.0:
@@ -92,7 +90,7 @@ def _fit_garch(returns: np.ndarray) -> tuple[float, float, float, float]:
     alpha, beta = result.x
     omega = sample_var * (1.0 - alpha - beta)
     if not result.success or alpha < 0 or beta < 0 or alpha + beta >= 1.0 or omega <= 0:
-        raise InsufficientDataError("Ajustement GARCH non convergent.")
+        raise InsufficientDataError("GARCH fit did not converge.")
     last_variance = _garch_variance_path(returns, omega, alpha, beta)[-1]
     return float(omega), float(alpha), float(beta), float(last_variance)
 

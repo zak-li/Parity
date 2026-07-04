@@ -23,9 +23,9 @@ def test_risk_level_from_score_boundaries(score, expected):
     assert RiskLevel.from_score(score) is expected
 
 
-def test_risk_level_has_french_labels():
-    assert RiskLevel.LOW.value == "Faible"
-    assert RiskLevel.CRITICAL.value == "Critique"
+def test_risk_level_has_english_labels():
+    assert RiskLevel.LOW.value == "Low"
+    assert RiskLevel.CRITICAL.value == "Critical"
 
 
 def test_sampling_method_values():

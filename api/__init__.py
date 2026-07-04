@@ -35,7 +35,7 @@ _ERROR_STATUS: tuple[tuple[type[MarginProtectorError], int], ...] = (
 def create_app() -> FastAPI:
     app = FastAPI(
         title="Parity API",
-        description="API de simulation du risque de change pour importateurs et e-commerçants.",
+        description="FX risk simulation API for importers and e-commerce merchants.",
         version=core.__version__,
     )
 

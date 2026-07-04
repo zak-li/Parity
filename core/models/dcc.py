@@ -59,12 +59,12 @@ def estimate_dcc(returns: pd.DataFrame) -> DccResult:
     currencies = list(returns.columns)
     frame = returns.dropna()
     if len(frame) < 10 or len(currencies) < 2:
-        raise InsufficientDataError("Historique commun insuffisant pour estimer un DCC-GARCH.")
+        raise InsufficientDataError("Insufficient overlapping history to fit a DCC-GARCH.")
 
     residuals = np.column_stack([_standardized_residuals(frame[c].to_numpy()) for c in currencies])
     q_bar = np.corrcoef(residuals, rowvar=False)
     if not np.all(np.isfinite(q_bar)):
-        raise InsufficientDataError("Corrélation inconditionnelle non estimable.")
+        raise InsufficientDataError("Unconditional correlation cannot be estimated.")
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

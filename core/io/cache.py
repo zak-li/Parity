@@ -16,9 +16,9 @@ class TTLCache:
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         if ttl_seconds <= 0:
-            raise ValueError("ttl_seconds doit être strictement positif.")
+            raise ValueError("ttl_seconds must be strictly positive.")
         if max_entries <= 0:
-            raise ValueError("max_entries doit être strictement positif.")
+            raise ValueError("max_entries must be strictly positive.")
         self._ttl = ttl_seconds
         self._max_entries = max_entries
         self._clock = clock

@@ -6,10 +6,10 @@ from ..config import settings
 
 
 class RiskLevel(StrEnum):
-    LOW = "Faible"
-    MODERATE = "Modéré"
-    HIGH = "Élevé"
-    CRITICAL = "Critique"
+    LOW = "Low"
+    MODERATE = "Moderate"
+    HIGH = "High"
+    CRITICAL = "Critical"
 
     @classmethod
     def from_score(cls, score: int) -> RiskLevel:

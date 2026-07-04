@@ -51,9 +51,9 @@ def test_garch_falls_back_gracefully_on_short_clean_series():
 
 @pytest.mark.parametrize("seed", range(6))
 def test_garch_recovers_known_sigma_via_variance_targeting(seed):
-    # Regression: sur une serie a volatilite constante, l'estimateur GARCH doit
-    # retrouver le sigma vrai. Avant le variance targeting, il surestimait d'un
-    # facteur 2 a 5 (optimiseur piege a une init impliquant long_run = 5 x var).
+    # Regression: on a constant-volatility series the GARCH estimator must
+    # recover the true sigma. Before variance targeting it overstated it by a
+    # factor of 2 to 5 (optimizer stuck at an init implying long_run = 5 x var).
     result = garch_annualized_volatility(_series(0.20, n=1200, seed=seed), horizon_days=90)
     assert result == pytest.approx(0.20, abs=0.03)
 

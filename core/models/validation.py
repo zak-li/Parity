@@ -10,11 +10,11 @@ _CURRENCY_REGEX = re.compile(rf"^{settings.CURRENCY_CODE_PATTERN}$")
 
 def normalize_currency_code(code: str) -> str:
     if not isinstance(code, str):
-        raise ValueError("Le code devise doit être une chaîne de caractères.")
+        raise ValueError("The currency code must be a string.")
     normalized = code.strip().upper()
     if not _CURRENCY_REGEX.fullmatch(normalized):
         raise ValueError(
-            f"Code devise invalide: {code!r}. Format attendu: ISO 4217 (ex: USD, EUR, MAD)."
+            f"Invalid currency code: {code!r}. Expected format: ISO 4217 (e.g. USD, EUR, MAD)."
         )
     return normalized
 

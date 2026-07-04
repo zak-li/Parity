@@ -42,7 +42,7 @@ class StressReport:
 
 def margin_at_rate(revenue: float, amount_foreign: float, rate: float) -> tuple[float, float]:
     if revenue <= 0:
-        raise SimulationError("Le revenu doit être strictement positif.")
+        raise SimulationError("Revenue must be strictly positive.")
     margin_domestic = revenue - amount_foreign * rate
     return margin_domestic, margin_domestic / revenue
 
@@ -75,7 +75,7 @@ def reverse_stress_test(
     revenue: float, amount_foreign: float, spot: float, target_margin_pct: float = 0.0
 ) -> ReverseStressResult:
     if spot <= 0 or amount_foreign <= 0 or revenue <= 0:
-        raise SimulationError("Les paramètres doivent être strictement positifs.")
+        raise SimulationError("Parameters must be strictly positive.")
     breaking_rate = revenue * (1.0 - target_margin_pct) / amount_foreign
     return ReverseStressResult(
         target_margin_pct=target_margin_pct,
@@ -88,7 +88,7 @@ def worst_adverse_move(series: pd.Series, horizon_days: int) -> float:
     values = series.to_numpy()
     horizon = max(1, int(horizon_days))
     if values.size <= horizon:
-        raise InsufficientDataError("Historique insuffisant pour l'horizon demandé.")
+        raise InsufficientDataError("Insufficient history for the requested horizon.")
     ratios = values[horizon:] / values[:-horizon]
     return float(np.max(ratios) - 1.0)
 

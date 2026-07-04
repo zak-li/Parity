@@ -11,13 +11,11 @@ from ...models.validation import validate_currency_code
 class StaticFxDataProvider:
     def __init__(self, series: pd.Series) -> None:
         if series.empty:
-            raise InsufficientDataError("La série de taux fournie est vide.")
+            raise InsufficientDataError("The provided rate series is empty.")
         if not isinstance(series.index, pd.DatetimeIndex):
-            raise InvalidOrderError("L'index de la série doit être un DatetimeIndex.")
+            raise InvalidOrderError("The series index must be a DatetimeIndex.")
         if (series <= 0).any() or series.isna().any():
-            raise InvalidOrderError(
-                "La série de taux contient des valeurs non positives ou manquantes."
-            )
+            raise InvalidOrderError("The rate series contains non-positive or missing values.")
         self._series = series.astype("float64").sort_index()
 
     def get_historical_series(
@@ -26,16 +24,12 @@ class StaticFxDataProvider:
         validate_currency_code(base)
         validate_currency_code(quote)
         if end < start:
-            raise InvalidOrderError(
-                "La date de fin doit être postérieure ou égale à la date de début."
-            )
+            raise InvalidOrderError("The end date must be on or after the start date.")
 
         mask = (self._series.index >= pd.Timestamp(start)) & (
             self._series.index <= pd.Timestamp(end)
         )
         sliced = self._series.loc[mask]
         if sliced.empty:
-            raise InsufficientDataError(
-                f"Aucune donnée dans la série statique entre {start} et {end}."
-            )
+            raise InsufficientDataError(f"No data in the static series between {start} and {end}.")
         return sliced.copy()

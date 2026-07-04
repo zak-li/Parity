@@ -33,12 +33,12 @@ def test_stress_report_structure(static_provider, order):
     assert isinstance(result, StressReport)
     assert len(result.scenarios) >= len(canonical_scenarios())
     names = [s.scenario for s in result.scenarios]
-    assert any("Choc" in n for n in names)
+    assert any("shock" in n for n in names)
 
 
 def test_adverse_shock_reduces_margin_below_budget(static_provider, order):
     result = MarginRiskEngine(static_provider).stress_test(order)
-    severe = next(s for s in result.scenarios if "sévère" in s.scenario)
+    severe = next(s for s in result.scenarios if "Severe" in s.scenario)
     assert severe.margin_pct < result.budgeted_margin_pct
     assert severe.margin_pct_change < 0
 
@@ -66,7 +66,7 @@ def test_crisis_replay_included_when_history_available(reference_order_date, ord
 
     report = MarginRiskEngine(CrisisProvider()).stress_test(order)
     names = [s.scenario for s in report.scenarios]
-    assert any("Rejeu" in n for n in names)
+    assert any("Replay" in n for n in names)
 
 
 def test_crisis_replay_skipped_gracefully_when_unavailable(static_provider, order):

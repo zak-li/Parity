@@ -39,8 +39,8 @@ def result():
 def test_prompt_contains_key_indicators(result):
     prompt = _build_prompt(result)
     assert "USD/MAD" in prompt
-    assert "Score de vulnérabilité" in prompt
-    assert "Couverture optimale" in prompt
+    assert "Vulnerability score" in prompt
+    assert "Recommended optimal hedge" in prompt
 
 
 def test_null_narrator_returns_none(result):
@@ -67,10 +67,10 @@ def test_groq_narrator_returns_completion_text(result):
                 @staticmethod
                 def create(**kwargs):
                     assert kwargs["model"] == "stub"
-                    return _StubCompletion("Risque modéré, couverture à 100% conseillée.")
+                    return _StubCompletion("Moderate risk, full hedge recommended.")
 
     narrator._client = _Client()
-    assert narrator.narrate(result).startswith("Risque modéré")
+    assert narrator.narrate(result).startswith("Moderate risk")
 
 
 def test_groq_narrator_swallows_errors(result):

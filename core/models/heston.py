@@ -19,13 +19,13 @@ class HestonParams:
     def __post_init__(self) -> None:
         for name, value in (("v0", self.v0), ("theta", self.theta)):
             if not np.isfinite(value) or value <= 0:
-                raise SimulationError(f"Le paramètre Heston {name} doit être strictement positif.")
+                raise SimulationError(f"Heston parameter {name} must be strictly positive.")
         if not np.isfinite(self.kappa) or self.kappa <= 0:
-            raise SimulationError("La vitesse de retour à la moyenne (kappa) doit être positive.")
+            raise SimulationError("Mean-reversion speed (kappa) must be positive.")
         if not np.isfinite(self.xi) or self.xi <= 0:
-            raise SimulationError("La volatilité de la volatilité (xi) doit être positive.")
+            raise SimulationError("Volatility of volatility (xi) must be positive.")
         if not np.isfinite(self.rho) or not (-1.0 <= self.rho <= 1.0):
-            raise SimulationError("La corrélation spot/vol (rho) doit être dans [-1, 1].")
+            raise SimulationError("Spot/vol correlation (rho) must be within [-1, 1].")
 
     @property
     def satisfies_feller(self) -> bool:
@@ -58,18 +58,18 @@ def simulate_heston_terminal_rates(
     antithetic: bool = True,
 ) -> np.ndarray:
     if not np.isfinite(spot) or spot <= 0:
-        raise SimulationError("Le taux au comptant doit être strictement positif.")
+        raise SimulationError("The spot rate must be strictly positive.")
     if not np.isfinite(horizon_years) or horizon_years <= 0:
-        raise SimulationError("L'horizon de simulation doit être strictement positif.")
+        raise SimulationError("The simulation horizon must be strictly positive.")
     if not (settings.MIN_N_SIMULATIONS <= n_sims <= settings.MAX_N_SIMULATIONS):
         raise SimulationError(
-            f"Le nombre de simulations doit être compris entre {settings.MIN_N_SIMULATIONS} "
-            f"et {settings.MAX_N_SIMULATIONS}."
+            f"The number of simulations must be between {settings.MIN_N_SIMULATIONS} "
+            f"and {settings.MAX_N_SIMULATIONS}."
         )
 
     steps = n_steps if n_steps is not None else _resolve_steps(horizon_years)
     if steps <= 0:
-        raise SimulationError("Le nombre de pas de temps doit être strictement positif.")
+        raise SimulationError("The number of time steps must be strictly positive.")
     dt = horizon_years / steps
     sqrt_dt = np.sqrt(dt)
     rho_comp = np.sqrt(1.0 - params.rho**2)

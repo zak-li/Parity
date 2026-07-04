@@ -173,7 +173,7 @@ def get_simulation(
 ) -> SimulationRecordResponse:
     record = repository.get(record_id)
     if record is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation introuvable.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
     return _record_to_response(record)
 
 

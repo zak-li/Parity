@@ -42,14 +42,14 @@ def evaluate_result_alerts(
             if result.risk_level is RiskLevel.CRITICAL
             else AlertSeverity.WARNING
         )
-        alerts.append(Alert("risk_level", severity, f"Niveau de risque {result.risk_level.value}."))
+        alerts.append(Alert("risk_level", severity, f"Risk level {result.risk_level.value}."))
 
     if result.vulnerability_score >= thresholds.max_score:
         alerts.append(
             Alert(
                 "score_threshold",
                 AlertSeverity.WARNING,
-                f"Score de vulnérabilité {result.vulnerability_score} ≥ {thresholds.max_score}.",
+                f"Vulnerability score {result.vulnerability_score} ≥ {thresholds.max_score}.",
             )
         )
 
@@ -58,7 +58,7 @@ def evaluate_result_alerts(
             Alert(
                 "probability_threshold",
                 AlertSeverity.WARNING,
-                f"Probabilité de marge insuffisante "
+                f"Probability of insufficient margin "
                 f"{result.probability_margin_below_threshold * 100:.0f}% ≥ "
                 f"{thresholds.max_probability_below * 100:.0f}%.",
             )
@@ -72,7 +72,7 @@ def evaluate_result_alerts(
             Alert(
                 "delivery_proximity",
                 AlertSeverity.CRITICAL,
-                f"Livraison dans {result.horizon_days} j avec un risque élevé: décision urgente.",
+                f"Delivery in {result.horizon_days} days with high risk: urgent decision required.",
             )
         )
 
@@ -96,7 +96,7 @@ def change_alerts(
             Alert(
                 "risk_escalation",
                 AlertSeverity.WARNING,
-                f"Risque en hausse: {previous_risk_level.value} → {current_risk_level.value}.",
+                f"Risk increasing: {previous_risk_level.value} → {current_risk_level.value}.",
             )
         )
 
@@ -116,7 +116,7 @@ def change_alerts(
                 Alert(
                     "spot_move",
                     AlertSeverity.INFO,
-                    f"Taux au comptant {move * 100:+.1f}% depuis la dernière évaluation.",
+                    f"Spot rate {move * 100:+.1f}% since the last assessment.",
                 )
             )
 
