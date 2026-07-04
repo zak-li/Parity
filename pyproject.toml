@@ -73,7 +73,7 @@ ignore = [
 "**/tests/**" = ["B", "SIM"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 files = ["core", "api", "db", "ai"]
 ignore_missing_imports = true
 no_implicit_optional = true
