@@ -26,6 +26,17 @@
 
 Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerability Score** from 0 to 100, and recommends the optimal hedge such as a forward, an option, or a collar, with its cost and benefit fully quantified.
 
+<br>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="charts/parity_before_after_dark.png">
+    <img src="charts/parity_before_after_light.png" alt="Parity Predictable Margins Chart" width="100%">
+  </picture>
+</p>
+
+<br>
+
 ## Table of Contents
 
 - [Features](#features)
@@ -49,17 +60,16 @@ The engine core requires the following packages:
 | Package | Version |
 |---|---|
 | Python | 3.11+ |
-| NumPy | 1.26+ |
-| SciPy | 1.13+ |
-| pandas | 2.2+ |
-| FastAPI | 0.115+ |
-| Uvicorn | 0.34+ |
-| pydantic | 2.10+ |
+| NumPy | 2.4+ |
+| SciPy | 1.17+ |
+| pandas | 3.0+ |
+| requests | 2.34+ |
 
 The following are optional and enable extra capabilities:
 
 | Component | Role |
 |---|---|
+| FastAPI + Uvicorn | Hardened REST API service |
 | SQLAlchemy + psycopg2 | PostgreSQL structured history |
 | pymongo | MongoDB result documents |
 | neo4j | Currency exposure graph |
@@ -129,14 +139,17 @@ These endpoints run simulations and expose their results:
 | GET | `/api/v1/simulations/{id}` | Fetch a single persisted simulation |
 | GET | `/api/v1/exposure` | Currency exposure graph |
 
-These endpoints cover portfolio risk, stress testing, compliance, and backtesting:
+These endpoints cover portfolio risk, hedging tools, stress testing, compliance, and backtesting:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/v1/portfolio/simulations` | Multi-currency portfolio risk |
+| POST | `/api/v1/portfolio/simulations` | Multi-currency portfolio risk with per-currency CVaR attribution |
+| POST | `/api/v1/ladder/simulations` | Cashflow ladder: multi-date exposure and layered hedging |
+| POST | `/api/v1/hedge/greeks` | Closed-form FX option Greeks (Garman-Kohlhagen) |
 | POST | `/api/v1/stress-tests` | Deterministic and historical stress tests |
 | POST | `/api/v1/compliance` | Office des Changes assessment (indicative) |
 | POST | `/api/v1/backtests/var` | VaR model backtesting with the Kupiec test |
+| POST | `/api/v1/backtests/es` | Expected Shortfall backtest (Acerbi-Szekely) |
 
 ## Options
 
