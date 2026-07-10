@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 80 80">
+  <defs>
+    <linearGradient gradientTransform="rotate(25)" id="parity-icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color: rgb(53, 237, 255); stop-opacity: 1;"></stop>
+      <stop offset="100%" style="stop-color: rgb(11, 0, 255); stop-opacity: 1;"></stop>
+    </linearGradient>
+  </defs>
+  <path fill="url(#parity-icon-gradient)" d="M90 45.5H60.864l20.603-20.603-6.364-6.364L54.5 39.135V10h-9.001v29.135L24.897 18.534l-6.364 6.364L39.135 45.5H10v9h29.135L18.533 75.101l6.364 6.364 20.602-20.601V90H54.5V60.864l20.603 20.602 6.364-6.364L60.864 54.5H90z"></path>
+</svg>
