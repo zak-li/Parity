@@ -63,7 +63,8 @@ def test_health(client):
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "ok"
-    assert body["version"]
+    # S4: the public health check must not leak the version (fingerprinting).
+    assert "version" not in body
 
 
 def test_main_entrypoint_exposes_app():

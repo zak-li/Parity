@@ -87,9 +87,7 @@ def _env_float(name: str, default: float, *, minimum: float | None = None) -> fl
     try:
         value = float(raw)
     except ValueError as exc:
-        raise ValueError(
-            f"Variable d'environnement {_ENV_PREFIX}{name} invalide: {raw!r}."
-        ) from exc
+        raise ValueError(f"Invalid environment variable {_ENV_PREFIX}{name}: {raw!r}.") from exc
     if minimum is not None and value < minimum:
         raise ValueError(f"{_ENV_PREFIX}{name} must be >= {minimum}.")
     return value
@@ -102,9 +100,7 @@ def _env_int(name: str, default: int, *, minimum: int | None = None) -> int:
     try:
         value = int(raw)
     except ValueError as exc:
-        raise ValueError(
-            f"Variable d'environnement {_ENV_PREFIX}{name} invalide: {raw!r}."
-        ) from exc
+        raise ValueError(f"Invalid environment variable {_ENV_PREFIX}{name}: {raw!r}.") from exc
     if minimum is not None and value < minimum:
         raise ValueError(f"{_ENV_PREFIX}{name} must be >= {minimum}.")
     return value

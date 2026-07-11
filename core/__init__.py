@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _package_version
+
 from .app import MarginRiskEngine, PortfolioRiskEngine
 from .config import RuntimeConfig, load_runtime_config
 from .io import FrankfurterFxDataProvider, FxDataProvider, StaticFxDataProvider
@@ -78,4 +81,7 @@ __all__ = [
     "load_runtime_config",
 ]
 
-__version__ = "0.6.0"
+try:
+    __version__ = _package_version("xi")
+except PackageNotFoundError:  # running from source without installed metadata
+    __version__ = "0.0.0+unknown"
