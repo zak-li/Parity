@@ -126,6 +126,26 @@ curl -X POST http://localhost:8000/api/v1/simulations \
        "target_margin_pct": 0.15, "domestic_rate": 0.021, "foreign_rate": 0.043}}'
 ```
 
+The response scores the exposure and ranks the hedges (trimmed):
+
+```json
+{
+  "vulnerability_score": 32,
+  "risk_level": "Moderate",
+  "expected_terminal_rate": 1.0740,
+  "margin_pct_percentiles": { "P5": 0.079, "P50": 0.135, "P95": 0.188 },
+  "expected_shortfall_margin_pct": 0.079,
+  "hedge": { "optimal_hedge_ratio": 1.0, "hedged_margin_pct": 0.135 },
+  "instruments": [
+    { "instrument": "none", "expected_margin_pct": 0.135, "cvar_margin_pct": 0.079 },
+    { "instrument": "forward", "expected_margin_pct": 0.135, "cvar_margin_pct": 0.135 }
+  ],
+  "recommendation": "..."
+}
+```
+
+Model assumptions, limits, and numerical validation are documented in [`docs/MODELS.md`](docs/MODELS.md).
+
 ## Docker
 
 Run the API and a PostgreSQL backend with one command:
