@@ -136,6 +136,12 @@ docker compose up --build
 
 The service listens on `http://localhost:8000` (health check at `/health`). The image runs as a non-root user; published images are available on `ghcr.io/zak-li/parity`.
 
+With PostgreSQL, the schema is managed by Alembic. Set `XI_DB_AUTO_CREATE=0` and apply migrations before starting:
+
+```bash
+alembic upgrade head
+```
+
 ## Core API
 
 The API is rooted at `/api/v1` with Swagger docs at `/docs`. Every route requires the `X-API-Key` header once `XI_API_KEY` is configured, except the public `/health` check.
