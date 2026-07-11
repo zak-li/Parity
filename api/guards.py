@@ -31,7 +31,7 @@ from starlette.status import (
 from core.io.rate_limiter import TokenBucketRateLimiter
 
 _ENV_PREFIX = "XI_API_"
-_EXEMPT_PATHS = frozenset({"/health"})
+_EXEMPT_PATHS = frozenset({"/health", "/metrics"})
 
 
 def _env_float(name: str, default: float) -> float:
