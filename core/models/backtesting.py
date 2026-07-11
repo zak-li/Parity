@@ -27,6 +27,11 @@ def kupiec_pof_test(
     alpha: float,
     significance: float = settings.KUPIEC_SIGNIFICANCE,
 ) -> KupiecResult:
+    """Kupiec proportion-of-failures test for VaR calibration.
+
+    Likelihood-ratio test that the observed exceedance rate matches ``alpha``;
+    ``rejected`` is True when the p-value falls below ``significance``.
+    """
     if n_observations <= 0:
         raise InsufficientDataError("The number of observations must be strictly positive.")
     if not (0 <= n_exceedances <= n_observations):

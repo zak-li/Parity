@@ -63,6 +63,7 @@ def _d1_d2(spot, strike, rd, rf, sigma, t):
 
 
 def garman_kohlhagen_call(spot, strike, rd, rf, sigma, t):
+    """Garman-Kohlhagen (1983) FX call price (per unit of foreign currency)."""
     if sigma <= 0 or t <= 0:
         return max(spot * np.exp(-rf * t) - strike * np.exp(-rd * t), 0.0)
     d1, d2 = _d1_d2(spot, strike, rd, rf, sigma, t)
@@ -70,6 +71,7 @@ def garman_kohlhagen_call(spot, strike, rd, rf, sigma, t):
 
 
 def garman_kohlhagen_put(spot, strike, rd, rf, sigma, t):
+    """Garman-Kohlhagen (1983) FX put price (per unit of foreign currency)."""
     if sigma <= 0 or t <= 0:
         return max(strike * np.exp(-rd * t) - spot * np.exp(-rf * t), 0.0)
     d1, d2 = _d1_d2(spot, strike, rd, rf, sigma, t)

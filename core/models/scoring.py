@@ -19,6 +19,11 @@ def probability_below_threshold(values: np.ndarray, threshold: float) -> float:
 def conditional_value_at_risk(
     values: np.ndarray, alpha: float = settings.EXPECTED_SHORTFALL_ALPHA
 ) -> float:
+    """Expected Shortfall: the mean of the worst ``alpha`` fraction of ``values``.
+
+    On a margin distribution this is the average margin in the worst ``alpha``
+    tail (α = 0.05 by default) and is always <= the expected margin.
+    """
     n = values.size
     if n == 0:
         raise ValueError("The value series cannot be empty.")
@@ -30,6 +35,12 @@ def conditional_value_at_risk(
 def vulnerability_score(
     probability_below: float, budgeted_margin_pct: float, expected_shortfall_pct: float
 ) -> int:
+    """0-100 risk score blending loss probability and tail severity.
+
+    ``severity`` is the fraction of the budgeted margin eroded in the CVaR tail;
+    the score is a weighted average of that and ``probability_below``, scaled to
+    0-100 (higher = more vulnerable).
+    """
     if budgeted_margin_pct > 0:
         severity = (budgeted_margin_pct - expected_shortfall_pct) / budgeted_margin_pct
     else:
