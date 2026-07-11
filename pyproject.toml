@@ -23,15 +23,15 @@ dotenv = [
 ]
 api = [
     "fastapi>=0.139.0,<1",
-    "uvicorn>=0.50.0,<1",
-    "prometheus-client>=0.21,<1",
+    "uvicorn>=0.51.0,<1",
+    "prometheus-client>=0.25.0,<1",
 ]
 db = [
     "sqlalchemy>=2.0.51,<3",
     "psycopg2-binary>=2.9.12,<3",
     "pymongo>=4.17.0,<5",
     "neo4j>=6.2.0,<7",
-    "alembic>=1.13,<2",
+    "alembic>=1.18.5,<2",
 ]
 ai = [
     "groq>=1.5.0,<2",
@@ -41,19 +41,19 @@ dev = [
     "pytest-cov>=7.1.0,<8",
     "python-dotenv>=1.2.2,<2",
     "fastapi>=0.139.0,<1",
-    "uvicorn>=0.50.0,<1",
-    "prometheus-client>=0.21,<1",
+    "uvicorn>=0.51.0,<1",
+    "prometheus-client>=0.25.0,<1",
     "httpx>=0.28.1,<1",
     "sqlalchemy>=2.0.51,<3",
     "psycopg2-binary>=2.9.12,<3",
     "pymongo>=4.17.0,<5",
     "neo4j>=6.2.0,<7",
-    "alembic>=1.13,<2",
+    "alembic>=1.18.5,<2",
     "groq>=1.5.0,<2",
-    "ruff==0.15.20",
-    "mypy>=2.1.0",
+    "ruff==0.15.21",
+    "mypy>=2.2.0",
     "pip-audit>=2.10.1",
-    "build>=1.5.0",
+    "build>=1.5.1",
 ]
 
 [tool.pytest.ini_options]
