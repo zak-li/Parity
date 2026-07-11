@@ -30,29 +30,30 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerab
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="charts/parity_before_after_dark.png">
-    <img src="charts/parity_before_after_light.png" alt="Parity Predictable Margins Chart" width="100%">
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/charts/parity_before_after_dark.png">
+    <img src=".github/assets/charts/parity_before_after_light.png" alt="Parity Predictable Margins Chart" width="100%">
   </picture>
 </p>
 
 ## Table of Contents
 
 - [Features](#features)
-- [Dependencies](#dependencies)
 - [Quick Start](#quick-start)
-- [Docker](#docker)
-- [Core API](#core-api)
-- [Options](#options)
-- [Environment](#environment)
+- [API](#api)
+- [Configuration](#configuration)
 - [License](#license)
 
 ## Features
 
-The core simulates the delivery-date exchange rate by `Monte Carlo` (`GBM` with covered interest rate parity, optional `Heston`, `Student-t`, and `Merton` jumps), with volatility from `historical`, `EWMA`, or `GARCH(1,1)`. It turns the margin distribution into percentiles, loss probability, Expected Shortfall (`CVaR`), and a Vulnerability Score, then compares an unhedged position against a forward, an option, and a collar to recommend the optimal hedge.
+The core simulates the delivery-date exchange rate by `Monte Carlo` (`GBM` under covered interest rate parity, with optional `Heston`, `Student-t`, and `Merton` jumps) and estimates volatility with `historical`, `EWMA`, or `GARCH(1,1)`. From the resulting margin distribution it derives percentiles, loss probability, Expected Shortfall (`CVaR`), and a 0 to 100 Vulnerability Score.
 
-It also aggregates multi-currency portfolios, runs stress tests, `VaR` backtesting, and Office des Changes compliance checks, and features **automated data ingestion (ETL)** from Shopify, WooCommerce, Stripe, and Odoo. Everything is exposed through a hardened `FastAPI` service protected by **Single Sign-On (Auth0/Auth0)** or API keys, with optional `PostgreSQL`, `MongoDB`, and `Neo4j` persistence and a `Groq` AI narrative.
+It then compares an unhedged position against a forward, an option, and a zero-cost collar to recommend the optimal hedge. The same engine extends to multi-currency portfolios, cashflow ladders, stress tests, `VaR` and Expected Shortfall backtesting, and Office des Changes compliance checks.
 
-## Dependencies
+Everything is exposed through a hardened `FastAPI` service with Auth0 SSO or API keys, per-client rate limiting, structured logs, and Prometheus metrics. It ingests exposure automatically from Shopify, WooCommerce, Stripe, and Odoo, and offers optional `PostgreSQL`, `MongoDB`, and `Neo4j` persistence plus a `Groq` AI narrative.
+
+## Quick Start
+
+### Dependencies
 
 The engine core requires the following packages:
 
@@ -74,48 +75,26 @@ The following are optional and enable extra capabilities:
 | neo4j | Currency exposure graph |
 | groq | AI narrative generation |
 | python-dotenv | `.env` file loading |
-| PyJWT + cryptography | Auth0 / Auth0 Single Sign-On (SSO) |
+| PyJWT + cryptography | Auth0 Single Sign-On (SSO) |
+| prometheus-client | Prometheus `/metrics` endpoint |
+| redis | Shared cache + rate limiter (multi-worker) |
 
-## Quick Start
-
-**Step 1: Clone the repository**
+### Install and run
 
 ```bash
 git clone https://github.com/zak-li/Parity.git
 cd Parity
-```
-
-**Step 2: Create the environment file**
-
-```bash
-cp .env.example .env
-```
-
-All variables are optional. The engine runs with zero configuration using free ECB rates and in-memory storage. Fill in `.env` to enable persistence, the AI narrative, or API authentication.
-
-**Step 3: Create a virtual environment and install**
-
-```bash
+cp .env.example .env                # all variables are optional
 python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate           # Windows: .venv\Scripts\activate
 pip install -e ".[api,db,ai,dotenv,dev]"
-```
-
-**Step 4: Verify the install with the test suite**
-
-```bash
-pytest -q
-```
-
-**Step 5: Start the API**
-
-```bash
+pytest -q                           # verify the install
 uvicorn api.main:app --host 0.0.0.0 --port 8000
 ```
 
-The API is live at `http://localhost:8000` and the interactive documentation at `/docs`.
+The engine runs with zero configuration using free ECB rates and in-memory storage. The API is then live at `http://localhost:8000`, with interactive documentation at `/docs`.
 
-**Step 6: Send a first request**
+### First request
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/simulations \
@@ -145,7 +124,7 @@ The response scores the exposure and ranks the hedges (trimmed):
 
 Model assumptions, limits, and numerical validation are documented in [`docs/MODELS.md`](docs/MODELS.md).
 
-## Docker
+### Docker
 
 Run the API and a PostgreSQL backend with one command:
 
@@ -153,29 +132,27 @@ Run the API and a PostgreSQL backend with one command:
 docker compose up --build
 ```
 
-The service listens on `http://localhost:8000` (health check at `/health`). The image runs as a non-root user; published images are available on `ghcr.io/zak-li/parity`.
-
-With PostgreSQL, the schema is managed by Alembic. Set `XI_DB_AUTO_CREATE=0` and apply migrations before starting:
+The service listens on `http://localhost:8000` (health check at `/health`) and runs as a non-root user; published images are available on `ghcr.io/zak-li/parity`. With PostgreSQL the schema is managed by Alembic, so set `XI_DB_AUTO_CREATE=0` and apply migrations before starting:
 
 ```bash
 alembic upgrade head
 ```
 
-## Core API
+## API
 
-The API is rooted at `/api/v1` with Swagger docs at `/docs`. Every route requires the `X-API-Key` header once `XI_API_KEY` is configured, except the public `/health` check.
+The API is rooted at `/api/v1`, with Swagger docs at `/docs` and Prometheus metrics at `/metrics`. Once a credential is configured (see [Authentication](#authentication)), every `/api/v1` route requires it, while `/health` and `/metrics` stay public.
 
 These endpoints run simulations and expose their results:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/health` | Service status and version. *public* |
+| GET | `/health` | Liveness check. *public* |
 | POST | `/api/v1/simulations` | Risk simulation, hedging decision, instrument comparison, alerts |
 | GET | `/api/v1/simulations/history` | Persisted simulation history with currency filters |
 | GET | `/api/v1/simulations/{id}` | Fetch a single persisted simulation |
 | GET | `/api/v1/exposure` | Currency exposure graph |
 
-These endpoints handle automated data ingestion (ETL) from E-commerce and ERP platforms:
+These endpoints ingest exposure automatically (ETL) from e-commerce and ERP platforms:
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -196,7 +173,7 @@ These endpoints cover portfolio risk, hedging tools, stress testing, compliance,
 | POST | `/api/v1/backtests/var` | VaR model backtesting with the Kupiec test |
 | POST | `/api/v1/backtests/es` | Expected Shortfall backtest (Acerbi-Szekely) |
 
-## Options
+### Options
 
 The `options` block of `POST /simulations` selects the modeling method. All fields are optional and default to the fastest baseline.
 
@@ -208,13 +185,33 @@ The `options` block of `POST /simulations` selects the modeling method. All fiel
 | `sampling_method` | `pseudo_random`, `sobol` | `pseudo_random` |
 | `jumps` | object with `intensity_annual`, `mean_log_jump`, `std_log_jump` | none |
 
-## Environment
+## Configuration
+
+### Authentication
+
+Authentication is off by default for zero-config local use, and turns on as soon as a credential is configured. Setting `XI_API_KEY` requires that master key in the `X-API-Key` header.
+
+For multiple clients, set a secret `XI_API_KEY_PEPPER` and mint revocable, optionally expiring keys with the CLI. Only the HMAC-SHA256 hash is stored, never the key itself:
+
+```bash
+python -m api.keys create --client acme --days 90   # prints the key once
+python -m api.keys revoke --id <key-id>
+```
+
+For single sign-on, set the `XI_AUTH0_*` variables. Callers then send a Bearer token (`Authorization: Bearer <jwt>`) that is validated against Auth0's JWKS with RS256, audience, issuer, and expiry checks. Every request is also rate-limited per client and bounded by a concurrency cap and a timeout.
+
+### Observability
+
+Every request carries an `X-Request-ID` (echoed from the caller or generated) bound to structured JSON logs, so a single request can be traced end to end. Prometheus metrics such as request counts and latency histograms, labelled by method, route template, and status, are served at `GET /metrics`, which should be restricted to an internal network in production.
+
+### Environment
 
 These variables are all optional and share the `XI_` prefix. The complete reference is in [`.env.example`](.env.example).
 
 | Variable | Default | Description |
 |---|---|---|
-| `XI_API_KEY` | | When set, the `X-API-Key` header becomes mandatory |
+| `XI_API_KEY` | | Master key; when set, the `X-API-Key` header becomes mandatory |
+| `XI_API_KEY_PEPPER` | | Secret pepper for per-client API-key hashing (set in production) |
 | `XI_API_RATE_LIMIT_PER_SECOND` | `25` | Inbound per-client rate limit |
 | `XI_API_RATE_LIMIT_BURST` | `50` | Inbound per-client burst size |
 | `XI_API_MAX_CONCURRENCY` | `8` | Max simultaneous requests before `503` |
@@ -233,8 +230,10 @@ These variables are all optional and share the `XI_` prefix. The complete refere
 | `XI_NEO4J_DATABASE` | `neo4j` | Neo4j database (the instance ID on Aura) |
 | `XI_GROQ_API_KEY` | | Groq key for the AI narrative |
 | `XI_GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model |
-| `XI_AUTH0_DOMAIN` | | Domain for Auth0/Auth0 SSO validation (e.g. `dev-xxx.eu.auth0.com`) |
-| `XI_AUTH0_CLIENT_ID` | | Client ID for Auth0/Auth0 SSO validation |
+| `XI_REDIS_URL` | | Shared cache + rate limiter for multi-worker deployments |
+| `XI_AUTH0_DOMAIN` | | Auth0 tenant domain (e.g. `dev-xxx.eu.auth0.com`) |
+| `XI_AUTH0_CLIENT_ID` | | Auth0 application client ID |
+| `XI_AUTH0_AUDIENCE` | `api://default` | Auth0 API audience |
 
 ## License
 

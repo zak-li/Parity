@@ -10,7 +10,6 @@ __pycache__
 htmlcov
 .claude
 *.log
-charts
 scripts
 docs
 tests
