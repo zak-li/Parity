@@ -31,6 +31,7 @@ db = [
     "psycopg2-binary>=2.9.12,<3",
     "pymongo>=4.17.0,<5",
     "neo4j>=6.2.0,<7",
+    "alembic>=1.13,<2",
 ]
 ai = [
     "groq>=1.5.0,<2",
@@ -47,6 +48,7 @@ dev = [
     "psycopg2-binary>=2.9.12,<3",
     "pymongo>=4.17.0,<5",
     "neo4j>=6.2.0,<7",
+    "alembic>=1.13,<2",
     "groq>=1.5.0,<2",
     "ruff==0.15.20",
     "mypy>=2.1.0",

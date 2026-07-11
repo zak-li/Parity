@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import os
 
 from sqlalchemy import (
     JSON,
@@ -23,11 +24,11 @@ from core.models.enums import RiskLevel
 
 from .records import SimulationRecord
 
-_metadata = MetaData()
+metadata = MetaData()
 
-_simulation_runs = Table(
+simulation_runs = Table(
     "simulation_runs",
-    _metadata,
+    metadata,
     Column("id", String(32), primary_key=True),
     Column("created_at", DateTime(timezone=True), nullable=False, index=True),
     Column("foreign_currency", String(3), nullable=False),
@@ -79,15 +80,18 @@ class PostgresSimulationRepository:
             max_overflow=5,
             connect_args={"connect_timeout": connect_timeout},
         )
-        _metadata.create_all(self._engine)
+        # In production the schema is owned by Alembic migrations
+        # (`alembic upgrade head`); set XI_DB_AUTO_CREATE=0 to disable auto-create.
+        if os.environ.get("XI_DB_AUTO_CREATE", "1") == "1":
+            metadata.create_all(self._engine)
 
     def save(self, record: SimulationRecord) -> SimulationRecord:
         with self._engine.begin() as connection:
-            connection.execute(insert(_simulation_runs).values(**self._to_row(record)))
+            connection.execute(insert(simulation_runs).values(**self._to_row(record)))
         return record
 
     def get(self, record_id: str) -> SimulationRecord | None:
-        stmt = select(_simulation_runs).where(_simulation_runs.c.id == record_id)
+        stmt = select(simulation_runs).where(simulation_runs.c.id == record_id)
         with self._engine.connect() as connection:
             row = connection.execute(stmt).mappings().first()
         return self._from_row(row) if row else None
@@ -97,9 +101,9 @@ class PostgresSimulationRepository:
     ) -> SimulationRecord | None:
         pair = f"{foreign_currency}{domestic_currency}".upper()
         stmt = (
-            select(_simulation_runs)
-            .where(_simulation_runs.c.pair == pair)
-            .order_by(_simulation_runs.c.created_at.desc())
+            select(simulation_runs)
+            .where(simulation_runs.c.pair == pair)
+            .order_by(simulation_runs.c.created_at.desc())
             .limit(1)
         )
         with self._engine.connect() as connection:
@@ -112,11 +116,11 @@ class PostgresSimulationRepository:
         domestic_currency: str | None = None,
         limit: int = 50,
     ) -> list[SimulationRecord]:
-        stmt = select(_simulation_runs).order_by(_simulation_runs.c.created_at.desc())
+        stmt = select(simulation_runs).order_by(simulation_runs.c.created_at.desc())
         if foreign_currency:
-            stmt = stmt.where(_simulation_runs.c.foreign_currency == foreign_currency.upper())
+            stmt = stmt.where(simulation_runs.c.foreign_currency == foreign_currency.upper())
         if domestic_currency:
-            stmt = stmt.where(_simulation_runs.c.domestic_currency == domestic_currency.upper())
+            stmt = stmt.where(simulation_runs.c.domestic_currency == domestic_currency.upper())
         stmt = stmt.limit(max(limit, 0))
         with self._engine.connect() as connection:
             rows = connection.execute(stmt).mappings().all()

@@ -18,6 +18,10 @@ COPY db ./db
 COPY ai ./ai
 RUN pip install --upgrade pip && pip install ".[api,db,ai]"
 
+# Alembic migrations (run `alembic upgrade head` before starting in production).
+COPY alembic.ini ./
+COPY migrations ./migrations
+
 USER parity
 EXPOSE 8000
 
