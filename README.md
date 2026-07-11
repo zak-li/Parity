@@ -42,6 +42,7 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerab
 - [Features](#features)
 - [Dependencies](#dependencies)
 - [Quick Start](#quick-start)
+- [Docker](#docker)
 - [Core API](#core-api)
 - [Options](#options)
 - [Environment](#environment)
@@ -124,6 +125,16 @@ curl -X POST http://localhost:8000/api/v1/simulations \
        "domestic_currency": "EUR", "delivery_date": "2026-10-01",
        "target_margin_pct": 0.15, "domestic_rate": 0.021, "foreign_rate": 0.043}}'
 ```
+
+## Docker
+
+Run the API and a PostgreSQL backend with one command:
+
+```bash
+docker compose up --build
+```
+
+The service listens on `http://localhost:8000` (health check at `/health`). The image runs as a non-root user; published images are available on `ghcr.io/zak-li/parity`.
 
 ## Core API
 

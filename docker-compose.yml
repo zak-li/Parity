@@ -1,0 +1,32 @@
+services:
+  api:
+    build: .
+    image: parity-api
+    ports:
+      - "8000:8000"
+    environment:
+      XI_POSTGRES_DSN: postgresql+psycopg2://parity:parity@db:5432/parity
+      # Set XI_API_KEY to require authentication:
+      # XI_API_KEY: change-me
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: parity
+      POSTGRES_PASSWORD: parity
+      POSTGRES_DB: parity
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parity -d parity"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
