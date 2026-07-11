@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Inbound request guards**: per-client token-bucket rate limit (`429`),
+  concurrency cap (`503`), and request timeout (`504`), configurable via
+  `XI_API_*` variables.
+- **Observability**: `X-Request-ID` propagation, structured JSON logs, and a
+  Prometheus `GET /metrics` endpoint.
+- **Fallback FX provider** with a per-provider circuit breaker behind the
+  `FxDataProvider` port.
+- **Docker**: non-root image with healthcheck, `docker-compose` (API +
+  PostgreSQL), and a GHCR publish workflow.
+- **Alembic migrations** for the PostgreSQL schema; `create_all` is now gated
+  behind `XI_DB_AUTO_CREATE`.
+- `docs/MODELS.md` documenting model assumptions, limits, and numerical
+  validation; docstrings on the key quantitative functions.
+- CycloneDX SBOM artifact in the security workflow.
+
+### Changed
+- `GET /health` no longer exposes the package version (fingerprinting).
+- `Strict-Transport-Security` added to the security headers.
+- Package version is now single-sourced from the installed metadata.
+
 ## [0.7.0] - 2026-07-04
 
 ### Added

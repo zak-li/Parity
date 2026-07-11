@@ -211,6 +211,8 @@ These variables are all optional and share the `XI_` prefix. The complete refere
 | `XI_API_RATE_LIMIT_BURST` | `50` | Inbound per-client burst size |
 | `XI_API_MAX_CONCURRENCY` | `8` | Max simultaneous requests before `503` |
 | `XI_API_REQUEST_TIMEOUT_SECONDS` | `30` | Request timeout before `504` |
+| `XI_LOG_LEVEL` | `INFO` | JSON log level |
+| `XI_DB_AUTO_CREATE` | `1` | Set `0` in production; manage the schema with Alembic |
 | `XI_ALLOWED_FX_HOSTS` | `api.frankfurter.dev` | Data host allowlist (anti-SSRF) |
 | `XI_HTTP_TIMEOUT_SECONDS` | `10.0` | Data call timeout |
 | `XI_RATE_LIMIT_PER_SECOND` | `10.0` | Max request rate to the rate provider |
