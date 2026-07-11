@@ -99,6 +99,12 @@ def simulate_terminal_rates(
     student_t_dof: float | None = None,
     jumps: JumpParams | None = None,
 ) -> np.ndarray:
+    """Simulate delivery-date FX rates under a risk-neutral GBM.
+
+    ``S_T = spot * exp((mu - 0.5*sigma^2)*T + sigma*sqrt(T)*Z)`` with optional
+    Student-t shocks, Merton jumps, antithetic variates, or Sobol sampling.
+    Returns an array of ``n_sims`` terminal rates.
+    """
     if not np.isfinite(spot) or spot <= 0:
         raise SimulationError("The spot rate must be strictly positive.")
     if not np.isfinite(sigma_annual) or sigma_annual < 0:
