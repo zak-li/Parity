@@ -35,8 +35,6 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerab
   </picture>
 </p>
 
-<br>
-
 ## Table of Contents
 
 - [Features](#features)
@@ -52,7 +50,7 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerab
 
 The core simulates the delivery-date exchange rate by `Monte Carlo` (`GBM` with covered interest rate parity, optional `Heston`, `Student-t`, and `Merton` jumps), with volatility from `historical`, `EWMA`, or `GARCH(1,1)`. It turns the margin distribution into percentiles, loss probability, Expected Shortfall (`CVaR`), and a Vulnerability Score, then compares an unhedged position against a forward, an option, and a collar to recommend the optimal hedge.
 
-It also aggregates multi-currency portfolios and runs stress tests, `VaR` backtesting, and Office des Changes compliance checks. Everything is exposed through a hardened `FastAPI` service with optional `PostgreSQL`, `MongoDB`, and `Neo4j` persistence and a `Groq` AI narrative.
+It also aggregates multi-currency portfolios, runs stress tests, `VaR` backtesting, and Office des Changes compliance checks, and features **automated data ingestion (ETL)** from Shopify, WooCommerce, Stripe, and Odoo. Everything is exposed through a hardened `FastAPI` service protected by **Single Sign-On (Auth0/Auth0)** or API keys, with optional `PostgreSQL`, `MongoDB`, and `Neo4j` persistence and a `Groq` AI narrative.
 
 ## Dependencies
 
@@ -76,6 +74,7 @@ The following are optional and enable extra capabilities:
 | neo4j | Currency exposure graph |
 | groq | AI narrative generation |
 | python-dotenv | `.env` file loading |
+| PyJWT + cryptography | Auth0 / Auth0 Single Sign-On (SSO) |
 
 ## Quick Start
 
@@ -176,6 +175,15 @@ These endpoints run simulations and expose their results:
 | GET | `/api/v1/simulations/{id}` | Fetch a single persisted simulation |
 | GET | `/api/v1/exposure` | Currency exposure graph |
 
+These endpoints handle automated data ingestion (ETL) from E-commerce and ERP platforms:
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/v1/connectors/shopify/import` | Fetch sales/revenue from Shopify |
+| POST | `/api/v1/connectors/woocommerce/import` | Fetch orders from WooCommerce |
+| POST | `/api/v1/connectors/stripe/import` | Fetch successful charges from Stripe |
+| POST | `/api/v1/connectors/odoo/import` | Fetch purchase orders (costs) from Odoo ERP |
+
 These endpoints cover portfolio risk, hedging tools, stress testing, compliance, and backtesting:
 
 | Method | Endpoint | Description |
@@ -225,6 +233,8 @@ These variables are all optional and share the `XI_` prefix. The complete refere
 | `XI_NEO4J_DATABASE` | `neo4j` | Neo4j database (the instance ID on Aura) |
 | `XI_GROQ_API_KEY` | | Groq key for the AI narrative |
 | `XI_GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model |
+| `XI_AUTH0_DOMAIN` | | Domain for Auth0/Auth0 SSO validation (e.g. `dev-xxx.eu.auth0.com`) |
+| `XI_AUTH0_CLIENT_ID` | | Client ID for Auth0/Auth0 SSO validation |
 
 ## License
 

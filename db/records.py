@@ -101,3 +101,35 @@ def record_from_result(
         recommendation=result.recommendation,
         details=details,
     )
+
+
+@dataclass(frozen=True, slots=True)
+class ApiKeyRecord:
+    id: str
+    client_id: str
+    prefix: str
+    hashed_key: str
+    created_at: dt.datetime
+    expires_at: dt.datetime | None = None
+    revoked: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class ApiAuditLogRecord:
+    id: int | None
+    timestamp: dt.datetime
+    client_id: str
+    endpoint: str
+    method: str
+    status_code: int
+    processing_time_ms: float
+
+
+@dataclass(frozen=True, slots=True)
+class JobRunRecord:
+    id: str
+    created_at: dt.datetime
+    updated_at: dt.datetime
+    status: str
+    result_id: str | None = None
+    error: str | None = None
