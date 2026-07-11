@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import datetime as dt
+import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from fastapi.responses import JSONResponse
 
 from ai import Narrator
 from core.app.portfolio_engine import PortfolioRiskEngine
@@ -16,9 +18,21 @@ from core.models.ladder import CashflowTranche, simulate_ladder
 from core.models.models import OrderInput, SimulationResult
 from core.models.monitoring import change_alerts, evaluate_result_alerts
 from core.models.monte_carlo import JumpParams
-from db import SimulationRecord, SimulationRepository, record_from_result
+from db import (
+    JobRepository,
+    JobRunRecord,
+    SimulationRecord,
+    SimulationRepository,
+    record_from_result,
+)
 
-from .dependencies import get_fx_provider, get_narrator, get_repository, require_api_key
+from .dependencies import (
+    get_fx_provider,
+    get_job_repository,
+    get_narrator,
+    get_repository,
+    require_api_key,
+)
 from .schemas import (
     BacktestRequest,
     BacktestResponse,
@@ -124,13 +138,52 @@ def health() -> HealthResponse:
     return HealthResponse(status="ok")
 
 
+def _run_simulation_job(
+    job_id: str,
+    request: SimulationRequest,
+    provider: FxDataProvider,
+    repository: SimulationRepository,
+    job_repository: JobRepository,
+    narrator: Narrator,
+) -> None:
+    try:
+        job_repository.update_status(job_id, "IN_PROGRESS")
+        order = _to_order(request.order)
+        engine = _build_engine(request.options, provider)
+        result = engine.run(order)
+        record = repository.save(record_from_result(result))
+        job_repository.update_status(job_id, "COMPLETED", result_id=record.id)
+    except Exception as exc:
+        job_repository.update_status(job_id, "FAILED", error=str(exc))
+
+
 @router.post("/simulations", response_model=SimulationResponse)
 def run_simulation(
     request: SimulationRequest,
+    background_tasks: BackgroundTasks,
     provider: FxDataProvider = Depends(get_fx_provider),
     repository: SimulationRepository = Depends(get_repository),
+    job_repository: JobRepository = Depends(get_job_repository),
     narrator: Narrator = Depends(get_narrator),
-) -> SimulationResponse:
+):
+    if request.order.n_simulations > 10000:
+        job_id = uuid.uuid4().hex
+        job_repository.save(
+            JobRunRecord(
+                id=job_id,
+                created_at=dt.datetime.now(dt.UTC),
+                updated_at=dt.datetime.now(dt.UTC),
+                status="PENDING",
+            )
+        )
+        background_tasks.add_task(
+            _run_simulation_job, job_id, request, provider, repository, job_repository, narrator
+        )
+        return JSONResponse(
+            status_code=status.HTTP_202_ACCEPTED,
+            content={"detail": "Simulation is processing.", "job_id": job_id},
+        )
+
     order = _to_order(request.order)
     engine = _build_engine(request.options, provider)
     result = engine.run(order)
@@ -157,6 +210,25 @@ def run_simulation(
         record_id = record.id
 
     return _to_simulation_response(result, change, narrative, record_id)
+
+
+@router.get("/simulations/jobs/{job_id}")
+def get_job_status(
+    job_id: str,
+    job_repository: JobRepository = Depends(get_job_repository),
+):
+    job = job_repository.get(job_id)
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found.")
+
+    return {
+        "id": job.id,
+        "status": job.status,
+        "result_id": job.result_id,
+        "error": job.error,
+        "created_at": job.created_at.isoformat(),
+        "updated_at": job.updated_at.isoformat(),
+    }
 
 
 @router.get("/simulations/history", response_model=list[SimulationRecordResponse])

@@ -14,7 +14,9 @@ from core.models.exceptions import (
 )
 
 from .guards import install_request_guards
+from .middleware import install_audit_logging
 from .observability import install_observability
+from .routers import connectors
 from .routes import health_router, router
 
 _SECURITY_HEADERS = {
@@ -54,7 +56,9 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router)
     app.include_router(router)
+    app.include_router(connectors.router)
     install_request_guards(app)
+    install_audit_logging(app)
     install_observability(app)
     return app
 

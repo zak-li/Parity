@@ -2,21 +2,36 @@ from __future__ import annotations
 
 import logging
 
-from .base import SimulationRepository
+from .base import AuthRepository, JobRepository, SimulationRepository
 from .composite import CompositeSimulationRepository, SimulationSink
 from .config import PersistenceConfig, load_persistence_config
-from .memory import InMemorySimulationRepository
-from .records import SimulationRecord, record_from_result
+from .memory import InMemoryAuthRepository, InMemoryJobRepository, InMemorySimulationRepository
+from .records import (
+    ApiAuditLogRecord,
+    ApiKeyRecord,
+    JobRunRecord,
+    SimulationRecord,
+    record_from_result,
+)
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
+    "ApiAuditLogRecord",
+    "ApiKeyRecord",
+    "AuthRepository",
     "CompositeSimulationRepository",
+    "InMemoryAuthRepository",
+    "InMemoryJobRepository",
     "InMemorySimulationRepository",
+    "JobRepository",
+    "JobRunRecord",
     "PersistenceConfig",
     "SimulationRecord",
     "SimulationRepository",
     "SimulationSink",
+    "build_auth_repository",
+    "build_job_repository",
     "build_repository",
     "load_persistence_config",
     "record_from_result",
@@ -67,3 +82,35 @@ def build_repository(config: PersistenceConfig | None = None) -> SimulationRepos
     if secondaries:
         return CompositeSimulationRepository(primary, secondaries)
     return primary
+
+
+def build_auth_repository(config: PersistenceConfig | None = None) -> AuthRepository:
+    config = config or load_persistence_config()
+    if config.postgres_enabled:
+        try:
+            from sqlalchemy import create_engine
+
+            from .postgres import PostgresAuthRepository, _make_url
+
+            engine = create_engine(_make_url(config.postgres_dsn), pool_size=5, max_overflow=5)  # type: ignore[arg-type]
+            return PostgresAuthRepository(engine)
+        except Exception as exc:
+            logger.warning("postgres_auth_unavailable", extra={"error": str(exc)})
+
+    return InMemoryAuthRepository()
+
+
+def build_job_repository(config: PersistenceConfig | None = None) -> JobRepository:
+    config = config or load_persistence_config()
+    if config.postgres_enabled:
+        try:
+            from sqlalchemy import create_engine
+
+            from .postgres import PostgresJobRepository, _make_url
+
+            engine = create_engine(_make_url(config.postgres_dsn), pool_size=5, max_overflow=5)  # type: ignore[arg-type]
+            return PostgresJobRepository(engine)
+        except Exception as exc:
+            logger.warning("postgres_job_unavailable", extra={"error": str(exc)})
+
+    return InMemoryJobRepository()

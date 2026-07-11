@@ -116,6 +116,10 @@ def _env_hosts(name: str, default: frozenset[str]) -> frozenset[str]:
     return hosts
 
 
+def _env_str(name: str, default: str | None = None) -> str | None:
+    return os.environ.get(f"{_ENV_PREFIX}{name}", default)
+
+
 @dataclass(frozen=True, slots=True)
 class RuntimeConfig:
     http_timeout_seconds: float = field(
@@ -144,6 +148,11 @@ class RuntimeConfig:
     )
     allowed_fx_hosts: frozenset[str] = field(
         default_factory=lambda: _env_hosts("ALLOWED_FX_HOSTS", frozenset({"api.frankfurter.dev"}))
+    )
+    auth0_domain: str | None = field(default_factory=lambda: _env_str("AUTH0_DOMAIN", None))
+    auth0_client_id: str | None = field(default_factory=lambda: _env_str("AUTH0_CLIENT_ID", None))
+    auth0_audience: str = field(
+        default_factory=lambda: _env_str("AUTH0_AUDIENCE", "api://default") or "api://default"
     )
 
 
