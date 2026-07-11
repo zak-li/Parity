@@ -38,10 +38,11 @@ class Auth0Authenticator:
                 issuer=f"https://{self._domain}/",
             )
 
-            # Auth0 uses 'azp' (Authorized Party) to store the Client ID
-            if ("azp" in payload and payload["azp"] != self._client_id) and (
-                "cid" in payload and payload["cid"] != self._client_id or "cid" not in payload
-            ):
+            # Signature, audience, issuer and expiry are already enforced by
+            # jwt.decode above. When the token carries an authorized-party claim
+            # (`azp`), it must additionally match our configured Client ID.
+            azp = payload.get("azp")
+            if azp is not None and azp != self._client_id:
                 raise SecurityError("Token was not issued for this Client ID.")
 
             return payload

@@ -62,8 +62,11 @@ def configure_logging(level: str | None = None) -> None:
 
 
 def _route_template(request: Request) -> str:
+    # Use the matched route template (low cardinality). Unmatched paths (404,
+    # scanners) collapse to a constant so an attacker can't inflate the metric
+    # registry with unbounded label values.
     route = request.scope.get("route")
-    return getattr(route, "path", None) or request.url.path
+    return getattr(route, "path", None) or "__unmatched__"
 
 
 def install_observability(app: FastAPI) -> None:

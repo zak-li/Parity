@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
-import hashlib
+import logging
 import os
 import secrets
 from functools import lru_cache
@@ -11,6 +11,7 @@ from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBea
 
 from ai import Narrator, build_narrator
 from api.auth0_auth import Auth0Authenticator
+from api.security import hash_api_key
 from core.config import load_runtime_config
 from core.io.fx import FrankfurterFxDataProvider, FxDataProvider
 from core.models.exceptions import SecurityError
@@ -23,6 +24,8 @@ from db import (
     build_repository,
 )
 from db.records import ApiKeyRecord
+
+logger = logging.getLogger(__name__)
 
 _API_KEY_ENV = "XI_API_KEY"
 _api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -63,8 +66,12 @@ def get_fx_provider() -> FxDataProvider:
             rate_limiter = RedisTokenBucketRateLimiter(
                 r, "fx:rl", config.rate_limit_per_second, config.rate_limit_burst
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "Redis unavailable (%s); falling back to in-process cache and rate limiter.", exc
+            )
+            cache = None
+            rate_limiter = None
 
     return FrankfurterFxDataProvider(cache=cache, rate_limiter=rate_limiter)
 
@@ -127,8 +134,7 @@ def require_api_key(
             detail="Invalid or missing API key or Auth0 Bearer token.",
         )
 
-    hashed = hashlib.pbkdf2_hmac("sha256", api_key.encode(), b"parity_api", 100000).hex()
-    key_record = repo.get_api_key(hashed)
+    key_record = repo.get_api_key(hash_api_key(api_key))
 
     if not key_record or key_record.revoked:
         raise HTTPException(
