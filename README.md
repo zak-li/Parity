@@ -24,7 +24,7 @@
 
 > **Parity** (codename `Xi`): a currency risk decision engine for importers and e-commerce merchants. It quantifies FX exposure, scores vulnerability, and recommends the optimal hedge directly from the numbers.
 
-Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerability Score** from 0 to 100, and recommends the optimal hedge such as a forward, an option, or a collar, with its cost and benefit fully quantified.
+Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerability Score** from 0 to 100, and recommends the optimal hedge such as a `forward`, an `option`, or a `collar`, with its cost and benefit fully quantified.
 
 <br>
 
@@ -40,46 +40,47 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerab
 - [Features](#features)
 - [Quick Start](#quick-start)
 - [API](#api)
-- [Configuration](#configuration)
+- [Observability](#observability)
+- [Settings](#settings)
 - [License](#license)
 
 ## Features
 
-The core simulates the delivery-date exchange rate by `Monte Carlo` (`GBM` under covered interest rate parity, with optional `Heston`, `Student-t`, and `Merton` jumps) and estimates volatility with `historical`, `EWMA`, or `GARCH(1,1)`. From the resulting margin distribution it derives percentiles, loss probability, Expected Shortfall (`CVaR`), and a 0 to 100 Vulnerability Score.
+Parity turns raw currency exposure into a decision. It simulates the delivery-date exchange rate across hundreds of thousands of scenarios, captures volatility clustering and fat-tailed, jump-prone markets, and distils the outcome into margin percentiles, loss probability, tail risk (`Expected Shortfall`), and a 0 to 100 `Vulnerability Score`.
 
-It then compares an unhedged position against a forward, an option, and a zero-cost collar to recommend the optimal hedge. The same engine extends to multi-currency portfolios, cashflow ladders, stress tests, `VaR` and Expected Shortfall backtesting, and Office des Changes compliance checks.
+It then prices and compares hedging instruments, a `forward`, an `option`, and a `zero-cost collar`, to recommend the optimal hedge with its cost and benefit quantified. The same engine aggregates multi-currency portfolios with per-currency risk attribution, builds `layered hedges` across payment schedules, runs historical and hypothetical `stress tests`, backtests its own risk models, and checks regulatory hedging eligibility.
 
-Everything is exposed through a hardened `FastAPI` service with Auth0 SSO or API keys, per-client rate limiting, structured logs, and Prometheus metrics. It ingests exposure automatically from Shopify, WooCommerce, Stripe, and Odoo, and offers optional `PostgreSQL`, `MongoDB`, and `Neo4j` persistence plus a `Groq` AI narrative.
+Operationally, it ingests exposure automatically from `e-commerce` and `ERP` platforms, secures access with `single sign-on` or `per-client keys`, and ships production-ready with `rate limiting`, `structured logging`, `metrics`, and an optional `AI narrative` that explains each result in plain language.
 
 ## Quick Start
-
-### Dependencies
 
 The engine core requires the following packages:
 
 | Package | Version |
 |---|---|
-| Python | 3.11+ |
-| NumPy | 2.4+ |
-| SciPy | 1.17+ |
-| pandas | 3.0+ |
-| requests | 2.34+ |
+| `Python` | 3.11+ |
+| `NumPy` | 2.4+ |
+| `SciPy` | 1.17+ |
+| `pandas` | 3.0+ |
+| `requests` | 2.34+ |
 
 The following are optional and enable extra capabilities:
 
 | Component | Role |
 |---|---|
-| FastAPI + Uvicorn | Hardened REST API service |
-| SQLAlchemy + psycopg2 | PostgreSQL structured history |
-| pymongo | MongoDB result documents |
-| neo4j | Currency exposure graph |
-| groq | AI narrative generation |
-| python-dotenv | `.env` file loading |
-| PyJWT + cryptography | Auth0 Single Sign-On (SSO) |
-| prometheus-client | Prometheus `/metrics` endpoint |
-| redis | Shared cache + rate limiter (multi-worker) |
+| `FastAPI` + `Uvicorn` | Hardened REST API service |
+| `SQLAlchemy` + `psycopg2` | `PostgreSQL` structured history |
+| `pymongo` | `MongoDB` result documents |
+| `neo4j` | Currency exposure graph |
+| `groq` | `AI` narrative generation |
+| `python-dotenv` | `.env` file loading |
+| `PyJWT` + `cryptography` | `Auth0` Single Sign-On (SSO) |
+| `prometheus-client` | Prometheus `/metrics` endpoint |
+| `redis` | Shared cache + rate limiter (multi-worker) |
 
-### Install and run
+### Setup
+
+Install from source:
 
 ```bash
 git clone https://github.com/zak-li/Parity.git
@@ -92,9 +93,9 @@ pytest -q                           # verify the install
 uvicorn api.main:app --host 0.0.0.0 --port 8000
 ```
 
-The engine runs with zero configuration using free ECB rates and in-memory storage. The API is then live at `http://localhost:8000`, with interactive documentation at `/docs`.
+The engine runs with zero configuration using free `ECB` rates and in-memory storage. The API is then live at `http://localhost:8000`, with interactive documentation at `/docs`.
 
-### First request
+Try it with a request:
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/simulations \
@@ -122,17 +123,17 @@ The response scores the exposure and ranks the hedges (trimmed):
 }
 ```
 
-Model assumptions, limits, and numerical validation are documented in [`docs/MODELS.md`](docs/MODELS.md).
+The modeling assumptions, limits, and validation are covered in [`docs/MODELS.md`](docs/MODELS.md).
 
 ### Docker
 
-Run the API and a PostgreSQL backend with one command:
+Launch everything with Docker Compose:
 
 ```bash
 docker compose up --build
 ```
 
-The service listens on `http://localhost:8000` (health check at `/health`) and runs as a non-root user; published images are available on `ghcr.io/zak-li/parity`. With PostgreSQL the schema is managed by Alembic, so set `XI_DB_AUTO_CREATE=0` and apply migrations before starting:
+The service listens on `http://localhost:8000` (health check at `/health`) and runs as a non-root user; published images are available on `ghcr.io/zak-li/parity`. With `PostgreSQL` the schema is managed by `Alembic`, so set `XI_DB_AUTO_CREATE=0` and apply migrations before starting:
 
 ```bash
 alembic upgrade head
@@ -140,7 +141,7 @@ alembic upgrade head
 
 ## API
 
-The API is rooted at `/api/v1`, with Swagger docs at `/docs` and Prometheus metrics at `/metrics`. Once a credential is configured (see [Authentication](#authentication)), every `/api/v1` route requires it, while `/health` and `/metrics` stay public.
+The API is rooted at `/api/v1`, with Swagger docs at `/docs` and Prometheus metrics at `/metrics`. Once a credential is configured (`XI_API_KEY`, a per-client key, or `Auth0`), every `/api/v1` route requires it, while `/health` and `/metrics` stay public.
 
 These endpoints run simulations and expose their results:
 
@@ -156,22 +157,22 @@ These endpoints ingest exposure automatically (ETL) from e-commerce and ERP plat
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/v1/connectors/shopify/import` | Fetch sales/revenue from Shopify |
-| POST | `/api/v1/connectors/woocommerce/import` | Fetch orders from WooCommerce |
-| POST | `/api/v1/connectors/stripe/import` | Fetch successful charges from Stripe |
-| POST | `/api/v1/connectors/odoo/import` | Fetch purchase orders (costs) from Odoo ERP |
+| POST | `/api/v1/connectors/shopify/import` | Fetch sales/revenue from `Shopify` |
+| POST | `/api/v1/connectors/woocommerce/import` | Fetch orders from `WooCommerce` |
+| POST | `/api/v1/connectors/stripe/import` | Fetch successful charges from `Stripe` |
+| POST | `/api/v1/connectors/odoo/import` | Fetch purchase orders (costs) from `Odoo` ERP |
 
 These endpoints cover portfolio risk, hedging tools, stress testing, compliance, and backtesting:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/v1/portfolio/simulations` | Multi-currency portfolio risk with per-currency CVaR attribution |
+| POST | `/api/v1/portfolio/simulations` | Multi-currency portfolio risk with per-currency `CVaR` attribution |
 | POST | `/api/v1/ladder/simulations` | Cashflow ladder: multi-date exposure and layered hedging |
-| POST | `/api/v1/hedge/greeks` | Closed-form FX option Greeks (Garman-Kohlhagen) |
+| POST | `/api/v1/hedge/greeks` | Closed-form FX option Greeks (`Garman-Kohlhagen`) |
 | POST | `/api/v1/stress-tests` | Deterministic and historical stress tests |
 | POST | `/api/v1/compliance` | Office des Changes assessment (indicative) |
-| POST | `/api/v1/backtests/var` | VaR model backtesting with the Kupiec test |
-| POST | `/api/v1/backtests/es` | Expected Shortfall backtest (Acerbi-Szekely) |
+| POST | `/api/v1/backtests/var` | `VaR` model backtesting with the `Kupiec` test |
+| POST | `/api/v1/backtests/es` | Expected Shortfall backtest (`Acerbi-Szekely`) |
 
 ### Options
 
@@ -185,26 +186,11 @@ The `options` block of `POST /simulations` selects the modeling method. All fiel
 | `sampling_method` | `pseudo_random`, `sobol` | `pseudo_random` |
 | `jumps` | object with `intensity_annual`, `mean_log_jump`, `std_log_jump` | none |
 
-## Configuration
+## Observability
 
-### Authentication
+Every request carries an `X-Request-ID` (echoed from the caller or generated) bound to structured `JSON` logs, so a single request can be traced end to end. `Prometheus` metrics such as request counts and latency histograms, labelled by method, route template, and status, are served at `GET /metrics`, which should be restricted to an internal network in production.
 
-Authentication is off by default for zero-config local use, and turns on as soon as a credential is configured. Setting `XI_API_KEY` requires that master key in the `X-API-Key` header.
-
-For multiple clients, set a secret `XI_API_KEY_PEPPER` and mint revocable, optionally expiring keys with the CLI. Only the HMAC-SHA256 hash is stored, never the key itself:
-
-```bash
-python -m api.keys create --client acme --days 90   # prints the key once
-python -m api.keys revoke --id <key-id>
-```
-
-For single sign-on, set the `XI_AUTH0_*` variables. Callers then send a Bearer token (`Authorization: Bearer <jwt>`) that is validated against Auth0's JWKS with RS256, audience, issuer, and expiry checks. Every request is also rate-limited per client and bounded by a concurrency cap and a timeout.
-
-### Observability
-
-Every request carries an `X-Request-ID` (echoed from the caller or generated) bound to structured JSON logs, so a single request can be traced end to end. Prometheus metrics such as request counts and latency histograms, labelled by method, route template, and status, are served at `GET /metrics`, which should be restricted to an internal network in production.
-
-### Environment
+## Settings
 
 These variables are all optional and share the `XI_` prefix. The complete reference is in [`.env.example`](.env.example).
 
