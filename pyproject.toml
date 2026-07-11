@@ -24,6 +24,7 @@ dotenv = [
 api = [
     "fastapi>=0.139.0,<1",
     "uvicorn>=0.50.0,<1",
+    "prometheus-client>=0.21,<1",
 ]
 db = [
     "sqlalchemy>=2.0.51,<3",
@@ -40,6 +41,7 @@ dev = [
     "python-dotenv>=1.2.2,<2",
     "fastapi>=0.139.0,<1",
     "uvicorn>=0.50.0,<1",
+    "prometheus-client>=0.21,<1",
     "httpx>=0.28.1,<1",
     "sqlalchemy>=2.0.51,<3",
     "psycopg2-binary>=2.9.12,<3",
