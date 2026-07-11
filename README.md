@@ -22,9 +22,11 @@
 
 ## Parity
 
-> **Parity** (codename `Xi`): a currency risk decision engine for importers and e-commerce merchants. It quantifies FX exposure, scores vulnerability, and recommends the optimal hedge directly from the numbers.
+> **Parity** (codename `Xi`): Built an institutional Monte Carlo decision engine that scores currency-risk vulnerability (0–100) for importers and recommends cost-optimal hedges with fully priced costs, including forwards, options, and zero-cost collars. The platform seamlessly ingests transactional risk exposure through modular connectors for Shopify, WooCommerce, Stripe, and Odoo. Its simulation core is driven by advanced stochastic models incorporating GBM, Heston, Merton jumps, Student-t tails, Sobol sampling, GARCH/DCC-GARCH volatility, and Garman-Kohlhagen pricing with full FX Greeks.
 
-Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerability Score** from 0 to 100, and recommends the optimal hedge such as a forward, an option, or a collar, with its cost and benefit fully quantified.
+To navigate complex currency markets, the system produces critical metrics such as VaR, CVaR, CVaR-optimal hedge ratios, and loss probabilities. It natively supports correlated multi-currency portfolios along with Euler risk attribution, cashflow ladders, crisis replay, reverse stress testing, ES backtesting, and regulatory compliance. The backend serves as an AI-driven risk advisor, leveraging Groq to generate actionable, natural-language risk narratives directly from the simulation outputs.
+
+The production-grade infrastructure relies on a secure, hexagonal-architecture API protected by Auth0 Single Sign-On (SSO). It delegates caching and rate limiting to Redis, while ensuring multi-store persistence across PostgreSQL, MongoDB, and Neo4j for deep exposure graph analytics. The entire platform is fully containerized, rigorously tested, and automatically validated through robust CI/CD pipelines.
 
 <br>
 
@@ -36,8 +38,6 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerab
 </p>
 
 ## Table of Contents
-
-- [Features](#features)
 - [Dependencies](#dependencies)
 - [Quick Start](#quick-start)
 - [Docker](#docker)
@@ -46,11 +46,6 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerab
 - [Environment](#environment)
 - [License](#license)
 
-## Features
-
-The core simulates the delivery-date exchange rate by `Monte Carlo` (`GBM` with covered interest rate parity, optional `Heston`, `Student-t`, and `Merton` jumps), with volatility from `historical`, `EWMA`, or `GARCH(1,1)`. It turns the margin distribution into percentiles, loss probability, Expected Shortfall (`CVaR`), and a Vulnerability Score, then compares an unhedged position against a forward, an option, and a collar to recommend the optimal hedge.
-
-It also aggregates multi-currency portfolios, runs stress tests, `VaR` backtesting, and Office des Changes compliance checks, and features **automated data ingestion (ETL)** from Shopify, WooCommerce, Stripe, and Odoo. Everything is exposed through a hardened `FastAPI` service protected by **Single Sign-On (Auth0/Auth0)** or API keys, with optional `PostgreSQL`, `MongoDB`, and `Neo4j` persistence and a `Groq` AI narrative.
 
 ## Dependencies
 
@@ -74,7 +69,7 @@ The following are optional and enable extra capabilities:
 | neo4j | Currency exposure graph |
 | groq | AI narrative generation |
 | python-dotenv | `.env` file loading |
-| PyJWT + cryptography | Auth0 / Auth0 Single Sign-On (SSO) |
+| PyJWT + cryptography | Auth0 Single Sign-On (SSO) |
 
 ## Quick Start
 
@@ -233,8 +228,8 @@ These variables are all optional and share the `XI_` prefix. The complete refere
 | `XI_NEO4J_DATABASE` | `neo4j` | Neo4j database (the instance ID on Aura) |
 | `XI_GROQ_API_KEY` | | Groq key for the AI narrative |
 | `XI_GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model |
-| `XI_AUTH0_DOMAIN` | | Domain for Auth0/Auth0 SSO validation (e.g. `dev-xxx.eu.auth0.com`) |
-| `XI_AUTH0_CLIENT_ID` | | Client ID for Auth0/Auth0 SSO validation |
+| `XI_AUTH0_DOMAIN` | | Domain for Auth0 SSO validation (e.g. `dev-xxx.eu.auth0.com`) |
+| `XI_AUTH0_CLIENT_ID` | | Client ID for Auth0 SSO validation |
 
 ## License
 
