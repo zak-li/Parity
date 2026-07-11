@@ -4,7 +4,6 @@ import datetime as dt
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-import core
 from ai import Narrator
 from core.app.portfolio_engine import PortfolioRiskEngine
 from core.app.risk_engine import MarginRiskEngine
@@ -122,7 +121,7 @@ def _to_simulation_response(
 
 @health_router.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
-    return HealthResponse(status="ok", version=core.__version__)
+    return HealthResponse(status="ok")
 
 
 @router.post("/simulations", response_model=SimulationResponse)

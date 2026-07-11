@@ -13,6 +13,7 @@ from core.models.exceptions import (
     SecurityError,
 )
 
+from .guards import install_request_guards
 from .routes import health_router, router
 
 _SECURITY_HEADERS = {
@@ -20,6 +21,7 @@ _SECURITY_HEADERS = {
     "X-Frame-Options": "DENY",
     "Cache-Control": "no-store",
     "Referrer-Policy": "no-referrer",
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
 }
 
 _ERROR_STATUS: tuple[tuple[type[MarginProtectorError], int], ...] = (
@@ -51,6 +53,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router)
     app.include_router(router)
+    install_request_guards(app)
     return app
 
 
