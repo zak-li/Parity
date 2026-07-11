@@ -26,3 +26,13 @@ jobs:
           pip install -e ".[dev]"
       - name: Audit dependencies
         run: pip-audit --progress-spinner off --skip-editable
+
+      - name: Generate SBOM (CycloneDX)
+        run: pip-audit --progress-spinner off --skip-editable --format cyclonedx-json --output sbom.json || true
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-cyclonedx
+          path: sbom.json
+          if-no-files-found: ignore
