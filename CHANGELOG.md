@@ -30,6 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Strict-Transport-Security` added to the security headers.
 - Package version is now single-sourced from the installed metadata.
 
+### Dependencies
+- Bump `redis` 5.x → 8.x, `cryptography` 41 → 49, `PyJWT` 2.8 → 2.13,
+  `fastapi` 0.139.0 → 0.139.2, `ruff` 0.15.21 → 0.15.22, and `mypy`
+  2.2 → 2.3.
+- Relax the `build` dev pin to `>=1.5.0` (1.5.1 was yanked from PyPI),
+  restoring a resolvable `pip install -e ".[dev]"` and unblocking CI.
+
 ## [0.7.0] - 2026-07-04
 
 ### Added
