@@ -12,6 +12,7 @@ from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBea
 from ai import Narrator, build_narrator
 from api.auth0_auth import Auth0Authenticator
 from api.security import hash_api_key
+from core.app.tracking import SimulationTracker, build_tracker
 from core.config import load_runtime_config
 from core.io.fx import FrankfurterFxDataProvider, FxDataProvider
 from core.models.exceptions import SecurityError
@@ -84,6 +85,11 @@ def get_repository() -> SimulationRepository:
 @lru_cache(maxsize=1)
 def get_narrator() -> Narrator:
     return build_narrator()
+
+
+@lru_cache(maxsize=1)
+def get_tracker() -> SimulationTracker:
+    return build_tracker()
 
 
 def require_api_key(

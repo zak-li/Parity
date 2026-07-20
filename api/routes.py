@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from ai import Narrator
 from core.app.portfolio_engine import PortfolioRiskEngine
 from core.app.risk_engine import MarginRiskEngine
+from core.app.tracking import SimulationTracker
 from core.io.fx import FxDataProvider
 from core.models import market_stats, volatility
 from core.models.backtesting import backtest_expected_shortfall, backtest_parametric_var
@@ -31,6 +32,7 @@ from .dependencies import (
     get_job_repository,
     get_narrator,
     get_repository,
+    get_tracker,
     require_api_key,
 )
 from .schemas import (
@@ -165,6 +167,7 @@ def run_simulation(
     repository: SimulationRepository = Depends(get_repository),
     job_repository: JobRepository = Depends(get_job_repository),
     narrator: Narrator = Depends(get_narrator),
+    tracker: SimulationTracker = Depends(get_tracker),
 ):
     if request.order.n_simulations > 10000:
         job_id = uuid.uuid4().hex
@@ -187,6 +190,9 @@ def run_simulation(
     order = _to_order(request.order)
     engine = _build_engine(request.options, provider)
     result = engine.run(order)
+
+    # Log the run to MLflow (no-op unless XI_MLFLOW_TRACKING_URI is set).
+    background_tasks.add_task(tracker.track, result)
 
     previous = repository.latest_for_pair(order.foreign_currency, order.domestic_currency)
     change = []

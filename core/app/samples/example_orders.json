@@ -1,0 +1,20 @@
+[
+  {
+    "amount_foreign": 100000,
+    "foreign_currency": "USD",
+    "domestic_currency": "EUR",
+    "delivery_date": "2026-12-31",
+    "target_margin_pct": 0.2,
+    "min_acceptable_margin_pct": 0.05,
+    "n_simulations": 20000
+  },
+  {
+    "amount_foreign": 50000,
+    "foreign_currency": "GBP",
+    "domestic_currency": "EUR",
+    "delivery_date": "2026-11-15",
+    "target_margin_pct": 0.15,
+    "min_acceptable_margin_pct": 0.03,
+    "n_simulations": 20000
+  }
+]

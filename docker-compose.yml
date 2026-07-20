@@ -1,32 +1,100 @@
+# Parity backend stack. Uses host networking so every service is reachable at
+# 127.0.0.1:<port> on the host and at <host-ip>:<port> from other machines.
+# Databases stay in the cloud (configured via .env).
 services:
+  # ---- API (FastAPI engines) ----
   api:
     build: .
     image: parity-api
-    ports:
-      - "8000:8000"
+    network_mode: host
+    env_file:
+      - .env
+    # On the VM the engines reach the co-located services over loopback.
     environment:
-      XI_POSTGRES_DSN: postgresql+psycopg2://parity:parity@db:5432/parity
-      # Set XI_API_KEY to require authentication:
-      # XI_API_KEY: change-me
+      XI_REDIS_URL: redis://127.0.0.1:6379/0
+      XI_MLFLOW_TRACKING_URI: http://127.0.0.1:5000
+      XI_SPARK_MASTER: spark://127.0.0.1:7077
     depends_on:
-      db:
+      redis:
         condition: service_healthy
+      mlflow:
+        condition: service_started
+    mem_limit: 640m
     restart: unless-stopped
 
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: parity
-      POSTGRES_PASSWORD: parity
-      POSTGRES_DB: parity
+  # ---- Redis (FX cache + rate limiter for the engines) ----
+  redis:
+    image: redis:7-alpine
+    network_mode: host
+    command: ["redis-server", "--port", "6379", "--save", "60", "1"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U parity -d parity"]
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - redisdata:/data
+    mem_limit: 192m
+    restart: unless-stopped
+
+  # ---- MLflow tracking server ----
+  mlflow:
+    build: ./deploy/mlflow
+    image: parity-mlflow
+    network_mode: host
+    volumes:
+      - mlflowdata:/mlflow
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://127.0.0.1:5000/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    mem_limit: 1g
+    restart: unless-stopped
+
+  # ---- Apache Spark (standalone master) ----
+  spark-master:
+    image: apache/spark:3.5.3
+    network_mode: host
+    command:
+      - /opt/spark/bin/spark-class
+      - org.apache.spark.deploy.master.Master
+      - --host
+      - 0.0.0.0
+      - --port
+      - "7077"
+      - --webui-port
+      - "8080"
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/127.0.0.1/7077' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    mem_limit: 768m
+    restart: unless-stopped
+
+  # ---- Apache Spark (worker) ----
+  spark-worker:
+    image: apache/spark:3.5.3
+    network_mode: host
+    command:
+      - /opt/spark/bin/spark-class
+      - org.apache.spark.deploy.worker.Worker
+      - spark://127.0.0.1:7077
+      - --cores
+      - "2"
+      - --memory
+      - 1G
+      - --webui-port
+      - "8081"
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    mem_limit: 1400m
     restart: unless-stopped
 
 volumes:
-  pgdata:
+  redisdata:
+  mlflowdata:

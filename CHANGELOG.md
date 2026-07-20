@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-07-21
+
+### Added
+- **Browser-SPA authentication**: Auth0 SSO (RS256 Bearer tokens with `aud` /
+  `iss` / `azp` validation) alongside an alternative developer API-key path, so
+  a web dashboard can sign in either way. A single API dependency accepts the
+  Auth0 Bearer token or the `X-API-Key` header.
+- **Configurable CORS** on the API via `XI_CORS_ALLOW_ORIGINS` (disabled when
+  unset).
+- **MLflow experiment tracking** (optional, `[mlflow]`) in `core/app/tracking.py`:
+  each simulation is logged as a run with its parameters and risk metrics when
+  `XI_MLFLOW_TRACKING_URI` is set (no-op otherwise; runs in a background task so
+  tracking never blocks or breaks a request).
+- **Apache Spark batch simulations** (optional, `[spark]`) in
+  `core/app/distributed.py`: `python -m core.app.distributed` scores a book of
+  orders in parallel, running the same `MarginRiskEngine` on each Spark task.
+- **Backend stack deployment**: `docker-compose.yml` stands up the API, Redis,
+  an MLflow server, and a Spark cluster on host networking (services reachable
+  at `127.0.0.1` on the host and `<ip>` remotely; databases stay in the cloud).
+  `scripts/deploy_vm.sh` provisions it over SSH.
+
+### Fixed
+- **Redis was silently ignored** for the FX cache and rate limiter: a
+  Redis-backed instance is "falsy" (`__len__ == 0`), so the `cache or …` /
+  `rate_limiter or …` fallbacks dropped it and used the in-process versions.
+  Now selected with `is not None`.
+
+### Security
+- **Enabled Row Level Security** on all public Supabase tables, closing the
+  PostgREST `anon`/`authenticated` exposure the Supabase Advisor flagged
+  (`scripts/supabase_rls_fix.sql`). Owner (server) connections are unaffected.
+
 ## [0.8.0] - 2026-07-18
 
 ### Added
@@ -103,7 +135,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AI narrative.** Optional `Groq` narrative generation (import-guarded).
 - **Tooling.** Test suite (361 tests) and GitHub Actions CI on Python 3.11/3.12.
 
-[Unreleased]: https://github.com/zak-li/Parity/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/zak-li/Parity/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/zak-li/Parity/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/zak-li/Parity/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/zak-li/Parity/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/zak-li/Parity/compare/v0.6.0...v0.6.1

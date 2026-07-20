@@ -31,13 +31,24 @@ class FrankfurterFxDataProvider:
         self._session = session or build_secure_session(self._config, allowlist)
         self._timeout = self._config.http_timeout_seconds
         self._max_response_bytes = self._config.http_max_response_bytes
-        self._cache = cache or TTLCache(
-            ttl_seconds=self._config.cache_ttl_seconds,
-            max_entries=self._config.cache_max_entries,
+        # Use `is not None` (not truthiness): a Redis-backed cache/limiter can be
+        # "falsy" (e.g. __len__ == 0), which would silently drop the injected
+        # instance and fall back to the in-process one.
+        self._cache = (
+            cache
+            if cache is not None
+            else TTLCache(
+                ttl_seconds=self._config.cache_ttl_seconds,
+                max_entries=self._config.cache_max_entries,
+            )
         )
-        self._rate_limiter = rate_limiter or TokenBucketRateLimiter(
-            rate_per_second=self._config.rate_limit_per_second,
-            capacity=self._config.rate_limit_burst,
+        self._rate_limiter = (
+            rate_limiter
+            if rate_limiter is not None
+            else TokenBucketRateLimiter(
+                rate_per_second=self._config.rate_limit_per_second,
+                capacity=self._config.rate_limit_burst,
+            )
         )
 
     def get_historical_series(

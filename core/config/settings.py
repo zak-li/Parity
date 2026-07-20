@@ -116,6 +116,13 @@ def _env_hosts(name: str, default: frozenset[str]) -> frozenset[str]:
     return hosts
 
 
+def _env_origins(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
+    raw = os.environ.get(f"{_ENV_PREFIX}{name}")
+    if raw is None:
+        return default
+    return tuple(o.strip() for o in raw.split(",") if o.strip())
+
+
 def _env_str(name: str, default: str | None = None) -> str | None:
     return os.environ.get(f"{_ENV_PREFIX}{name}", default)
 
@@ -153,6 +160,9 @@ class RuntimeConfig:
     auth0_client_id: str | None = field(default_factory=lambda: _env_str("AUTH0_CLIENT_ID", None))
     auth0_audience: str = field(
         default_factory=lambda: _env_str("AUTH0_AUDIENCE", "api://default") or "api://default"
+    )
+    cors_allow_origins: tuple[str, ...] = field(
+        default_factory=lambda: _env_origins("CORS_ALLOW_ORIGINS", ())
     )
 
 
