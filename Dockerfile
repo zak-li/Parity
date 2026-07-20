@@ -1,10 +1,9 @@
 # syntax=docker/dockerfile:1
 FROM python:3.12-slim
 
-# Best practices: no bytecode/cache, unbuffered logs, run as non-root.
+# Best practices: no bytecode, unbuffered logs, run as non-root.
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 RUN useradd --create-home --uid 10001 parity
@@ -16,7 +15,10 @@ COPY core ./core
 COPY api ./api
 COPY db ./db
 COPY ai ./ai
-RUN pip install --upgrade pip && pip install ".[api,db,ai]"
+# mlflow-skinny is the lightweight tracking client (no server deps) used by the
+# engines to log runs; the MLflow server runs in its own container.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip && pip install ".[api,db,ai]" "mlflow-skinny>=2.15,<4"
 
 # Alembic config (migrations live under db/migrations, copied with the db package).
 # Run `alembic upgrade head` before starting in production.

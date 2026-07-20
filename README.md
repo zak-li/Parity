@@ -46,11 +46,9 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerab
 
 ## Features
 
-Parity turns raw currency exposure into a decision. It simulates the delivery-date exchange rate across hundreds of thousands of scenarios, captures volatility clustering and fat-tailed, jump-prone markets, and distils the outcome into margin percentiles, loss probability, tail risk (`Expected Shortfall`), and a 0 to 100 `Vulnerability Score`.
+Parity simulates the delivery-date exchange rate across hundreds of thousands of scenarios, capturing volatility clustering and fat-tailed, jump-prone markets. It distils the result into margin percentiles, loss probability, tail risk (`Expected Shortfall`), and a 0 to 100 `Vulnerability Score`, then prices and compares a `forward`, an `option`, and a `zero-cost collar` to recommend the optimal hedge with its cost and benefit quantified.
 
-It then prices and compares hedging instruments, a `forward`, an `option`, and a `zero-cost collar`, to recommend the optimal hedge with its cost and benefit quantified. The same engine aggregates multi-currency portfolios with per-currency risk attribution, builds `layered hedges` across payment schedules, runs historical and hypothetical `stress tests`, backtests its own risk models, and checks regulatory hedging eligibility.
-
-Operationally, it ingests exposure automatically from `e-commerce` and `ERP` platforms, secures access with `single sign-on` or `per-client keys`, and ships production-ready with `rate limiting`, `structured logging`, `metrics`, and an optional `AI narrative` that explains each result in plain language.
+The same engine handles multi-currency portfolios, layered hedges, stress tests, backtests, and compliance checks. It ships as a hardened API secured by `Auth0` or `per-client keys`, ingests exposure automatically from `e-commerce` and `ERP` platforms, and scales with `Redis` caching, `MLflow` run tracking, and `Apache Spark` batches.
 
 ## Quick Start
 
@@ -76,7 +74,9 @@ The following are optional and enable extra capabilities:
 | `python-dotenv` | `.env` file loading |
 | `PyJWT` + `cryptography` | `Auth0` Single Sign-On (SSO) |
 | `prometheus-client` | Prometheus `/metrics` endpoint |
-| `redis` | Shared cache + rate limiter (multi-worker) |
+| `redis` | Shared FX cache + rate limiter |
+| `mlflow-skinny` | Experiment tracking of each simulation run |
+| `pyspark` | Distributed batch simulations on Apache Spark |
 
 ### Setup
 
@@ -127,13 +127,25 @@ The modeling assumptions, limits, and validation are covered in [`docs/MODELS.md
 
 ### Docker
 
-Launch everything with Docker Compose:
+[`docker-compose.yml`](docker-compose.yml) brings up the backend platform — the API and the engines' three scale services: a **Redis** FX-rate cache and rate limiter ([`core/io/fx/frankfurter.py`](core/io/fx/frankfurter.py)), an **MLflow** tracking server that records every simulation as a run with its parameters and risk metrics ([`core/app/tracking.py`](core/app/tracking.py)), and an **Apache Spark** cluster that scores a book of orders in parallel ([`core/app/distributed.py`](core/app/distributed.py)):
 
 ```bash
 docker compose up --build
 ```
 
-The service listens on `http://localhost:8000` (health check at `/health`) and runs as a non-root user; published images are available on `ghcr.io/zak-li/parity`. With `PostgreSQL` the schema is managed by `Alembic`, so set `XI_DB_AUTO_CREATE=0` and apply migrations before starting:
+The API listens on `http://localhost:8000` (health check at `/health`) and runs as a non-root user; published images are on `ghcr.io/zak-li/parity`. The stack uses host networking, so each service is reachable at `127.0.0.1:<port>` on the host and at `<host-ip>:<port>` from other machines (API `8000`, Redis `6379`, MLflow `5000`, Spark `7077`/`8080`). Databases stay in the cloud (configured in [`.env`](.env.example)); the API reaches the co-located services over loopback, and the same `XI_REDIS_URL` / `XI_MLFLOW_TRACKING_URI` / `XI_SPARK_MASTER` variables point a local machine at a remote host. Provision a remote host over SSH with [`scripts/deploy_vm.sh`](scripts/deploy_vm.sh):
+
+```bash
+./scripts/deploy_vm.sh <ssh-user> <host-ip>
+```
+
+Score a batch of orders across the Spark cluster:
+
+```bash
+python -m core.app.distributed --input core/app/samples/example_orders.json
+```
+
+With `PostgreSQL` the schema is managed by `Alembic`, so set `XI_DB_AUTO_CREATE=0` and apply migrations before starting:
 
 ```bash
 alembic upgrade head
@@ -216,10 +228,14 @@ These variables are all optional and share the `XI_` prefix. The complete refere
 | `XI_NEO4J_DATABASE` | `neo4j` | Neo4j database (the instance ID on Aura) |
 | `XI_GROQ_API_KEY` | | Groq key for the AI narrative |
 | `XI_GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model |
-| `XI_REDIS_URL` | | Shared cache + rate limiter for multi-worker deployments |
+| `XI_REDIS_URL` | | Shared FX cache + rate limiter (also used by the full-stack deployment) |
 | `XI_AUTH0_DOMAIN` | | Auth0 tenant domain (e.g. `dev-xxx.eu.auth0.com`) |
 | `XI_AUTH0_CLIENT_ID` | | Auth0 application client ID |
 | `XI_AUTH0_AUDIENCE` | `api://default` | Auth0 API audience |
+| `XI_CORS_ALLOW_ORIGINS` | | Comma-separated browser origins allowed to call the API |
+| `XI_MLFLOW_TRACKING_URI` | | MLflow server; logs each run when set (`[mlflow]` extra) |
+| `XI_MLFLOW_EXPERIMENT` | `parity-simulations` | MLflow experiment name |
+| `XI_SPARK_MASTER` | `local[*]` | Spark master for batch simulations (`[spark]` extra) |
 
 ## License
 

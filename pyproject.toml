@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xi"
-version = "0.8.0"
+version = "0.9.0"
 description = "Currency risk simulation engine for importers and e-commerce merchants"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
@@ -38,6 +38,12 @@ db = [
 ]
 ai = [
     "groq>=1.5.0,<2",
+]
+mlflow = [
+    "mlflow>=2.15,<4",
+]
+spark = [
+    "pyspark>=3.5,<4",
 ]
 dev = [
     "pytest>=9.1.1,<10",
