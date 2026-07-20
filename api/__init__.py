@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 import core
+from core.config import load_runtime_config
 from core.models.exceptions import (
     FxDataError,
     InsufficientDataError,
@@ -43,6 +45,17 @@ def create_app() -> FastAPI:
         description="FX risk simulation API for importers and e-commerce merchants.",
         version=core.__version__,
     )
+
+    cors_origins = load_runtime_config().cors_allow_origins
+    if cors_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=list(cors_origins),
+            allow_methods=["GET", "POST"],
+            allow_headers=["Authorization", "Content-Type", "X-API-Key"],
+            allow_credentials=False,
+            max_age=3600,
+        )
 
     for exception_type, status_code in _ERROR_STATUS:
         app.add_exception_handler(exception_type, _make_handler(status_code))
