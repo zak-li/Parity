@@ -82,6 +82,4 @@ def test_key_management_requires_admin(monkeypatch):
         # A per-client key cannot manage keys.
         assert client.get("/api/v1/keys", headers={"X-API-Key": plaintext}).status_code == 403
         # The master key can.
-        assert (
-            client.get("/api/v1/keys", headers={"X-API-Key": "master-secret"}).status_code == 200
-        )
+        assert client.get("/api/v1/keys", headers={"X-API-Key": "master-secret"}).status_code == 200
