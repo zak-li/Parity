@@ -35,6 +35,9 @@ def test_rate_limit_returns_429_after_burst():
     third = client.get("/work")
     assert third.status_code == 429
     assert third.headers.get("Retry-After") == "1"
+    assert third.headers.get("X-RateLimit-Limit") == "2"
+    assert third.headers.get("X-RateLimit-Remaining") == "0"
+    assert third.headers.get("X-RateLimit-Reset") == "1"
 
 
 def test_health_is_exempt_from_rate_limit():

@@ -236,6 +236,12 @@ class PostgresAuthRepository:
             connection.execute(insert(api_keys).values(**self._to_row(record)))
         return record
 
+    def list_api_keys(self) -> list[ApiKeyRecord]:
+        stmt = select(api_keys).order_by(api_keys.c.created_at.desc())
+        with self._engine.connect() as connection:
+            rows = connection.execute(stmt).mappings().all()
+        return [self._from_row(row) for row in rows]
+
     def revoke_api_key(self, key_id: str) -> bool:
         stmt = update(api_keys).where(api_keys.c.id == key_id).values(revoked=True)
         with self._engine.begin() as connection:

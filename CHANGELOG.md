@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `API-key management` REST endpoints (admin only): `POST/GET/DELETE
+  /api/v1/keys` to mint, list, and revoke per-client keys. `list_api_keys` was
+  added to the auth repository.
+- `GET /api/v1/me` returning the authenticated client's identity.
+- Standard rate-limit headers (`X-RateLimit-Limit/Remaining/Reset`) on `429`
+  responses, alongside `Retry-After`.
+
+### Fixed
+- The connector ETL endpoints are now served under `/api/v1/connectors/...`
+  (were `/connectors/...`), matching the documented paths and the API version
+  namespace.
+
 ## [0.9.0] (2026-07-21)
 
 ### Added

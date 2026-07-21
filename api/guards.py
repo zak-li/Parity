@@ -114,7 +114,16 @@ def install_request_guards(app: FastAPI, config: GuardConfig | None = None) -> N
             return await call_next(request)
 
         if not buckets.allow(_client_id(request)):
-            return _json(HTTP_429_TOO_MANY_REQUESTS, "Rate limit exceeded.", **{"Retry-After": "1"})
+            return _json(
+                HTTP_429_TOO_MANY_REQUESTS,
+                "Rate limit exceeded.",
+                **{
+                    "Retry-After": "1",
+                    "X-RateLimit-Limit": str(config.burst),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": "1",
+                },
+            )
 
         try:
             await asyncio.wait_for(semaphore.acquire(), timeout=config.acquire_timeout_seconds)

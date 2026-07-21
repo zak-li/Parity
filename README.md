@@ -164,6 +164,15 @@ These endpoints run simulations and expose their results:
 | GET | `/api/v1/simulations/history` | Persisted simulation history with currency filters |
 | GET | `/api/v1/simulations/{id}` | Fetch a single persisted simulation |
 | GET | `/api/v1/exposure` | Currency exposure graph |
+| GET | `/api/v1/me` | Identity of the authenticated client |
+
+These admin endpoints manage per-client API keys (master key or open dev mode only):
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/v1/keys` | Mint a key for a client; returns the plaintext once |
+| GET | `/api/v1/keys` | List keys (metadata only, never the secret) |
+| DELETE | `/api/v1/keys/{id}` | Revoke a key |
 
 These endpoints ingest exposure automatically (ETL) from e-commerce and ERP platforms:
 
