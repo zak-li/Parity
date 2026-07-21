@@ -155,3 +155,19 @@ def require_api_key(
 
     request.state.client_id = key_record.client_id
     return key_record
+
+
+def require_admin(
+    principal: ApiKeyRecord | None = Depends(require_api_key),
+) -> ApiKeyRecord | None:
+    """Gate admin-only operations (API-key management).
+
+    Allowed for the master key (``XI_API_KEY``) or when no auth is configured at
+    all (open development mode). Per-client keys and Auth0 users are rejected.
+    """
+    if principal is None or principal.client_id == "master":
+        return principal
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Admin privileges required for API-key management.",
+    )

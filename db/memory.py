@@ -69,6 +69,10 @@ class InMemoryAuthRepository:
             self._keys[record.id] = record
         return record
 
+    def list_api_keys(self) -> list[ApiKeyRecord]:
+        with self._lock:
+            return sorted(self._keys.values(), key=lambda k: k.created_at, reverse=True)
+
     def revoke_api_key(self, key_id: str) -> bool:
         with self._lock:
             if key_id in self._keys:

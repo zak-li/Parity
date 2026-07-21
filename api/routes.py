@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import uuid
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
 from fastapi.responses import JSONResponse
 
 from ai import Narrator
@@ -20,22 +20,29 @@ from core.models.models import OrderInput, SimulationResult
 from core.models.monitoring import change_alerts, evaluate_result_alerts
 from core.models.monte_carlo import JumpParams
 from db import (
+    AuthRepository,
     JobRepository,
     JobRunRecord,
     SimulationRecord,
     SimulationRepository,
     record_from_result,
 )
+from db.records import ApiKeyRecord
 
 from .dependencies import (
+    get_auth_repository,
     get_fx_provider,
     get_job_repository,
     get_narrator,
     get_repository,
     get_tracker,
+    require_admin,
     require_api_key,
 )
 from .schemas import (
+    ApiKeyCreatedResponse,
+    ApiKeyCreateRequest,
+    ApiKeyResponse,
     BacktestRequest,
     BacktestResponse,
     ComplianceResponse,
@@ -45,6 +52,7 @@ from .schemas import (
     HealthResponse,
     HedgeGreeksRequest,
     HedgeGreeksResponse,
+    IdentityResponse,
     LadderRequest,
     LadderResponse,
     OrderRequest,
@@ -55,9 +63,58 @@ from .schemas import (
     SimulationResponse,
     StressResponse,
 )
+from .security import generate_api_key
 
 router = APIRouter(prefix="/api/v1", dependencies=[Depends(require_api_key)])
 health_router = APIRouter()
+keys_router = APIRouter(prefix="/api/v1/keys", tags=["keys"], dependencies=[Depends(require_admin)])
+
+
+@keys_router.post("", response_model=ApiKeyCreatedResponse, status_code=status.HTTP_201_CREATED)
+def create_api_key(
+    request: ApiKeyCreateRequest,
+    repo: AuthRepository = Depends(get_auth_repository),
+) -> ApiKeyCreatedResponse:
+    expires_at = (
+        dt.datetime.now(dt.UTC) + dt.timedelta(days=request.expires_days)
+        if request.expires_days is not None
+        else None
+    )
+    plaintext, record = generate_api_key(request.client_id, expires_at)
+    repo.save_api_key(record)
+    return ApiKeyCreatedResponse(
+        id=record.id,
+        client_id=record.client_id,
+        prefix=record.prefix,
+        created_at=record.created_at.isoformat(),
+        expires_at=record.expires_at.isoformat() if record.expires_at else None,
+        revoked=record.revoked,
+        api_key=plaintext,
+    )
+
+
+@keys_router.get("", response_model=list[ApiKeyResponse])
+def list_api_keys(repo: AuthRepository = Depends(get_auth_repository)) -> list[ApiKeyResponse]:
+    return [
+        ApiKeyResponse(
+            id=k.id,
+            client_id=k.client_id,
+            prefix=k.prefix,
+            created_at=k.created_at.isoformat(),
+            expires_at=k.expires_at.isoformat() if k.expires_at else None,
+            revoked=k.revoked,
+        )
+        for k in repo.list_api_keys()
+    ]
+
+
+@keys_router.delete("/{key_id}", status_code=status.HTTP_204_NO_CONTENT)
+def revoke_api_key(key_id: str, repo: AuthRepository = Depends(get_auth_repository)) -> Response:
+    if not repo.revoke_api_key(key_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No API key with that id."
+        )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 def _record_to_response(record: SimulationRecord) -> SimulationRecordResponse:
@@ -269,6 +326,16 @@ def currency_exposure(
     summary = getattr(repository, "exposure_summary", None)
     rows = summary() if callable(summary) else []
     return [CurrencyExposureResponse(**row) for row in rows]
+
+
+@router.get("/me", response_model=IdentityResponse)
+def whoami(principal: ApiKeyRecord | None = Depends(require_api_key)) -> IdentityResponse:
+    """Return the authenticated client's identity (or open access when no auth is configured)."""
+    if principal is None:
+        return IdentityResponse(authenticated=False)
+    return IdentityResponse(
+        authenticated=True, client_id=principal.client_id, prefix=principal.prefix
+    )
 
 
 @router.post("/stress-tests", response_model=StressResponse)
