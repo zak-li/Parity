@@ -324,3 +324,28 @@ class LadderResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     status: str
+
+
+class IdentityResponse(BaseModel):
+    authenticated: bool
+    client_id: str | None = None
+    prefix: str | None = None
+
+
+class ApiKeyCreateRequest(StrictModel):
+    client_id: str = Field(min_length=1, max_length=128)
+    expires_days: int | None = Field(default=None, ge=1, le=3650)
+
+
+class ApiKeyResponse(BaseModel):
+    id: str
+    client_id: str
+    prefix: str
+    created_at: str
+    expires_at: str | None = None
+    revoked: bool = False
+
+
+class ApiKeyCreatedResponse(ApiKeyResponse):
+    # The plaintext key is returned only once, at creation.
+    api_key: str

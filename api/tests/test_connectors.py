@@ -16,7 +16,7 @@ def test_import_shopify(mock_estimate, mock_fetch):
     mock_estimate.return_value = {"MAD": 100000.0}
 
     response = client.post(
-        "/connectors/shopify/import",
+        "/api/v1/connectors/shopify/import",
         json={"shop_name": "test_shop", "access_token": "fake_token"},
         headers={"Authorization": "Bearer test-api-key"},
     )
@@ -38,7 +38,7 @@ def test_import_odoo(mock_auth, mock_fetch):
     mock_fetch.return_value = [MockPurchase(), MockPurchase()]
 
     response = client.post(
-        "/connectors/odoo/import",
+        "/api/v1/connectors/odoo/import",
         json={"url": "http://test", "db": "test", "username": "user", "password": "pwd"},
         headers={"Authorization": "Bearer test-api-key"},
     )
@@ -57,7 +57,7 @@ def test_import_woocommerce(mock_estimate, mock_fetch):
     mock_estimate.return_value = {"USD": 50000.0}
 
     response = client.post(
-        "/connectors/woocommerce/import",
+        "/api/v1/connectors/woocommerce/import",
         json={"store_url": "http://test", "consumer_key": "ck", "consumer_secret": "cs"},
         headers={"Authorization": "Bearer test-api-key"},
     )
@@ -75,7 +75,7 @@ def test_import_stripe(mock_estimate, mock_fetch):
     mock_estimate.return_value = {"EUR": 25000.0}
 
     response = client.post(
-        "/connectors/stripe/import",
+        "/api/v1/connectors/stripe/import",
         json={"api_key": "sk_test_fake"},
         headers={"Authorization": "Bearer test-api-key"},
     )
