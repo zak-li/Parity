@@ -39,7 +39,7 @@ services:
 
   # ---- MLflow tracking server ----
   mlflow:
-    build: ./deploy/mlflow
+    build: ./lab
     image: parity-mlflow
     network_mode: host
     volumes:

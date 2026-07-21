@@ -22,9 +22,9 @@
 
 ## Parity
 
-> **Parity** (codename `Xi`): a currency risk decision engine for importers and e-commerce merchants. It quantifies FX exposure, scores vulnerability, and recommends the optimal hedge directly from the numbers.
+> `Parity` (codename `Xi`): a currency risk decision engine for importers and e-commerce merchants. It quantifies FX exposure, scores vulnerability, and recommends the optimal hedge directly from the numbers.
 
-Parity quantifies FX exposure by `Monte Carlo` simulation, produces a **Vulnerability Score** from 0 to 100, and recommends the optimal hedge such as a `forward`, an `option`, or a `collar`, with its cost and benefit fully quantified.
+Parity quantifies FX exposure by `Monte Carlo` simulation, produces a `Vulnerability Score` from 0 to 100, and recommends the optimal hedge such as a `forward`, an `option`, or a `collar`, with its cost and benefit fully quantified.
 
 <br>
 
@@ -127,7 +127,7 @@ The modeling assumptions, limits, and validation are covered in [`docs/MODELS.md
 
 ### Docker
 
-[`docker-compose.yml`](docker-compose.yml) brings up the backend platform — the API and the engines' three scale services: a **Redis** FX-rate cache and rate limiter ([`core/io/fx/frankfurter.py`](core/io/fx/frankfurter.py)), an **MLflow** tracking server that records every simulation as a run with its parameters and risk metrics ([`core/app/tracking.py`](core/app/tracking.py)), and an **Apache Spark** cluster that scores a book of orders in parallel ([`core/app/distributed.py`](core/app/distributed.py)):
+[`docker-compose.yml`](docker-compose.yml) brings up the backend platform. It runs the API and the engines' three scale services: a `Redis` FX-rate cache and rate limiter ([`core/io/fx/frankfurter.py`](core/io/fx/frankfurter.py)), an `MLflow` tracking server that records every simulation as a run with its parameters and risk metrics ([`core/app/tracking.py`](core/app/tracking.py)), and an `Apache Spark` cluster that scores a book of orders in parallel ([`core/app/distributed.py`](core/app/distributed.py)):
 
 ```bash
 docker compose up --build
