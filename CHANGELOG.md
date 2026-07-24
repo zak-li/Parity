@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- `Multi-tenant isolation` for persisted simulations: every run is now scoped to
+  the authenticated client (`client_id`), and `history` / `GET {id}` /
+  change-alert lookups filter by tenant, so one client can no longer read
+  another's runs. Adds a `client_id` column (migration `0003`) across the
+  in-memory, PostgreSQL, and MongoDB repositories.
+- `Fail closed on a missing API-key pepper` when `XI_ENV=production`
+  (previously always fell back to an insecure development pepper).
+
+### Added
+- `XI_DB_STRICT`: when set, a configured-but-unreachable database is a hard
+  error instead of a silent fall-back to volatile in-memory storage.
+- `XI_ENV` deployment-environment switch (`development` default, `production`).
+
 ## [0.9.1] (2026-07-21)
 
 ### Added

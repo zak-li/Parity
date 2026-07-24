@@ -32,6 +32,7 @@ simulation_runs = Table(
     "simulation_runs",
     metadata,
     Column("id", String(32), primary_key=True),
+    Column("client_id", String(64), nullable=False, server_default="public", index=True),
     Column("created_at", DateTime(timezone=True), nullable=False, index=True),
     Column("foreign_currency", String(3), nullable=False),
     Column("domestic_currency", String(3), nullable=False),
@@ -127,14 +128,16 @@ class PostgresSimulationRepository:
             connection.execute(insert(simulation_runs).values(**self._to_row(record)))
         return record
 
-    def get(self, record_id: str) -> SimulationRecord | None:
+    def get(self, record_id: str, client_id: str | None = None) -> SimulationRecord | None:
         stmt = select(simulation_runs).where(simulation_runs.c.id == record_id)
+        if client_id is not None:
+            stmt = stmt.where(simulation_runs.c.client_id == client_id)
         with self._engine.connect() as connection:
             row = connection.execute(stmt).mappings().first()
         return self._from_row(row) if row else None
 
     def latest_for_pair(
-        self, foreign_currency: str, domestic_currency: str
+        self, foreign_currency: str, domestic_currency: str, client_id: str | None = None
     ) -> SimulationRecord | None:
         pair = f"{foreign_currency}{domestic_currency}".upper()
         stmt = (
@@ -143,6 +146,8 @@ class PostgresSimulationRepository:
             .order_by(simulation_runs.c.created_at.desc())
             .limit(1)
         )
+        if client_id is not None:
+            stmt = stmt.where(simulation_runs.c.client_id == client_id)
         with self._engine.connect() as connection:
             row = connection.execute(stmt).mappings().first()
         return self._from_row(row) if row else None
@@ -152,8 +157,11 @@ class PostgresSimulationRepository:
         foreign_currency: str | None = None,
         domestic_currency: str | None = None,
         limit: int = 50,
+        client_id: str | None = None,
     ) -> list[SimulationRecord]:
         stmt = select(simulation_runs).order_by(simulation_runs.c.created_at.desc())
+        if client_id is not None:
+            stmt = stmt.where(simulation_runs.c.client_id == client_id)
         if foreign_currency:
             stmt = stmt.where(simulation_runs.c.foreign_currency == foreign_currency.upper())
         if domestic_currency:
@@ -170,6 +178,7 @@ class PostgresSimulationRepository:
     def _to_row(record: SimulationRecord) -> dict:
         return {
             "id": record.id,
+            "client_id": record.client_id,
             "created_at": record.created_at,
             "foreign_currency": record.foreign_currency,
             "domestic_currency": record.domestic_currency,
@@ -199,6 +208,7 @@ class PostgresSimulationRepository:
             created = created.replace(tzinfo=dt.UTC)
         return SimulationRecord(
             id=row["id"],
+            client_id=row.get("client_id", "public"),
             created_at=created,
             foreign_currency=row["foreign_currency"],
             domestic_currency=row["domestic_currency"],

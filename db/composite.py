@@ -35,21 +35,22 @@ class CompositeSimulationRepository:
                 )
         return saved
 
-    def get(self, record_id: str) -> SimulationRecord | None:
-        return self._primary.get(record_id)
+    def get(self, record_id: str, client_id: str | None = None) -> SimulationRecord | None:
+        return self._primary.get(record_id, client_id)
 
     def latest_for_pair(
-        self, foreign_currency: str, domestic_currency: str
+        self, foreign_currency: str, domestic_currency: str, client_id: str | None = None
     ) -> SimulationRecord | None:
-        return self._primary.latest_for_pair(foreign_currency, domestic_currency)
+        return self._primary.latest_for_pair(foreign_currency, domestic_currency, client_id)
 
     def history(
         self,
         foreign_currency: str | None = None,
         domestic_currency: str | None = None,
         limit: int = 50,
+        client_id: str | None = None,
     ) -> list[SimulationRecord]:
-        return self._primary.history(foreign_currency, domestic_currency, limit)
+        return self._primary.history(foreign_currency, domestic_currency, limit, client_id)
 
     def exposure_summary(self) -> list[dict]:
         for sink in self._secondaries:

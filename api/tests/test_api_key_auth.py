@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from api import create_app
 from api.dependencies import get_auth_repository, get_repository
 from api.security import _KEY_PREFIX, generate_api_key, hash_api_key
+from core.models.exceptions import SecurityError
 from db.memory import InMemoryAuthRepository, InMemorySimulationRepository
 
 
@@ -17,6 +18,19 @@ def test_hash_is_deterministic_and_pepper_dependent(monkeypatch):
     assert h1 == hash_api_key("pk_secret")
     monkeypatch.setenv("XI_API_KEY_PEPPER", "pepper-two")
     assert hash_api_key("pk_secret") != h1  # a different pepper changes the hash
+
+
+def test_pepper_fails_closed_in_production(monkeypatch):
+    monkeypatch.setenv("XI_ENV", "production")
+    monkeypatch.setenv("XI_API_KEY_PEPPER", "")  # unset in prod must be fatal
+    with pytest.raises(SecurityError):
+        hash_api_key("pk_secret")
+
+
+def test_pepper_dev_fallback_outside_production(monkeypatch):
+    monkeypatch.setenv("XI_ENV", "development")
+    monkeypatch.setenv("XI_API_KEY_PEPPER", "")
+    assert hash_api_key("pk_secret")  # dev fallback, no exception
 
 
 def test_generate_api_key_shape(monkeypatch):
