@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] (2026-07-21)
+
 ### Added
 - `API-key management` REST endpoints (admin only): `POST/GET/DELETE
   /api/v1/keys` to mint, list, and revoke per-client keys. `list_api_keys` was
@@ -148,7 +150,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AI narrative.` Optional `Groq` narrative generation (import-guarded).
 - `Tooling.` Test suite (361 tests) and GitHub Actions CI on Python 3.11/3.12.
 
-[Unreleased]: https://github.com/zak-li/Parity/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/zak-li/Parity/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/zak-li/Parity/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/zak-li/Parity/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/zak-li/Parity/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/zak-li/Parity/compare/v0.6.1...v0.7.0
