@@ -42,7 +42,7 @@ services:
 
   # ---- MLflow tracking server ----
   mlflow:
-    build: ./lab
+    build: ./mlflow
     image: parity-mlflow
     network_mode: host
     environment:
