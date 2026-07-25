@@ -19,10 +19,10 @@
       <!-- TRANSPARENT BACKGROUND FOR UNIVERSAL LIGHT/DARK USE -->
       <rect id="svg-bg-color" width="100%" height="100%" fill="transparent"/>
 
-      <!-- COMPACT TEXT IN UNIVERSAL SLATE GRAY VISIBLE IN LIGHT & DARK MODES -->
+      <!-- COMPACT TEXT IN UNIVERSAL SLATE GRAY: "POWERED BY: FRANKFURTER API" -->
       <text class="title-serif" x="400" y="70" text-anchor="middle" letter-spacing="0.5px">
-        <!-- FX FEED: (Slate Gray 45% opacity) -->
-        <tspan fill="#64748B" fill-opacity="0.45" font-size="38">F</tspan><tspan fill="#64748B" fill-opacity="0.45" font-size="30">X FEED: </tspan>
+        <!-- POWERED BY: (Slate Gray 45% opacity) -->
+        <tspan fill="#64748B" fill-opacity="0.45" font-size="38">P</tspan><tspan fill="#64748B" fill-opacity="0.45" font-size="30">OWERED BY: </tspan>
         <!-- FRANKFURTER API (Slate Gray 100% opacity) -->
         <tspan fill="#64748B" fill-opacity="1.0" font-size="38">F</tspan><tspan fill="#64748B" fill-opacity="1.0" font-size="30">RANKFURTER API</tspan>
       </text>
