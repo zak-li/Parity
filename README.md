@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://frankfurter.dev"><img src=".github/assets/charts/svg/frankfurter.svg" alt="FX data feed: Frankfurter API (ECB)" width="300"></a>
+  <a href="https://frankfurter.dev"><img src=".github/assets/charts/svg/frankfurter.svg" alt="FX data feed: Frankfurter API (ECB)" width="230"></a>
 </p>
 
 <br>
