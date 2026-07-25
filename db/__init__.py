@@ -106,7 +106,13 @@ def build_auth_repository(config: PersistenceConfig | None = None) -> AuthReposi
 
             from .postgres import PostgresAuthRepository, _make_url
 
-            engine = create_engine(_make_url(config.postgres_dsn), pool_size=5, max_overflow=5)  # type: ignore[arg-type]
+            engine = create_engine(
+                _make_url(config.postgres_dsn),  # type: ignore[arg-type]
+                pool_pre_ping=True,
+                pool_size=5,
+                max_overflow=5,
+                connect_args={"connect_timeout": 15, "options": "-c statement_timeout=5000"},
+            )
             return PostgresAuthRepository(engine)
         except Exception as exc:
             logger.warning("postgres_auth_unavailable", extra={"error": str(exc)})
@@ -122,7 +128,13 @@ def build_job_repository(config: PersistenceConfig | None = None) -> JobReposito
 
             from .postgres import PostgresJobRepository, _make_url
 
-            engine = create_engine(_make_url(config.postgres_dsn), pool_size=5, max_overflow=5)  # type: ignore[arg-type]
+            engine = create_engine(
+                _make_url(config.postgres_dsn),  # type: ignore[arg-type]
+                pool_pre_ping=True,
+                pool_size=5,
+                max_overflow=5,
+                connect_args={"connect_timeout": 15, "options": "-c statement_timeout=5000"},
+            )
             return PostgresJobRepository(engine)
         except Exception as exc:
             logger.warning("postgres_job_unavailable", extra={"error": str(exc)})

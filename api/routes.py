@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import datetime as dt
+import logging
+import os
 import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
@@ -64,6 +66,8 @@ from .schemas import (
     StressResponse,
 )
 from .security import generate_api_key
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", dependencies=[Depends(require_api_key)])
 health_router = APIRouter()
@@ -266,9 +270,13 @@ def run_simulation(
     # Log the run to MLflow (no-op unless XI_MLFLOW_TRACKING_URI is set).
     background_tasks.add_task(tracker.track, result)
 
-    previous = repository.latest_for_pair(
-        order.foreign_currency, order.domestic_currency, client_id
-    )
+    try:
+        previous = repository.latest_for_pair(
+            order.foreign_currency, order.domestic_currency, client_id
+        )
+    except Exception as exc:
+        logger.warning("latest_for_pair_failed", extra={"error": str(exc)})
+        previous = None
     change = []
     if previous is not None:
         change = list(
@@ -286,8 +294,15 @@ def run_simulation(
 
     record_id = None
     if request.persist:
-        record = repository.save(record_from_result(result, client_id=client_id))
-        record_id = record.id
+        try:
+            record = repository.save(record_from_result(result, client_id=client_id))
+            record_id = record.id
+        except Exception as exc:
+            # A persistence side-effect must not fail the computed result. In
+            # strict mode (XI_DB_STRICT=1) the error propagates instead.
+            if os.environ.get("XI_DB_STRICT") == "1":
+                raise
+            logger.warning("simulation_persist_failed", extra={"error": str(exc)})
 
     return _to_simulation_response(result, change, narrative, record_id)
 
