@@ -116,7 +116,12 @@ class PostgresSimulationRepository:
             pool_pre_ping=True,
             pool_size=5,
             max_overflow=5,
-            connect_args={"connect_timeout": connect_timeout},
+            # Bound both connect and per-statement time so a slow/hung database
+            # aborts quickly instead of blocking the request until it times out.
+            connect_args={
+                "connect_timeout": connect_timeout,
+                "options": "-c statement_timeout=5000",
+            },
         )
         # In production the schema is owned by Alembic migrations
         # (`alembic upgrade head`); set XI_DB_AUTO_CREATE=0 to disable auto-create.
