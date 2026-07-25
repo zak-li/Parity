@@ -9,17 +9,6 @@
 
 <br>
 
-<p align="center">
-  <a href="https://github.com/zak-li/Parity/releases"><img src="https://img.shields.io/github/v/tag/zak-li/Parity?label=version&color=3A60F0" alt="Version"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL_3.0-2E77F3.svg" alt="License: AGPL 3.0"></a>
-  <a href="https://github.com/zak-li/Parity/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/zak-li/Parity/ci.yml?label=CI&color=238EF6" alt="CI"></a>
-  <a href="https://github.com/zak-li/Parity/issues"><img src="https://img.shields.io/github/issues/zak-li/Parity?color=17A6F9" alt="Issues"></a><br>
-  <a href="https://github.com/zak-li/Parity/commits/main"><img src="https://img.shields.io/github/last-commit/zak-li/Parity?color=0CBDFC" alt="Last Commit"></a>
-  <a href="https://docs.pytest.org/"><img src="https://img.shields.io/badge/tested_with-pytest-00D4FF.svg" alt="Tested with pytest"></a>
-</p>
-
-<br>
-
 ## Parity
 
 > `Parity` (codename `Xi`): a currency risk decision engine for importers and e-commerce merchants. It quantifies FX exposure, scores vulnerability, and recommends the optimal hedge directly from the numbers.
