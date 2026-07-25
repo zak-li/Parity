@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://frankfurter.dev"><img src=".github/assets/charts/svg/frankfurter.svg" alt="FX data feed: Frankfurter API (ECB)" width="230"></a>
+  <a href="https://frankfurter.dev"><img src=".github/assets/charts/svg/frankfurter.svg" alt="FX data feed: Frankfurter API (ECB)" width="240"></a>
 </p>
 
 <br>
@@ -32,7 +32,7 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a `Vulnerabi
 
 - [Features](#features)
 - [Quick Start](#quick-start)
-- [API](#api)
+- [Core API](#core-api)
 - [Observability](#observability)
 - [Settings](#settings)
 - [License](#license)
@@ -41,7 +41,10 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a `Vulnerabi
 
 Parity simulates the delivery-date exchange rate across hundreds of thousands of scenarios, capturing volatility clustering and fat-tailed, jump-prone markets. It distils the result into margin percentiles, loss probability, tail risk (`Expected Shortfall`), and a 0 to 100 `Vulnerability Score`, then prices and compares a `forward`, an `option`, and a `zero-cost collar` to recommend the optimal hedge with its cost and benefit quantified.
 
-The same engine handles multi-currency portfolios, layered hedges, stress tests, backtests, and compliance checks. It ships as a hardened API secured by `Auth0` or `per-client keys`, ingests exposure automatically from `e-commerce` and `ERP` platforms, and scales with `Redis` caching, `MLflow` run tracking, and `Apache Spark` batches.
+The same engine scales far beyond a single order:
+
+- It handles multi-currency portfolios, layered hedges, stress tests, backtests, and compliance checks from the same core.
+- It ships as a hardened API secured by `Auth0` or `per-client keys`, ingests exposure automatically from `e-commerce` and `ERP` platforms, and scales with `Redis` caching, `MLflow` run tracking, and `Apache Spark` batches.
 
 ## Quick Start
 
@@ -144,7 +147,7 @@ With `PostgreSQL` the schema is managed by `Alembic`, so set `XI_DB_AUTO_CREATE=
 alembic upgrade head
 ```
 
-## API
+## Core API
 
 The API is rooted at `/api/v1`, with Swagger docs at `/docs` and Prometheus metrics at `/metrics`. Once a credential is configured (`XI_API_KEY`, a per-client key, or `Auth0`), every `/api/v1` route requires it, while `/health` and `/metrics` stay public.
 
