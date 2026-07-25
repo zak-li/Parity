@@ -15,10 +15,16 @@ class MongoSimulationRepository:
         uri: str,
         database: str = "xi",
         collection: str = "simulation_runs",
-        server_selection_timeout_ms: int = 15000,
+        server_selection_timeout_ms: int = 5000,
     ) -> None:
+        # Bound every phase so a slow/hung cluster (e.g. a stalled majority-write
+        # ack) aborts quickly and is caught, instead of blocking the request.
         self._client: MongoClient = MongoClient(
-            uri, serverSelectionTimeoutMS=server_selection_timeout_ms, tz_aware=True
+            uri,
+            serverSelectionTimeoutMS=server_selection_timeout_ms,
+            connectTimeoutMS=5000,
+            socketTimeoutMS=5000,
+            tz_aware=True,
         )
         self._collection = self._client[database][collection]
         self._collection.create_index([("pair", DESCENDING), ("created_at", DESCENDING)])
