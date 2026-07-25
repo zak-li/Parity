@@ -39,6 +39,9 @@ class SimulationRecord:
     risk_level: RiskLevel
     recommendation: str
     details: dict[str, Any] = field(default_factory=dict, repr=False)
+    # Owner tenant. Every persisted run is scoped to the authenticated client so
+    # history/reads never cross tenants. "public" is the shared open-dev bucket.
+    client_id: str = "public"
 
     @property
     def pair(self) -> str:
@@ -58,6 +61,7 @@ def record_from_result(
     result: SimulationResult,
     record_id: str | None = None,
     created_at: dt.datetime | None = None,
+    client_id: str = "public",
 ) -> SimulationRecord:
     order = result.order
     details = {
@@ -100,6 +104,7 @@ def record_from_result(
         risk_level=result.risk_level,
         recommendation=result.recommendation,
         details=details,
+        client_id=client_id,
     )
 
 

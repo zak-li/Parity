@@ -18,6 +18,7 @@ import os
 import secrets
 from hashlib import sha256
 
+from core.models.exceptions import SecurityError
 from db.records import ApiKeyRecord
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,11 @@ def _pepper() -> bytes:
     raw = os.environ.get(_PEPPER_ENV)
     if raw:
         return raw.encode()
+    # Fail closed in production: a missing pepper makes the key table brute-forceable.
+    if os.environ.get("XI_ENV", "development").strip().lower() == "production":
+        raise SecurityError(
+            f"{_PEPPER_ENV} must be set when XI_ENV=production (API keys cannot be hashed securely)."
+        )
     logger.warning(
         "%s is not set; using an insecure development pepper. Set it in production.", _PEPPER_ENV
     )

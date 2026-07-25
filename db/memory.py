@@ -18,18 +18,23 @@ class InMemorySimulationRepository:
             self._order.append(record.id)
         return record
 
-    def get(self, record_id: str) -> SimulationRecord | None:
+    def get(self, record_id: str, client_id: str | None = None) -> SimulationRecord | None:
         with self._lock:
-            return self._records.get(record_id)
+            record = self._records.get(record_id)
+        if record is None:
+            return None
+        if client_id is not None and record.client_id != client_id:
+            return None
+        return record
 
     def latest_for_pair(
-        self, foreign_currency: str, domestic_currency: str
+        self, foreign_currency: str, domestic_currency: str, client_id: str | None = None
     ) -> SimulationRecord | None:
         pair = f"{foreign_currency}{domestic_currency}".upper()
         with self._lock:
             for record_id in reversed(self._order):
                 record = self._records[record_id]
-                if record.pair == pair:
+                if record.pair == pair and (client_id is None or record.client_id == client_id):
                     return record
         return None
 
@@ -38,9 +43,12 @@ class InMemorySimulationRepository:
         foreign_currency: str | None = None,
         domestic_currency: str | None = None,
         limit: int = 50,
+        client_id: str | None = None,
     ) -> list[SimulationRecord]:
         with self._lock:
             records = [self._records[i] for i in reversed(self._order)]
+        if client_id is not None:
+            records = [r for r in records if r.client_id == client_id]
         if foreign_currency:
             records = [r for r in records if r.foreign_currency == foreign_currency.upper()]
         if domestic_currency:

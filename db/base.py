@@ -9,10 +9,10 @@ from .records import ApiAuditLogRecord, ApiKeyRecord, JobRunRecord, SimulationRe
 class SimulationRepository(Protocol):
     def save(self, record: SimulationRecord) -> SimulationRecord: ...
 
-    def get(self, record_id: str) -> SimulationRecord | None: ...
+    def get(self, record_id: str, client_id: str | None = None) -> SimulationRecord | None: ...
 
     def latest_for_pair(
-        self, foreign_currency: str, domestic_currency: str
+        self, foreign_currency: str, domestic_currency: str, client_id: str | None = None
     ) -> SimulationRecord | None: ...
 
     def history(
@@ -20,6 +20,7 @@ class SimulationRepository(Protocol):
         foreign_currency: str | None = None,
         domestic_currency: str | None = None,
         limit: int = 50,
+        client_id: str | None = None,
     ) -> list[SimulationRecord]: ...
 
     def close(self) -> None: ...

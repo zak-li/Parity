@@ -117,6 +117,11 @@ def revoke_api_key(key_id: str, repo: AuthRepository = Depends(get_auth_reposito
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+def _client_id(principal: ApiKeyRecord | None) -> str:
+    """Tenant that owns a run. In open dev mode (no auth) everyone shares 'public'."""
+    return principal.client_id if principal is not None else "public"
+
+
 def _record_to_response(record: SimulationRecord) -> SimulationRecordResponse:
     return SimulationRecordResponse(**record.summary())
 
@@ -204,13 +209,14 @@ def _run_simulation_job(
     repository: SimulationRepository,
     job_repository: JobRepository,
     narrator: Narrator,
+    client_id: str = "public",
 ) -> None:
     try:
         job_repository.update_status(job_id, "IN_PROGRESS")
         order = _to_order(request.order)
         engine = _build_engine(request.options, provider)
         result = engine.run(order)
-        record = repository.save(record_from_result(result))
+        record = repository.save(record_from_result(result, client_id=client_id))
         job_repository.update_status(job_id, "COMPLETED", result_id=record.id)
     except Exception as exc:
         job_repository.update_status(job_id, "FAILED", error=str(exc))
@@ -225,7 +231,9 @@ def run_simulation(
     job_repository: JobRepository = Depends(get_job_repository),
     narrator: Narrator = Depends(get_narrator),
     tracker: SimulationTracker = Depends(get_tracker),
+    principal: ApiKeyRecord | None = Depends(require_api_key),
 ):
+    client_id = _client_id(principal)
     if request.order.n_simulations > 10000:
         job_id = uuid.uuid4().hex
         job_repository.save(
@@ -237,7 +245,14 @@ def run_simulation(
             )
         )
         background_tasks.add_task(
-            _run_simulation_job, job_id, request, provider, repository, job_repository, narrator
+            _run_simulation_job,
+            job_id,
+            request,
+            provider,
+            repository,
+            job_repository,
+            narrator,
+            client_id,
         )
         return JSONResponse(
             status_code=status.HTTP_202_ACCEPTED,
@@ -251,7 +266,9 @@ def run_simulation(
     # Log the run to MLflow (no-op unless XI_MLFLOW_TRACKING_URI is set).
     background_tasks.add_task(tracker.track, result)
 
-    previous = repository.latest_for_pair(order.foreign_currency, order.domestic_currency)
+    previous = repository.latest_for_pair(
+        order.foreign_currency, order.domestic_currency, client_id
+    )
     change = []
     if previous is not None:
         change = list(
@@ -269,7 +286,7 @@ def run_simulation(
 
     record_id = None
     if request.persist:
-        record = repository.save(record_from_result(result))
+        record = repository.save(record_from_result(result, client_id=client_id))
         record_id = record.id
 
     return _to_simulation_response(result, change, narrative, record_id)
@@ -300,20 +317,24 @@ def list_history(
     domestic_currency: str | None = Query(default=None, pattern=r"^[A-Za-z]{3}$"),
     limit: int = Query(default=50, ge=1, le=500),
     repository: SimulationRepository = Depends(get_repository),
+    principal: ApiKeyRecord | None = Depends(require_api_key),
 ) -> list[SimulationRecordResponse]:
     records = repository.history(
         foreign_currency.upper() if foreign_currency else None,
         domestic_currency.upper() if domestic_currency else None,
         limit,
+        client_id=_client_id(principal),
     )
     return [_record_to_response(record) for record in records]
 
 
 @router.get("/simulations/{record_id}", response_model=SimulationRecordResponse)
 def get_simulation(
-    record_id: str, repository: SimulationRepository = Depends(get_repository)
+    record_id: str,
+    repository: SimulationRepository = Depends(get_repository),
+    principal: ApiKeyRecord | None = Depends(require_api_key),
 ) -> SimulationRecordResponse:
-    record = repository.get(record_id)
+    record = repository.get(record_id, client_id=_client_id(principal))
     if record is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation not found.")
     return _record_to_response(record)
