@@ -41,10 +41,10 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a `Vulnerabi
 
 Parity simulates the delivery-date exchange rate across hundreds of thousands of scenarios, capturing volatility clustering and fat-tailed, jump-prone markets. It distils the result into margin percentiles, loss probability, tail risk (`Expected Shortfall`), and a 0 to 100 `Vulnerability Score`, then prices and compares a `forward`, an `option`, and a `zero-cost collar` to recommend the optimal hedge with its cost and benefit quantified.
 
-Beyond a single order, the same engine covers the full workflow:
+Past the single-order view, the same core does more:
 
-- Portfolios, layered hedges, stress tests, backtests, and compliance, all in one model.
-- Packaged as a deployable API with `Auth0` / `per-client keys` auth, automatic `e-commerce` and `ERP` ingestion, and `Redis` / `MLflow` / `Apache Spark` scaling.
+- Portfolios, layered hedges, stress tests, backtests, and compliance, all in one engine.
+- A deployable API with `Auth0` / `per-client keys` auth, automatic `e-commerce` and `ERP` ingestion, and `Redis` / `MLflow` / `Apache Spark` scaling.
 
 ## Quick Start
 
