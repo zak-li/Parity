@@ -12,7 +12,7 @@ license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.4.6,<3",
-    "pandas>=3.0.3,<4",
+    "pandas>=3.0.5,<4",
     "scipy>=1.17.1,<2",
     "requests>=2.34.2,<3",
 ]
@@ -22,9 +22,9 @@ dotenv = [
     "python-dotenv>=1.2.2,<2",
 ]
 api = [
-    "fastapi>=0.139.2,<1",
+    "fastapi>=0.140.0,<1",
     "uvicorn>=0.51.0,<1",
-    "prometheus-client>=0.25.0,<1",
+    "prometheus-client>=0.26.0,<1",
     "redis>=8.0.1,<9",
     "PyJWT>=2.13.0,<3",
     "cryptography>=49.0.0",
@@ -37,29 +37,29 @@ db = [
     "alembic>=1.18.5,<2",
 ]
 ai = [
-    "groq>=1.5.0,<2",
+    "groq>=1.6.0,<2",
 ]
 mlflow = [
-    "mlflow>=2.15,<4",
+    "mlflow>=3.14.0,<4",
 ]
 spark = [
-    "pyspark>=3.5,<4",
+    "pyspark>=4.2.0,<5",
 ]
 dev = [
     "pytest>=9.1.1,<10",
     "pytest-cov>=7.1.0,<8",
     "python-dotenv>=1.2.2,<2",
-    "fastapi>=0.139.2,<1",
+    "fastapi>=0.140.0,<1",
     "uvicorn>=0.51.0,<1",
-    "prometheus-client>=0.25.0,<1",
+    "prometheus-client>=0.26.0,<1",
     "httpx>=0.28.1,<1",
     "sqlalchemy>=2.0.51,<3",
     "psycopg2-binary>=2.9.12,<3",
     "pymongo>=4.17.0,<5",
     "neo4j>=6.2.0,<7",
     "alembic>=1.18.5,<2",
-    "groq>=1.5.0,<2",
-    "ruff==0.15.22",
+    "groq>=1.6.0,<2",
+    "ruff==0.16.0",
     "mypy>=2.3.0",
     "pip-audit>=2.10.1",
     "build>=1.5.0",
