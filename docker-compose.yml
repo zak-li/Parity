@@ -1,5 +1,6 @@
-# Parity backend stack. Uses host networking so every service is reachable at
-# 127.0.0.1:<port> on the host and at <host-ip>:<port> from other machines.
+# Parity backend stack. Host networking, but every service binds to 127.0.0.1
+# only: nothing is reachable from outside the host. The frontend (reverse proxy)
+# is the sole public entrypoint; a firewall (ufw) is the second layer.
 # Databases stay in the cloud (configured via .env).
 services:
   # ---- API (FastAPI engines) ----
@@ -7,6 +8,8 @@ services:
     build: .
     image: parity-api
     network_mode: host
+    # Bind to loopback: only the co-located reverse proxy reaches the API.
+    command: ["uvicorn", "api.main:app", "--host", "127.0.0.1", "--port", "8000"]
     env_file:
       - .env
     # On the VM the engines reach the co-located services over loopback.
@@ -26,7 +29,7 @@ services:
   redis:
     image: redis:7-alpine
     network_mode: host
-    command: ["redis-server", "--port", "6379", "--save", "60", "1"]
+    command: ["redis-server", "--bind", "127.0.0.1", "--port", "6379", "--save", "60", "1"]
     healthcheck:
       test: ["CMD", "redis-cli", "-p", "6379", "ping"]
       interval: 5s
@@ -42,6 +45,8 @@ services:
     build: ./lab
     image: parity-mlflow
     network_mode: host
+    environment:
+      MLFLOW_HOST: 127.0.0.1
     volumes:
       - mlflowdata:/mlflow
     healthcheck:
@@ -61,7 +66,7 @@ services:
       - /opt/spark/bin/spark-class
       - org.apache.spark.deploy.master.Master
       - --host
-      - 0.0.0.0
+      - 127.0.0.1
       - --port
       - "7077"
       - --webui-port
