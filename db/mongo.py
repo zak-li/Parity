@@ -27,15 +27,21 @@ class MongoSimulationRepository:
         self._collection.replace_one({"_id": record.id}, self._to_document(record), upsert=True)
         return record
 
-    def get(self, record_id: str) -> SimulationRecord | None:
-        document = self._collection.find_one({"_id": record_id})
+    def get(self, record_id: str, client_id: str | None = None) -> SimulationRecord | None:
+        query: dict = {"_id": record_id}
+        if client_id is not None:
+            query["client_id"] = client_id
+        document = self._collection.find_one(query)
         return self._from_document(document) if document else None
 
     def latest_for_pair(
-        self, foreign_currency: str, domestic_currency: str
+        self, foreign_currency: str, domestic_currency: str, client_id: str | None = None
     ) -> SimulationRecord | None:
         pair = f"{foreign_currency}{domestic_currency}".upper()
-        document = self._collection.find_one({"pair": pair}, sort=[("created_at", DESCENDING)])
+        query: dict = {"pair": pair}
+        if client_id is not None:
+            query["client_id"] = client_id
+        document = self._collection.find_one(query, sort=[("created_at", DESCENDING)])
         return self._from_document(document) if document else None
 
     def history(
@@ -43,8 +49,11 @@ class MongoSimulationRepository:
         foreign_currency: str | None = None,
         domestic_currency: str | None = None,
         limit: int = 50,
+        client_id: str | None = None,
     ) -> list[SimulationRecord]:
         query: dict = {}
+        if client_id is not None:
+            query["client_id"] = client_id
         if foreign_currency:
             query["foreign_currency"] = foreign_currency.upper()
         if domestic_currency:
@@ -59,6 +68,7 @@ class MongoSimulationRepository:
     def _to_document(record: SimulationRecord) -> dict:
         return {
             "_id": record.id,
+            "client_id": record.client_id,
             "created_at": record.created_at,
             "foreign_currency": record.foreign_currency,
             "domestic_currency": record.domestic_currency,
@@ -88,6 +98,7 @@ class MongoSimulationRepository:
             created = created.replace(tzinfo=dt.UTC)
         return SimulationRecord(
             id=document["_id"],
+            client_id=document.get("client_id", "public"),
             created_at=created,
             foreign_currency=document["foreign_currency"],
             domestic_currency=document["domestic_currency"],

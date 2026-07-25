@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 
 from .base import AuthRepository, JobRepository, SimulationRepository
 from .composite import CompositeSimulationRepository, SimulationSink
@@ -38,8 +39,15 @@ __all__ = [
 ]
 
 
+def _strict_persistence() -> bool:
+    # When set, a configured-but-unreachable database is a hard error instead of
+    # a silent fall-back to volatile in-memory storage (which would lose data).
+    return os.environ.get("XI_DB_STRICT", "0") == "1"
+
+
 def build_repository(config: PersistenceConfig | None = None) -> SimulationRepository:
     config = config or load_persistence_config()
+    strict = _strict_persistence()
 
     primary: SimulationRepository = InMemorySimulationRepository()
     secondaries: list[SimulationSink] = []
@@ -51,6 +59,8 @@ def build_repository(config: PersistenceConfig | None = None) -> SimulationRepos
             primary = PostgresSimulationRepository(config.postgres_dsn)  # type: ignore[arg-type]
         except Exception as exc:
             logger.warning("postgres_unavailable", extra={"error": str(exc)})
+            if strict:
+                raise
 
     if config.mongodb_enabled:
         try:
@@ -63,6 +73,8 @@ def build_repository(config: PersistenceConfig | None = None) -> SimulationRepos
                 secondaries.append(mongo)
         except Exception as exc:
             logger.warning("mongodb_unavailable", extra={"error": str(exc)})
+            if strict:
+                raise
 
     if config.neo4j_enabled:
         try:
@@ -78,6 +90,8 @@ def build_repository(config: PersistenceConfig | None = None) -> SimulationRepos
             )
         except Exception as exc:
             logger.warning("neo4j_unavailable", extra={"error": str(exc)})
+            if strict:
+                raise
 
     if secondaries:
         return CompositeSimulationRepository(primary, secondaries)
