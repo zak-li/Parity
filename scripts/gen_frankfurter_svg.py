@@ -50,6 +50,36 @@ def inject(svg: str, label: str, value: str) -> str:
     return new_svg
 
 
+def sanitize(svg: str, version: str, license_: str) -> str:
+    """Turn the interactive design SVG into a clean, link-free static image.
+
+    GitHub strips <a> inside SVGs rendered as images, so the links never worked
+    in the README; removing them (and their dead CSS) yields a smaller, valid,
+    accessible asset that renders identically everywhere.
+    """
+    # Unwrap every hyperlink, keeping the text/graphics it wrapped.
+    svg = re.sub(r"<a\b[^>]*>", "", svg)
+    svg = svg.replace("</a>", "")
+    # Drop the now-dead link CSS rules and the unused xlink namespace.
+    svg = re.sub(r"\n[ \t]*a\s*\{[^}]*\}", "", svg)
+    svg = re.sub(r"\n[ \t]*a:hover\s*\{[^}]*\}", "", svg)
+    svg = svg.replace(' xmlns:xlink="http://www.w3.org/1999/xlink"', "")
+    # Accessibility: a static image needs a role, a label, and a <title>.
+    label = f"Powered by Frankfurter · version {version} · license {license_} · CI passing"
+    svg = svg.replace(
+        '<svg id="infographic"',
+        f'<svg id="infographic" role="img" aria-label="{label}"',
+        1,
+    )
+    svg = re.sub(
+        r'(<svg id="infographic"[^>]*>)',
+        rf"\1\n      <title>{label}</title>",
+        svg,
+        count=1,
+    )
+    return svg
+
+
 def main() -> int:
     if not SOURCE.exists():
         # Design source is local-only (tmp/ is gitignored); skip without failing
@@ -64,6 +94,7 @@ def main() -> int:
     svg = svg.replace("&nbsp;", " ")
     svg = inject(svg, "ERSION", version)
     svg = inject(svg, "ICENSE", license_)
+    svg = sanitize(svg, version, license_)
 
     if not svg.endswith("\n"):
         svg += "\n"
