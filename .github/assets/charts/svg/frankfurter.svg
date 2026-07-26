@@ -37,17 +37,17 @@
         <!-- HARMONIZED TOP METADATA LINE WITH EMBEDDED HYPERLINKS (CENTERED AT X=290) -->
         <text class="title-serif" x="290" y="30" text-anchor="middle" letter-spacing="0.8px">
           <!-- LINK 1: VERSION 0.9.1 -->
-          <a href="https://github.com/hannesfrank/frankfurter/releases" target="_blank">
+          <a href="https://github.com/zak-li/Parity/releases" target="_blank">
             <tspan fill="#64748B" fill-opacity="0.45" font-size="19">V</tspan><tspan fill="#64748B" fill-opacity="0.45" font-size="14.5">ERSION </tspan><tspan fill="#64748B" fill-opacity="1.0" font-size="14.5">0.9.1</tspan>
           </a>
           <tspan fill="#64748B" fill-opacity="0.4" font-size="14.5">   ·   </tspan>
           <!-- LINK 2: LICENSE AGPL-3.0 -->
-          <a href="https://github.com/hannesfrank/frankfurter/blob/master/LICENSE" target="_blank">
+          <a href="https://github.com/zak-li/Parity/blob/main/LICENSE" target="_blank">
             <tspan fill="#64748B" fill-opacity="0.45" font-size="19">L</tspan><tspan fill="#64748B" fill-opacity="0.45" font-size="14.5">ICENSE </tspan><tspan fill="#64748B" fill-opacity="1.0" font-size="14.5">AGPL-3.0</tspan>
           </a>
           <tspan fill="#64748B" fill-opacity="0.4" font-size="14.5">   ·   </tspan>
           <!-- LINK 3: CI PASSING -->
-          <a href="https://github.com/hannesfrank/frankfurter/actions" target="_blank">
+          <a href="https://github.com/zak-li/Parity/actions/workflows/ci.yml" target="_blank">
             <tspan fill="#64748B" fill-opacity="0.45" font-size="19">CI </tspan><tspan class="gradient-passing" font-size="14.5">PASSING</tspan>
           </a>
         </text>
