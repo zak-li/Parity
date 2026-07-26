@@ -3,12 +3,12 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/svg/logo_2.svg">
-    <img src=".github/assets/svg/logo.svg" alt="Parity" width="340">
+    <img src=".github/assets/svg/logo.svg" alt="Parity" width="370">
   </picture>
 </p>
 
 <p align="center">
-  <a href="https://frankfurter.dev"><img src=".github/assets/charts/svg/frankfurter.svg" alt="FX data feed: Frankfurter API (ECB)" width="340"></a>
+  <a href="https://frankfurter.dev"><img src=".github/assets/charts/svg/frankfurter.svg" alt="FX data feed: Frankfurter API (ECB)" width="380"></a>
 </p>
 
 <br>
