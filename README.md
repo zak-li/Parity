@@ -1,14 +1,18 @@
 <br>
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/svg/logo_2.svg">
-    <img src=".github/assets/svg/logo.svg" alt="Parity" width="400">
-  </picture>
+  <a>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/svg/logo_2.svg">
+      <img src=".github/assets/svg/logo.svg" alt="Parity" width="400">
+    </picture>
+  </a>
 </p>
 
 <p align="center">
-  <img src=".github/assets/charts/svg/frankfurter.svg" alt="Powered by Frankfurter · FX data feed (ECB)" width="390">
+  <a>
+    <img src=".github/assets/charts/svg/frankfurter.svg" alt="Powered by Frankfurter · FX data feed (ECB)" width="390">
+  </a>
 </p>
 
 <br>
@@ -22,10 +26,12 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a `Vulnerabi
 <br>
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/charts/parity_before_after_dark.png">
-    <img src=".github/assets/charts/parity_before_after_light.png" alt="Parity Predictable Margins Chart" width="100%">
-  </picture>
+  <a>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/charts/parity_quadrant_dark.png?v=3">
+      <img src=".github/assets/charts/parity_quadrant_light.png?v=3" alt="Parity Predictive Engine Accuracy" width="100%">
+    </picture>
+  </a>
 </p>
 
 ## Table of Contents

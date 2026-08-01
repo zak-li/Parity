@@ -18,7 +18,7 @@
               font-weight: 800;
             }
             .gradient-passing {
-              fill: url(#passing-gradient) !important;
+              fill: #0B00FF !important;
             }
             .logo-p { fill: #64748B; fill-opacity: 1.0; }
             .logo-s { fill: #64748B; fill-opacity: 0.45; }
@@ -42,7 +42,7 @@
           <tspan fill="#64748B" fill-opacity="0.4" font-size="14.5">   ·   </tspan>
           <!-- LINK 3: CI PASSING -->
           
-            <tspan fill="#64748B" fill-opacity="0.45" font-size="19">CI </tspan><tspan class="gradient-passing" font-size="14.5">PASSING</tspan>
+            <tspan fill="#64748B" fill-opacity="0.45" font-size="19">CI </tspan><tspan fill="#64748B" fill-opacity="1.0" font-size="14.5">PASSING</tspan>
           
         </text>
 
