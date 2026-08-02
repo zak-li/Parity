@@ -1,11 +1,6 @@
 <svg id="infographic" role="img" aria-label="Powered by Frankfurter · version 0.9.1 · license AGPL-3.0 · CI passing" viewBox="0 -32 580 331" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
       <title>Powered by Frankfurter · version 0.9.1 · license AGPL-3.0 · CI passing</title>
         <defs>
-          <!-- EXACT LINEAR GRADIENT FROM ICON.SVG (CYAN #35EDFF TO ELECTRIC BLUE #0B00FF) -->
-          <linearGradient id="passing-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#35EDFF" stop-opacity="1" />
-            <stop offset="100%" stop-color="#0B00FF" stop-opacity="1" />
-          </linearGradient>
           <style>
             @font-face {
   font-family: 'Cinzel';
@@ -16,9 +11,6 @@
             .title-serif {
               font-family: 'Cinzel', serif;
               font-weight: 800;
-            }
-            .gradient-passing {
-              fill: #0B00FF !important;
             }
             .logo-p { fill: #64748B; fill-opacity: 1.0; }
             .logo-s { fill: #64748B; fill-opacity: 0.45; }
