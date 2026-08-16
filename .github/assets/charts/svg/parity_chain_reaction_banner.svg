@@ -1,0 +1,141 @@
+<svg id="parity-square-tiles-svg" viewBox="0 0 1800 600" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Original Parity Icon Gradient from icon.svg -->
+          <linearGradient gradientTransform="rotate(25)" id="parity-icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color: #00F0FF; stop-opacity: 1;"/>
+            <stop offset="100%" style="stop-color: rgb(11, 0, 255); stop-opacity: 1;"/>
+          </linearGradient>
+
+          <!-- Luxurious 1800px Multi-Stop Palette: Luminous Cyan -> Electric Azure -> Parity Deep Blue -> Deep Indigo -> Royal Violet -->
+          <linearGradient id="stripe-gradient-1800" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#00F0FF"/>
+            <stop offset="22%" stop-color="#00A2FF"/>
+            <stop offset="48%" stop-color="rgb(11, 0, 255)"/>
+            <stop offset="75%" stop-color="#5E17EB"/>
+            <stop offset="100%" stop-color="#8B5CF6"/>
+          </linearGradient>
+
+          <!-- 1. Shadow for 2-Carreaux Spans (600x300) — Matches user image with stepped diagonal curve -->
+          <linearGradient id="matte-shadow-2-carreaux-top" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#000000" stop-opacity="0.85"/>
+            <stop offset="14%" stop-color="#000000" stop-opacity="0.60"/>
+            <stop offset="42%" stop-color="#000000" stop-opacity="0.0"/>
+            <stop offset="68%" stop-color="#000000" stop-opacity="0.0"/>
+            <stop offset="90%" stop-color="#000000" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#000000" stop-opacity="0.65"/>
+          </linearGradient>
+
+          <linearGradient id="matte-shadow-2-carreaux-bottom" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#000000" stop-opacity="0.85"/>
+            <stop offset="14%" stop-color="#000000" stop-opacity="0.60"/>
+            <stop offset="42%" stop-color="#000000" stop-opacity="0.0"/>
+            <stop offset="68%" stop-color="#000000" stop-opacity="0.0"/>
+            <stop offset="90%" stop-color="#000000" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#000000" stop-opacity="0.65"/>
+          </linearGradient>
+
+          <!-- 2. Shadow for Single 300x300 Carreau -->
+          <linearGradient id="matte-shadow-single" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#000000" stop-opacity="0.65"/>
+            <stop offset="45%" stop-color="#000000" stop-opacity="0.0"/>
+            <stop offset="100%" stop-color="#000000" stop-opacity="0.55"/>
+          </linearGradient>
+
+          <!-- Horizontal Ambient Shadow Overlay for Silky Depth -->
+          <linearGradient id="lines-vignette-overlay" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#000000" stop-opacity="0.18"/>
+            <stop offset="18%" stop-color="#000000" stop-opacity="0.02"/>
+            <stop offset="50%" stop-color="#000000" stop-opacity="0.05"/>
+            <stop offset="82%" stop-color="#000000" stop-opacity="0.02"/>
+            <stop offset="100%" stop-color="#000000" stop-opacity="0.18"/>
+          </linearGradient>
+
+          <!-- Soft Atmospheric Drop Shadow Filter for Elevated Solid Tiles -->
+          <filter id="elevated-tile-shadow" x="-15%" y="-15%" width="130%" height="130%">
+            <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#02001C" flood-opacity="0.50"/>
+            <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#02001C" flood-opacity="0.30"/>
+          </filter>
+
+          <!-- Pattern for 1800px Wide Full-Row Gradient Lines (Exact 300px tile cycle: 13 lines of 12px + 12 gaps of 12px = 300px) -->
+          <pattern id="stripes-full-row" x="0" y="0" width="1800" height="300" patternUnits="userSpaceOnUse">
+            <rect y="0" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="24" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="48" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="72" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="96" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="120" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="144" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="168" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="192" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="216" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="240" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="264" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+            <rect y="288" width="1800" height="12" fill="url(#stripe-gradient-1800)" opacity="0.95" shape-rendering="crispEdges"/>
+          </pattern>
+        </defs>
+
+        <g id="parity-tile-composition">
+
+          <!-- LAYER 1: FULL 1800x600 CANVAS BACKGROUND GRADIENT LINES WITH 2-CARREAUX SHADOWS -->
+          <g id="background-gradient-lines">
+            <!-- 1. All 13 gradient lines across full canvas -->
+            <rect x="0" y="0" width="1800" height="600" fill="url(#stripes-full-row)" shape-rendering="crispEdges"/>
+
+            <!-- 2. Row 0: Single tile shadow at x=600..900 -->
+            <rect x="600" y="0" width="300" height="300" fill="url(#matte-shadow-single)" style="mix-blend-mode: multiply;" shape-rendering="crispEdges"/>
+
+            <!-- 3. Row 0: 2-Carreaux continuous span shadow at x=1200..1800 (600x300) — Exact image match -->
+            <rect x="1200" y="0" width="600" height="300" fill="url(#matte-shadow-2-carreaux-top)" style="mix-blend-mode: multiply;" shape-rendering="crispEdges"/>
+
+            <!-- 4. Row 1: 2-Carreaux continuous span shadow at x=0..600 (600x300) — Exact image match -->
+            <rect x="0" y="300" width="600" height="300" fill="url(#matte-shadow-2-carreaux-bottom)" style="mix-blend-mode: multiply;" shape-rendering="crispEdges"/>
+
+            <!-- 5. Row 1: Single tile shadow at x=900..1200 -->
+            <rect x="900" y="300" width="300" height="300" fill="url(#matte-shadow-single)" style="mix-blend-mode: multiply;" shape-rendering="crispEdges"/>
+
+            <!-- 6. Subtle overall horizontal lighting balance -->
+            <rect x="0" y="0" width="1800" height="600" fill="url(#lines-vignette-overlay)" style="mix-blend-mode: multiply;" shape-rendering="crispEdges"/>
+          </g>
+
+          <!-- LAYER 2: FOREGROUND SOLID DEEP BLUE TILES (With Soft Multi-Drop Shadows) -->
+          <g id="foreground-solid-tiles" filter="url(#elevated-tile-shadow)">
+
+            <!-- ROW 0 (y=0) -->
+            <!-- Tile (0,0): Solid Deep Blue + Parity Star Icon (Centrage parfait avec marge 75px) -->
+            <g transform="translate(0, 0)">
+              <rect x="0" y="0" width="300" height="300" fill="rgb(11, 0, 255)" shape-rendering="crispEdges"/>
+              <g transform="translate(75, 75) scale(1.5)">
+                <path fill="#FFFFFF" d="M90 45.5H60.864l20.603-20.603-6.364-6.364L54.5 39.135V10h-9.001v29.135L24.897 18.534l-6.364 6.364L39.135 45.5H10v9h29.135L18.533 75.101l6.364 6.364 20.602-20.601V90H54.5V60.864l20.603 20.602 6.364-6.364L60.864 54.5H90z"/>
+              </g>
+            </g>
+
+            <!-- Tile (1,0): Solid Deep Blue + Ghost Icon (Centrage identique à 12% opacité) -->
+            <g transform="translate(300, 0)">
+              <rect x="0" y="0" width="300" height="300" fill="rgb(11, 0, 255)" shape-rendering="crispEdges"/>
+              <g transform="translate(75, 75) scale(1.5)" opacity="0.12">
+                <path fill="#FFFFFF" d="M90 45.5H60.864l20.603-20.603-6.364-6.364L54.5 39.135V10h-9.001v29.135L24.897 18.534l-6.364 6.364L39.135 45.5H10v9h29.135L18.533 75.101l6.364 6.364 20.602-20.601V90H54.5V60.864l20.603 20.602 6.364-6.364L60.864 54.5H90z"/>
+              </g>
+            </g>
+
+            <!-- Tile (3,0): Solid Deep Blue (clean gap) -->
+            <rect x="900" y="0" width="300" height="300" fill="rgb(11, 0, 255)" shape-rendering="crispEdges"/>
+
+            <!-- ROW 1 (y=300) -->
+            <!-- Tile (2,1): Solid Deep Blue + Ghost Icon (Centrage identique à 12% opacité) -->
+            <g transform="translate(600, 300)">
+              <rect x="0" y="0" width="300" height="300" fill="rgb(11, 0, 255)" shape-rendering="crispEdges"/>
+              <g transform="translate(75, 75) scale(1.5)" opacity="0.12">
+                <path fill="#FFFFFF" d="M90 45.5H60.864l20.603-20.603-6.364-6.364L54.5 39.135V10h-9.001v29.135L24.897 18.534l-6.364 6.364L39.135 45.5H10v9h29.135L18.533 75.101l6.364 6.364 20.602-20.601V90H54.5V60.864l20.603 20.602 6.364-6.364L60.864 54.5H90z"/>
+              </g>
+            </g>
+
+            <!-- Tile (4,1): Solid Deep Blue (clean gap) -->
+            <rect x="1200" y="300" width="300" height="300" fill="rgb(11, 0, 255)" shape-rendering="crispEdges"/>
+
+            <!-- Tile (5,1): Solid Deep Blue (Carreau en bas à droite — Icône supprimée) -->
+            <rect x="1500" y="300" width="300" height="300" fill="rgb(11, 0, 255)" shape-rendering="crispEdges"/>
+
+          </g>
+
+        </g>
+      </svg>

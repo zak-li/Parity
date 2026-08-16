@@ -9,9 +9,12 @@
   </a>
 </p>
 
+<br>
+<br>
+
 <p align="center">
   <a>
-    <img src=".github/assets/charts/svg/frankfurter.svg" alt="Powered by Frankfurter · FX data feed (ECB)" width="390">
+    <img src=".github/assets/charts/svg/parity_chain_reaction_banner.svg" alt="Parity Chain Reaction Banner" width="100%">
   </a>
 </p>
 
