@@ -40,12 +40,15 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a `Vulnerabi
 
 ## Features
 
-Parity simulates the delivery-date exchange rate across hundreds of thousands of scenarios, capturing volatility clustering and fat-tailed, jump-prone markets. It distils the result into margin percentiles, loss probability, tail risk (`Expected Shortfall`), and a 0 to 100 `Vulnerability Score`, then prices and compares a `forward`, an `option`, and a `zero-cost collar` to recommend the optimal hedge with its cost and benefit quantified.
+Parity is an end-to-end currency risk decision engine designed for international trade, commerce, and treasury operations. It quantifies FX exposure, evaluates downside vulnerability, and automates optimal hedging strategies directly from financial data:
 
-Past the single-order view, the same core does more:
-
-- Portfolios, layered hedges, stress tests, backtests, and compliance, all in one engine.
-- A deployable API with `Auth0` / `per-client keys` auth, automatic `e-commerce` and `ERP` ingestion, and `Redis` / `MLflow` / `Apache Spark` scaling.
+- **Stochastic FX Rate Simulation**: Simulates future exchange rate paths across hundreds of thousands of scenarios, capturing volatility clustering, stochastic volatility, fat tails, and jump risks.
+- **Margin & Tail Risk Scoring**: Computes margin distributions, loss probabilities, tail risk (`Value at Risk` and `Expected Shortfall`), and distils exposure into an actionable 0 to 100 `Vulnerability Score`.
+- **Optimal Hedging Decision Engine**: Prices and compares derivative structures (`forwards`, `options`, and `zero-cost collars`) with closed-form Greeks and cost-benefit trade-offs to recommend the optimal hedge ratio.
+- **Multi-Currency Portfolios & Cashflow Ladders**: Handles correlated exposure books, multi-date delivery schedules, layered hedging strategies, and per-currency risk attribution.
+- **Stress Testing & Model Validation**: Performs deterministic and historical crisis simulations, reverse stress tests, and formal statistical backtests (`Kupiec POF`, `Christoffersen independence`, and `Expected Shortfall` validation).
+- **Automated Exposure Ingestion**: Ingests orders, invoices, and payment streams directly from e-commerce and ERP workflows.
+- **Multi-Modal Operation**: Operates as an embedded Python library, a terminal CLI tool, or a secured REST API with multi-tenant isolation, structured audit logs, and monitoring alerts.
 
 ## Quick Start
 
