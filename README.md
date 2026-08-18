@@ -3,18 +3,9 @@
 <p align="center">
   <a>
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/svg/logo_2.svg">
-      <img src=".github/assets/svg/logo.svg" alt="Parity" width="400">
+      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/charts/svg/parity_brand_banner_dark.svg">
+      <img src=".github/assets/charts/svg/parity_brand_banner_light.svg" alt="Parity" width="100%">
     </picture>
-  </a>
-</p>
-
-<br>
-<br>
-
-<p align="center">
-  <a>
-    <img src=".github/assets/charts/svg/parity_chain_reaction_banner.svg" alt="Parity Chain Reaction Banner" width="100%">
   </a>
 </p>
 
