@@ -40,15 +40,15 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a `Vulnerabi
 
 ## Features
 
-Parity is an end-to-end currency risk decision engine designed for international trade, commerce, and treasury operations. It quantifies FX exposure, evaluates downside vulnerability, and automates optimal hedging strategies directly from financial data:
+Parity simulates exchange rate uncertainty across hundreds of thousands of market scenarios to quantify downside margin risk before transactions settle.
 
-- **Stochastic FX Rate Simulation**: Simulates future exchange rate paths across hundreds of thousands of scenarios, capturing volatility clustering, stochastic volatility, fat tails, and jump risks.
-- **Margin & Tail Risk Scoring**: Computes margin distributions, loss probabilities, tail risk (`Value at Risk` and `Expected Shortfall`), and distils exposure into an actionable 0 to 100 `Vulnerability Score`.
-- **Optimal Hedging Decision Engine**: Prices and compares derivative structures (`forwards`, `options`, and `zero-cost collars`) with closed-form Greeks and cost-benefit trade-offs to recommend the optimal hedge ratio.
-- **Multi-Currency Portfolios & Cashflow Ladders**: Handles correlated exposure books, multi-date delivery schedules, layered hedging strategies, and per-currency risk attribution.
-- **Stress Testing & Model Validation**: Performs deterministic and historical crisis simulations, reverse stress tests, and formal statistical backtests (`Kupiec POF`, `Christoffersen independence`, and `Expected Shortfall` validation).
-- **Automated Exposure Ingestion**: Ingests orders, invoices, and payment streams directly from e-commerce and ERP workflows.
-- **Multi-Modal Operation**: Operates as an embedded Python library, a terminal CLI tool, or a secured REST API with multi-tenant isolation, structured audit logs, and monitoring alerts.
+- Projects delivery-date exchange rates while capturing volatility clustering, fat tails, and market jumps.
+- Distils margin percentiles, loss probabilities, and tail risk into an actionable 0 to 100 `Vulnerability Score`.
+
+The engine automates derivative pricing and decision-making to recommend the optimal hedge for single orders or multi-currency portfolios.
+
+- Prices and compares `forwards`, `options`, and `zero-cost collars` with exact Greeks and trade-off metrics.
+- Scales from standalone trade hedging to netted cashflow ladders, historical stress tests, and statistical backtests.
 
 ## Quick Start
 
@@ -127,20 +127,29 @@ The modeling assumptions, limits, and validation are covered in [`docs/MODELS.md
 
 ### Command Line (CLI)
 
-Parity includes a standalone CLI (`parity`) for running risk simulations directly from your terminal:
+The `parity` executable enables terminal-based risk assessment and decision automation without starting an API service.
+
+Print CLI usage and configuration options:
 
 ```bash
-# Display CLI version and help
-parity --version
 parity --help
+```
 
-# Run a currency risk simulation for an order
+Quantify exposure and evaluate optimal hedging recommendations for an order:
+
+```bash
 parity simulate --amount 200000 --foreign USD --domestic EUR --delivery 2026-10-01 --target-margin 0.15
+```
 
-# Export simulation results as JSON
+Print structured JSON results:
+
+```bash
 parity simulate --amount 200000 --foreign USD --domestic EUR --delivery 2026-10-01 --json
+```
 
-# Check runtime environment and configuration health
+Perform runtime diagnostics and connectivity checks:
+
+```bash
 parity health
 ```
 
