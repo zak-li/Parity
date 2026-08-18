@@ -32,6 +32,7 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a `Vulnerabi
 
 - [Features](#features)
 - [Quick Start](#quick-start)
+- [Command Line (CLI)](#command-line-cli)
 - [Core API](#core-api)
 - [Observability](#observability)
 - [Settings](#settings)
@@ -120,6 +121,25 @@ The response scores the exposure and ranks the hedges (trimmed):
 ```
 
 The modeling assumptions, limits, and validation are covered in [`docs/MODELS.md`](docs/MODELS.md).
+
+### Command Line (CLI)
+
+Parity includes a standalone CLI (`parity`) for running risk simulations directly from your terminal:
+
+```bash
+# Display CLI version and help
+parity --version
+parity --help
+
+# Run a currency risk simulation for an order
+parity simulate --amount 200000 --foreign USD --domestic EUR --delivery 2026-10-01 --target-margin 0.15
+
+# Export simulation results as JSON
+parity simulate --amount 200000 --foreign USD --domestic EUR --delivery 2026-10-01 --json
+
+# Check runtime environment and configuration health
+parity health
+```
 
 ### Docker
 
@@ -215,13 +235,18 @@ These variables are all optional and share the `XI_` prefix. The complete refere
 |---|---|---|
 | `XI_API_KEY` | | Master key; when set, the `X-API-Key` header becomes mandatory |
 | `XI_API_KEY_PEPPER` | | Secret pepper for per-client API-key hashing (set in production) |
+| `XI_ENV` | `development` | Environment mode (`development`, `production`) |
 | `XI_API_RATE_LIMIT_PER_SECOND` | `25` | Inbound per-client rate limit |
 | `XI_API_RATE_LIMIT_BURST` | `50` | Inbound per-client burst size |
 | `XI_API_MAX_CONCURRENCY` | `8` | Max simultaneous requests before `503` |
 | `XI_API_REQUEST_TIMEOUT_SECONDS` | `30` | Request timeout before `504` |
 | `XI_LOG_LEVEL` | `INFO` | JSON log level |
 | `XI_DB_AUTO_CREATE` | `1` | Set `0` in production; manage the schema with Alembic |
+| `XI_DB_STRICT` | `0` | When set to `1`, unreachable database fails closed instead of falling back to memory |
 | `XI_ALLOWED_FX_HOSTS` | `api.frankfurter.dev` | Data host allowlist (anti-SSRF) |
+| `XI_FX_PROVIDERS` | `frankfurter,exchangerate_api` | Prioritized FX provider chain |
+| `XI_EXCHANGERATE_API_KEY` | | API key for ExchangeRate-API |
+| `XI_FIXER_API_KEY` | | API key for Fixer.io |
 | `XI_HTTP_TIMEOUT_SECONDS` | `10.0` | Data call timeout |
 | `XI_RATE_LIMIT_PER_SECOND` | `10.0` | Max request rate to the rate provider |
 | `XI_CACHE_TTL_SECONDS` | `3600.0` | Exchange rate cache lifetime |
