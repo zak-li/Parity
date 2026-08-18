@@ -14,7 +14,7 @@ from api.auth0_auth import Auth0Authenticator
 from api.security import hash_api_key
 from core.app.tracking import SimulationTracker, build_tracker
 from core.config import load_runtime_config
-from core.io.fx import FrankfurterFxDataProvider, FxDataProvider
+from core.io.fx import FxDataProvider, build_default_fx_provider
 from core.models.exceptions import SecurityError
 from db import (
     AuthRepository,
@@ -74,7 +74,7 @@ def get_fx_provider() -> FxDataProvider:
             cache = None
             rate_limiter = None
 
-    return FrankfurterFxDataProvider(cache=cache, rate_limiter=rate_limiter)
+    return build_default_fx_provider(config=config, cache=cache, rate_limiter=rate_limiter)
 
 
 @lru_cache(maxsize=1)

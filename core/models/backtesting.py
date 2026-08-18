@@ -21,6 +21,75 @@ class KupiecResult:
     rejected: bool
 
 
+@dataclass(frozen=True, slots=True)
+class ChristoffersenResult:
+    n_observations: int
+    n00: int
+    n01: int
+    n10: int
+    n11: int
+    pi0: float
+    pi1: float
+    likelihood_ratio: float
+    p_value: float
+    rejected: bool
+
+
+def christoffersen_independence_test(
+    exceedance_indicator: np.ndarray,
+    significance: float = settings.KUPIEC_SIGNIFICANCE,
+) -> ChristoffersenResult:
+    """Christoffersen (1998) test for independence of VaR exceedances.
+
+    Tests whether exceedances are unclustered in time (H0: pi0 == pi1).
+    """
+    ind = np.asarray(exceedance_indicator, dtype=int)
+    if ind.ndim != 1 or len(ind) < 2:
+        raise InsufficientDataError("Indicator series must have at least 2 observations.")
+
+    i_prev = ind[:-1]
+    i_curr = ind[1:]
+
+    n00 = int(np.sum((i_prev == 0) & (i_curr == 0)))
+    n01 = int(np.sum((i_prev == 0) & (i_curr == 1)))
+    n10 = int(np.sum((i_prev == 1) & (i_curr == 0)))
+    n11 = int(np.sum((i_prev == 1) & (i_curr == 1)))
+
+    n0 = n00 + n01
+    n1 = n10 + n11
+
+    pi0 = n01 / n0 if n0 > 0 else 0.0
+    pi1 = n11 / n1 if n1 > 0 else 0.0
+    pi = (n01 + n11) / (n0 + n1) if (n0 + n1) > 0 else 0.0
+
+    # Log-likelihood under null (independence)
+    log_l0 = (n00 + n10) * np.log(max(1.0 - pi, 1e-12)) + (n01 + n11) * np.log(max(pi, 1e-12))
+
+    # Log-likelihood under alternative (first-order Markov dependence)
+    log_l1 = (
+        n00 * np.log(max(1.0 - pi0, 1e-12))
+        + n01 * np.log(max(pi0, 1e-12))
+        + n10 * np.log(max(1.0 - pi1, 1e-12))
+        + n11 * np.log(max(pi1, 1e-12))
+    )
+
+    lr_stat = float(max(2.0 * (log_l1 - log_l0), 0.0))
+    p_value = float(chi2.sf(lr_stat, df=1))
+
+    return ChristoffersenResult(
+        n_observations=len(ind),
+        n00=n00,
+        n01=n01,
+        n10=n10,
+        n11=n11,
+        pi0=pi0,
+        pi1=pi1,
+        likelihood_ratio=lr_stat,
+        p_value=p_value,
+        rejected=p_value < significance,
+    )
+
+
 def kupiec_pof_test(
     n_observations: int,
     n_exceedances: int,

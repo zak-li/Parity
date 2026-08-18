@@ -17,5 +17,6 @@ venv/
 
 /app/
 /tmp/
+docs/arXiv/
 docker-compose.override.yml
 
