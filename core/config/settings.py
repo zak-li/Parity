@@ -123,6 +123,13 @@ def _env_origins(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(o.strip() for o in raw.split(",") if o.strip())
 
 
+def _env_tuple(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
+    raw = os.environ.get(f"{_ENV_PREFIX}{name}")
+    if raw is None:
+        return default
+    return tuple(p.strip().lower() for p in raw.split(",") if p.strip())
+
+
 def _env_str(name: str, default: str | None = None) -> str | None:
     return os.environ.get(f"{_ENV_PREFIX}{name}", default)
 
@@ -154,8 +161,26 @@ class RuntimeConfig:
         default_factory=lambda: _env_int("RATE_LIMIT_BURST", 20, minimum=1)
     )
     allowed_fx_hosts: frozenset[str] = field(
-        default_factory=lambda: _env_hosts("ALLOWED_FX_HOSTS", frozenset({"api.frankfurter.dev"}))
+        default_factory=lambda: _env_hosts(
+            "ALLOWED_FX_HOSTS",
+            frozenset(
+                {
+                    "api.frankfurter.dev",
+                    "open.er-api.com",
+                    "v6.exchangerate-api.com",
+                    "api.apilayer.com",
+                    "api.fixer.io",
+                }
+            ),
+        )
     )
+    fx_providers: tuple[str, ...] = field(
+        default_factory=lambda: _env_tuple("FX_PROVIDERS", ("frankfurter", "exchangerate_api"))
+    )
+    exchangerate_api_key: str | None = field(
+        default_factory=lambda: _env_str("EXCHANGERATE_API_KEY", None)
+    )
+    fixer_api_key: str | None = field(default_factory=lambda: _env_str("FIXER_API_KEY", None))
     auth0_domain: str | None = field(default_factory=lambda: _env_str("AUTH0_DOMAIN", None))
     auth0_client_id: str | None = field(default_factory=lambda: _env_str("AUTH0_CLIENT_ID", None))
     auth0_audience: str = field(

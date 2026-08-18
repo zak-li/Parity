@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.2] (2026-08-18)
+
 ### Security
 - `Multi-tenant isolation` for persisted simulations: every run is now scoped to
   the authenticated client (`client_id`), and `history` / `GET {id}` /
@@ -17,9 +19,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (previously always fell back to an insecure development pepper).
 
 ### Added
+- `CLI interface` (`core/cli.py`): added `parity` command-line executable with subcommands
+  `score`, `portfolio`, and `backtest`.
+- `ExchangeRate-API provider` (`core/io/fx/exchangerate_api.py`) with support for API-key authenticated FX rates.
+- `FX Provider Factory` (`core/io/fx/factory.py`): unified provider resolution (`build_default_fx_provider`) supporting Frankfurter, ExchangeRate-API, and static providers.
+- `Expected Shortfall & Kupiec backtesting` (`core/models/backtesting.py`): formal conditional coverage and tail risk statistical backtesting validation.
 - `XI_DB_STRICT`: when set, a configured-but-unreachable database is a hard
   error instead of a silent fall-back to volatile in-memory storage.
 - `XI_ENV` deployment-environment switch (`development` default, `production`).
+- Automated PyPI publishing workflow (`.github/workflows/pypi-publish.yml`).
+
+### Changed
+- Brand banner identity updated to responsive SVG with automatic dark / light mode support.
 
 ## [0.9.1] (2026-07-21)
 
@@ -164,7 +175,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AI narrative.` Optional `Groq` narrative generation (import-guarded).
 - `Tooling.` Test suite (361 tests) and GitHub Actions CI on Python 3.11/3.12.
 
-[Unreleased]: https://github.com/zak-li/Parity/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/zak-li/Parity/compare/v0.9.2...HEAD
+[0.9.2]: https://github.com/zak-li/Parity/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/zak-li/Parity/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/zak-li/Parity/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/zak-li/Parity/compare/v0.7.0...v0.8.0

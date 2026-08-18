@@ -23,7 +23,7 @@ from collections.abc import Callable, Sequence
 from typing import Any
 
 from core.app.risk_engine import MarginRiskEngine
-from core.io.fx import FrankfurterFxDataProvider, FxDataProvider
+from core.io.fx import FxDataProvider, build_default_fx_provider
 from core.models.models import OrderInput, SimulationResult
 
 
@@ -67,7 +67,7 @@ def summarize(result: SimulationResult) -> dict[str, Any]:
 
 def _build_provider() -> FxDataProvider:
     # Constructed inside each Spark task; patched in tests.
-    return FrankfurterFxDataProvider()
+    return build_default_fx_provider()
 
 
 def simulate_order(order_dict: dict[str, Any]) -> dict[str, Any]:

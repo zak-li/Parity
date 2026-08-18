@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-# Keep the Frankfurter signature SVG in sync with the current version/license
-# on every commit. Regenerates .github/assets/charts/svg/frankfurter.svg from
-# tmp/frankfurter.html and stages it. Never blocks a commit: if generation
-# fails (e.g. the local design source is missing), the commit proceeds.
-set -euo pipefail
-
-python scripts/gen_frankfurter_svg.py || exit 0
-git add .github/assets/charts/svg/frankfurter.svg 2>/dev/null || true

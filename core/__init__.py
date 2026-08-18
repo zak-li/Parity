@@ -5,7 +5,13 @@ from importlib.metadata import version as _package_version
 
 from .app import MarginRiskEngine, PortfolioRiskEngine
 from .config import RuntimeConfig, load_runtime_config
-from .io import FrankfurterFxDataProvider, FxDataProvider, StaticFxDataProvider
+from .io import (
+    ExchangeRateApiFxDataProvider,
+    FrankfurterFxDataProvider,
+    FxDataProvider,
+    StaticFxDataProvider,
+    build_default_fx_provider,
+)
 from .models import (
     Alert,
     AlertSeverity,
@@ -45,6 +51,7 @@ __all__ = [
     "AlertSeverity",
     "ComplianceReport",
     "DisallowedHostError",
+    "ExchangeRateApiFxDataProvider",
     "FrankfurterFxDataProvider",
     "FxDataError",
     "FxDataProvider",
@@ -74,6 +81,7 @@ __all__ = [
     "StressReport",
     "VolatilityModel",
     "backtest_parametric_var",
+    "build_default_fx_provider",
     "evaluate_change_alerts",
     "evaluate_compliance",
     "evaluate_result_alerts",

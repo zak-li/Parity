@@ -5,7 +5,7 @@ import datetime as dt
 import logging
 
 from ..config import settings
-from ..io.fx import FrankfurterFxDataProvider, FxDataProvider
+from ..io.fx import FxDataProvider, build_default_fx_provider
 from ..models import hedging, instruments, market_stats, monte_carlo, rates, scoring, volatility
 from ..models.enums import (
     MarketModel,
@@ -47,7 +47,7 @@ class MarginRiskEngine:
         market_model: MarketModel = MarketModel.GBM,
         heston_params: HestonParams | None = None,
     ) -> None:
-        self._fx_provider = fx_provider or FrankfurterFxDataProvider()
+        self._fx_provider = fx_provider or build_default_fx_provider()
         self._sampling_method = SamplingMethod(sampling_method)
         self._volatility_model = VolatilityModel(volatility_model)
         self._return_distribution = ReturnDistribution(return_distribution)

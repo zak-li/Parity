@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from ..config import settings
-from ..io.fx import FrankfurterFxDataProvider, FxDataProvider
+from ..io.fx import FxDataProvider, build_default_fx_provider
 from ..models import market_stats, rates, volatility
 from ..models.dcc import estimate_dcc
 from ..models.enums import VolatilityModel
@@ -25,7 +25,7 @@ class PortfolioRiskEngine:
         volatility_model: VolatilityModel = VolatilityModel.HISTORICAL,
         dynamic_correlation: bool = False,
     ) -> None:
-        self._fx_provider = fx_provider or FrankfurterFxDataProvider()
+        self._fx_provider = fx_provider or build_default_fx_provider()
         self._volatility_model = VolatilityModel(volatility_model)
         self._dynamic_correlation = dynamic_correlation
 

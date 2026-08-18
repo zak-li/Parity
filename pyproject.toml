@@ -3,19 +3,38 @@ requires = ["setuptools>=84.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "xi"
-version = "0.9.1"
-description = "Currency risk simulation engine for importers and e-commerce merchants"
+name = "parity-fx"
+version = "0.9.2"
+description = "Open-source currency risk simulation decision engine for importers and e-commerce merchants"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
+keywords = ["fx", "currency-risk", "monte-carlo", "hedging", "fintech", "garch", "risk-management"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+]
 dependencies = [
     "numpy>=2.4.6,<3",
     "pandas>=3.0.5,<4",
     "scipy>=1.17.1,<2",
     "requests>=2.34.2,<3",
 ]
+
+[project.urls]
+Homepage = "https://github.com/zak-li/Parity"
+Repository = "https://github.com/zak-li/Parity"
+Documentation = "https://github.com/zak-li/Parity#readme"
+"Bug Tracker" = "https://github.com/zak-li/Parity/issues"
+
+[project.scripts]
+parity = "core.cli:main"
 
 [project.optional-dependencies]
 dotenv = [

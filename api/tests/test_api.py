@@ -9,10 +9,10 @@ from fastapi.testclient import TestClient
 
 from ai.groq_narrator import NullNarrator
 from api import create_app
-from api.dependencies import get_fx_provider, get_narrator, get_repository
+from api.dependencies import get_auth_repository, get_fx_provider, get_narrator, get_repository
 from core.io.fx.static import StaticFxDataProvider
 from core.models.exceptions import RateLimitError
-from db.memory import InMemorySimulationRepository
+from db.memory import InMemoryAuthRepository, InMemorySimulationRepository
 
 ORDER_DATE = dt.date(2026, 1, 15)
 
@@ -23,6 +23,11 @@ def _series(end_date: dt.date, n_days: int = 700, sigma: float = 0.12, seed: int
     log_returns = rng.normal(0, sigma / np.sqrt(252), n_days)
     log_returns[0] = 0.0
     return pd.Series(10.0 * np.exp(np.cumsum(log_returns)), index=dates, dtype="float64")
+
+
+@pytest.fixture(autouse=True)
+def clear_env_api_key(monkeypatch):
+    monkeypatch.setenv("XI_API_KEY", "")
 
 
 @pytest.fixture
@@ -36,6 +41,7 @@ def client(repository):
     provider = StaticFxDataProvider(_series(ORDER_DATE))
     app.dependency_overrides[get_fx_provider] = lambda: provider
     app.dependency_overrides[get_repository] = lambda: repository
+    app.dependency_overrides[get_auth_repository] = lambda: InMemoryAuthRepository()
     app.dependency_overrides[get_narrator] = lambda: NullNarrator()
     with TestClient(app) as test_client:
         yield test_client
