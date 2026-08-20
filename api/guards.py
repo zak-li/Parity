@@ -8,7 +8,7 @@ the service, so this middleware applies three defence-in-depth limits:
 * a **concurrency cap** on simultaneous requests (asyncio semaphore),
 * a **request timeout** returning ``504`` instead of hanging.
 
-All limits are configurable via ``XI_API_*`` environment variables and default
+All limits are configurable with ``XI_API_*`` environment variables and default
 to permissive-but-present values. A reverse proxy (nginx/Traefik) is still
 recommended in production for network-level protection.
 """

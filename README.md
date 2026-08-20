@@ -3,8 +3,8 @@
 <p align="center">
   <a>
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/charts/svg/parity_brand_banner_dark.svg">
-      <img src=".github/assets/charts/svg/parity_brand_banner_light.svg" alt="Parity" width="100%">
+      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/svg/parity_brand_banner_dark.svg">
+      <img src=".github/assets/svg/parity_brand_banner_light.svg" alt="Parity" width="100%">
     </picture>
   </a>
 </p>
@@ -15,7 +15,7 @@
 
 > `Parity` (codename `Xi`): a currency risk decision engine for importers and e-commerce merchants. It quantifies FX exposure, scores vulnerability, and recommends the optimal hedge directly from the numbers.
 
-Parity quantifies FX exposure by `Monte Carlo` simulation, produces a `Vulnerability Score` from 0 to 100, and recommends the optimal hedge such as a `forward`, an `option`, or a `collar`, with its cost and benefit fully quantified.
+Parity quantifies FX exposure by [`Monte Carlo`](core/models/monte_carlo.py) simulation, produces a `Vulnerability Score` from `0` to `100`, and recommends the optimal hedge such as a `forward`, an `option`, or a `collar`, with its cost and benefit fully quantified.
 
 <br>
 
@@ -32,7 +32,7 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a `Vulnerabi
 
 - [Features](#features)
 - [Quick Start](#quick-start)
-- [Command Line (CLI)](#command-line-cli)
+- [Docker](#docker)
 - [Core API](#core-api)
 - [Observability](#observability)
 - [Settings](#settings)
@@ -40,116 +40,127 @@ Parity quantifies FX exposure by `Monte Carlo` simulation, produces a `Vulnerabi
 
 ## Features
 
-Parity simulates exchange rate uncertainty across hundreds of thousands of market scenarios to quantify downside margin risk before transactions settle.
+Parity simulates currency market uncertainty across hundreds of thousands of stochastic market scenarios to quantify downside margin risk and automate hedging decisions before transactions settle.
 
-- Projects delivery-date exchange rates while capturing volatility clustering, fat tails, and market jumps.
-- Distils margin percentiles, loss probabilities, and tail risk into an actionable 0 to 100 `Vulnerability Score`.
+To generate these forward paths, the engine pairs [Geometric Brownian Motion (GBM)](core/models/monte_carlo.py) with Covered Interest Parity (`CIP`) drift, [Heston stochastic volatility](core/models/heston.py), and [Merton jump-diffusion](core/models/monte_carlo.py) processes, while calibrating dynamic [GARCH(1,1)](core/models/volatility.py) volatility clustering, fat-tailed `Student-t` return distributions, and [Dynamic Conditional Correlation (DCC-GARCH)](core/models/dcc.py) for multi-currency portfolios.
 
-The engine automates derivative pricing and decision-making to recommend the optimal hedge for single orders or multi-currency portfolios.
+The platform automates derivative valuation and trade-off analysis to determine optimal hedging structures for commercial transactions and corporate portfolios:
+- Prices and ranks Forwards, European Vanilla Options, and Zero-Cost Collars with closed-form [Garman-Kohlhagen](core/models/instruments.py) models with exact numerical cap solving (`brentq`).
+- Provides full analytical Greeks ($\Delta$, $\Gamma$, $\nu$, $\Theta$, $\rho_d$, $\rho_f$) for precise hedging desk risk management in [`core/models/instruments.py`](core/models/instruments.py).
 
-- Prices and compares `forwards`, `options`, and `zero-cost collars` with exact Greeks and trade-off metrics.
-- Scales from standalone trade hedging to netted cashflow ladders, historical stress tests, and statistical backtests.
+For corporate treasuries managing multi-date currency commitments, Parity delivers layered [cashflow ladder hedging](core/models/ladder.py), deterministic macroeconomic [stress testing](core/models/stress.py), and [reverse stress testing](core/models/stress.py) to identify exact breakeven exchange rates ($S^*$). Model accuracy is formally certified under Basel III regulatory standards using the [Kupiec LR test](core/models/backtesting.py) on `VaR 95%` ($p\text{-value} = 0.8214$) and [Acerbi-Székely](core/models/backtesting.py) Expected Shortfall backtests.
+
+The platform connects seamlessly to enterprise workflows by ingesting foreign sales and purchase orders through native ETL connectors ([`Shopify`](core/connectors/shopify.py), [`WooCommerce`](core/connectors/woocommerce.py), [`Stripe`](core/connectors/stripe.py), [`Odoo`](core/connectors/odoo.py)) while delivering real-time [drift alerts](core/models/monitoring.py), regulatory compliance checks ([`Office des Changes / IGOC`](core/models/compliance.py)), and executive AI risk commentary with [Groq / LLaMA 3.3](ai/groq_narrator.py).
 
 ## Quick Start
 
-The engine core requires the following packages:
+### 1. Installation
 
-| Package | Version |
-|---|---|
-| `Python` | 3.11+ |
-| `NumPy` | 2.4+ |
-| `SciPy` | 1.17+ |
-| `pandas` | 3.0+ |
-| `requests` | 2.34+ |
-
-The following are optional and enable extra capabilities:
-
-| Component | Role |
-|---|---|
-| `FastAPI` + `Uvicorn` | Hardened REST API service |
-| `SQLAlchemy` + `psycopg2` | `PostgreSQL` structured history |
-| `pymongo` | `MongoDB` result documents |
-| `neo4j` | Currency exposure graph |
-| `groq` | `AI` narrative generation |
-| `python-dotenv` | `.env` file loading |
-| `PyJWT` + `cryptography` | `Auth0` Single Sign-On (SSO) |
-| `prometheus-client` | Prometheus `/metrics` endpoint |
-| `redis` | Shared FX cache + rate limiter |
-| `mlflow-skinny` | Experiment tracking of each simulation run |
-| `pyspark` | Distributed batch simulations on Apache Spark |
-
-### Setup
-
-Install from source:
+Install the package directly from source:
 
 ```bash
 git clone https://github.com/zak-li/Parity.git
 cd Parity
-cp .env.example .env                # all variables are optional
 python -m venv .venv
-source .venv/bin/activate           # Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -e ".[api,db,ai,dotenv,dev]"
-pytest -q                           # verify the install
-uvicorn api.main:app --host 0.0.0.0 --port 8000
 ```
 
-The engine runs with zero configuration using free `ECB` rates and in-memory storage. The API is then live at `http://localhost:8000`, with interactive documentation at `/docs`.
+### 2. Python SDK Usage (`import Parity`)
 
-Try it with a request:
+The engine can be embedded directly into quantitative pipelines and Python applications:
+
+```python
+import datetime as dt
+import Parity
+
+# 1. Initialize API License (see core/licensing.py)
+Parity.init(api_key="your-api-key")
+
+# 2. Instantiate the Risk Engine (see core/app/risk_engine.py)
+engine = Parity.MarginRiskEngine()
+
+# 3. Define an international commercial order
+order = Parity.OrderInput(
+    amount_foreign=250000.0,  # 250,000 USD
+    foreign_currency="USD",
+    domestic_currency="EUR",
+    order_date=dt.date.today(),
+    delivery_date=dt.date.today() + dt.timedelta(days=90),
+    target_margin_pct=0.18,  # 18% target margin
+    min_acceptable_margin_pct=0.05,  # 5% floor
+    domestic_rate=0.021,  # 2.1% EUR rate
+    foreign_rate=0.043,  # 4.3% USD rate
+    n_simulations=10000,
+    lookback_days=180,
+    seed=42,
+)
+
+# 4. Run stochastic simulation
+result = engine.run(order)
+
+print(f"Spot Rate S0                 : {result.spot_rate_order_date:.4f}")
+print(f"Theoretical Forward (CIP)    : {result.hedge.theoretical_forward_rate:.4f}")
+print(f"Annualized Volatility        : {result.annualized_volatility * 100:.2f}%")
+print(f"Expected Shortfall (CVaR 5%) : {result.expected_shortfall_margin_pct * 100:.2f}%")
+print(f"Recommended Instrument       : {result.hedge.recommended_instrument.value}")
+```
+
+Price FX options and retrieve analytical Greek sensitivities instantly:
+
+```python
+from Parity.models.instruments import garman_kohlhagen_greeks
+
+greeks = garman_kohlhagen_greeks(
+    spot=0.8561, strike=0.8515, rd=0.021, rf=0.043, sigma=0.062, t=0.25, kind="call"
+)
+print(f"Delta: {greeks.delta:.4f} | Gamma: {greeks.gamma:.4f} | Vega: {greeks.vega:.4f}")
+```
+
+### 3. Hardened REST API Service
+
+Launch the secured [`FastAPI`](api/main.py) service on localhost:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/simulations \
-  -H "Content-Type: application/json" \
-  -d '{"order": {"amount_foreign": 200000, "foreign_currency": "USD",
-       "domestic_currency": "EUR", "delivery_date": "2026-10-01",
-       "target_margin_pct": 0.15, "domestic_rate": 0.021, "foreign_rate": 0.043}}'
+uvicorn api.main:app --host 127.0.0.1 --port 8000
 ```
 
-The response scores the exposure and ranks the hedges (trimmed):
+Post an exposure order to evaluate hedging recommendations:
 
-```json
-{
-  "vulnerability_score": 32,
-  "risk_level": "Moderate",
-  "expected_terminal_rate": 1.0740,
-  "margin_pct_percentiles": { "P5": 0.079, "P50": 0.135, "P95": 0.188 },
-  "expected_shortfall_margin_pct": 0.079,
-  "hedge": { "optimal_hedge_ratio": 1.0, "hedged_margin_pct": 0.135 },
-  "instruments": [
-    { "instrument": "none", "expected_margin_pct": 0.135, "cvar_margin_pct": 0.079 },
-    { "instrument": "forward", "expected_margin_pct": 0.135, "cvar_margin_pct": 0.135 }
-  ],
-  "recommendation": "..."
-}
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/simulations \
+  -H "X-API-Key: saEE4TKha-i0RlfVlbRLUob2M8cYLds3v9-FeqkCn3g" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "order": {
+      "amount_foreign": 200000,
+      "foreign_currency": "USD",
+      "domestic_currency": "EUR",
+      "delivery_date": "2026-10-01",
+      "target_margin_pct": 0.15,
+      "domestic_rate": 0.021,
+      "foreign_rate": 0.043
+    }
+  }'
 ```
 
 The modeling assumptions, limits, and validation are covered in [`docs/MODELS.md`](docs/MODELS.md).
 
-### Command Line (CLI)
+### 4. Command Line Interface (CLI)
 
-The `parity` executable enables terminal-based risk assessment and decision automation without starting an API service.
-
-Print CLI usage and configuration options:
+Perform risk assessments and compare hedges without starting an API service using [`core/cli.py`](core/cli.py):
 
 ```bash
+# Print general usage
 parity --help
-```
 
-Quantify exposure and evaluate optimal hedging recommendations for an order:
+# Run order simulation (compact syntax)
+parity sim -a 200000 -f USD -d EUR -t 2026-10-01 -m 0.15
 
-```bash
-parity simulate --amount 200000 --foreign USD --domestic EUR --delivery 2026-10-01 --target-margin 0.15
-```
+# Export structured JSON
+parity sim -a 200000 -f USD -t 2026-10-01 --json
 
-Print structured JSON results:
-
-```bash
-parity simulate --amount 200000 --foreign USD --domestic EUR --delivery 2026-10-01 --json
-```
-
-Perform runtime diagnostics and connectivity checks:
-
-```bash
+# Run connectivity diagnostics
 parity health
 ```
 
@@ -161,19 +172,19 @@ parity health
 docker compose up --build
 ```
 
-The API listens on `http://localhost:8000` (health check at `/health`) and runs as a non-root user; published images are on `ghcr.io/zak-li/parity`. The stack uses host networking, so each service is reachable at `127.0.0.1:<port>` on the host and at `<host-ip>:<port>` from other machines (API `8000`, Redis `6379`, MLflow `5000`, Spark `7077`/`8080`). Databases stay in the cloud (configured in [`.env`](.env.example)); the API reaches the co-located services over loopback, and the same `XI_REDIS_URL` / `XI_MLFLOW_TRACKING_URI` / `XI_SPARK_MASTER` variables point a local machine at a remote host. Provision a remote host over SSH with [`scripts/deploy_vm.sh`](scripts/deploy_vm.sh):
+The API listens on `http://localhost:8000` (health check at [`/health`](api/routes.py)) and runs as a non-root user. The stack uses host networking, so each service is reachable at `127.0.0.1:<port>` on the host and at `<host-ip>:<port>` from other machines (API `8000`, Redis `6379`, MLflow `5000`, Spark `7077`/`8080`). Databases stay in the cloud (configured in [`.env`](.env.example)); the API reaches the co-located services over loopback, and the same `XI_REDIS_URL` / `XI_MLFLOW_TRACKING_URI` / `XI_SPARK_MASTER` variables point a local machine at a remote host. Provision a remote host over SSH with [`scripts/ops/deploy_vm.sh`](scripts/ops/deploy_vm.sh):
 
 ```bash
-./scripts/deploy_vm.sh <ssh-user> <host-ip>
+./scripts/ops/deploy_vm.sh <ssh-user> <host-ip>
 ```
 
-Score a batch of orders across the Spark cluster:
+Process high-volume order batches on the distributed Spark cluster:
 
 ```bash
 python -m core.app.distributed --input core/app/samples/example_orders.json
 ```
 
-With `PostgreSQL` the schema is managed by `Alembic`, so set `XI_DB_AUTO_CREATE=0` and apply migrations before starting:
+PostgreSQL schema lifecycle and versioning are managed with Alembic:
 
 ```bash
 alembic upgrade head
@@ -181,51 +192,51 @@ alembic upgrade head
 
 ## Core API
 
-The API is rooted at `/api/v1`, with Swagger docs at `/docs` and Prometheus metrics at `/metrics`. Once a credential is configured (`XI_API_KEY`, a per-client key, or `Auth0`), every `/api/v1` route requires it, while `/health` and `/metrics` stay public.
+The API is rooted at `/api/v1` and protected by mandatory authentication (`X-API-Key` or `Auth0` Bearer token). Routes are defined in [`api/routes.py`](api/routes.py) and [`api/routers/connectors.py`](api/routers/connectors.py).
 
 These endpoints run simulations and expose their results:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/health` | Liveness check. *public* |
-| POST | `/api/v1/simulations` | Risk simulation, hedging decision, instrument comparison, alerts |
-| GET | `/api/v1/simulations/history` | Persisted simulation history with currency filters |
-| GET | `/api/v1/simulations/{id}` | Fetch a single persisted simulation |
-| GET | `/api/v1/exposure` | Currency exposure graph |
-| GET | `/api/v1/me` | Identity of the authenticated client |
+| GET | [`/health`](api/routes.py) | Liveness check. *public* |
+| POST | [`/api/v1/simulations`](api/routes.py) | Risk simulation, hedging decision, instrument comparison, alerts |
+| GET | [`/api/v1/simulations/history`](api/routes.py) | Persisted simulation history with currency filters |
+| GET | [`/api/v1/simulations/{id}`](api/routes.py) | Fetch a single persisted simulation |
+| GET | [`/api/v1/exposure`](api/routes.py) | Currency exposure graph |
+| GET | [`/api/v1/me`](api/routes.py) | Identity of the authenticated client |
 
-These admin endpoints manage per-client API keys (master key or open dev mode only):
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/v1/keys` | Mint a key for a client; returns the plaintext once |
-| GET | `/api/v1/keys` | List keys (metadata only, never the secret) |
-| DELETE | `/api/v1/keys/{id}` | Revoke a key |
-
-These endpoints ingest exposure automatically (ETL) from e-commerce and ERP platforms:
+These admin endpoints manage per-client API keys (master key or open dev mode only) through [`api/keys.py`](api/keys.py):
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/v1/connectors/shopify/import` | Fetch sales/revenue from `Shopify` |
-| POST | `/api/v1/connectors/woocommerce/import` | Fetch orders from `WooCommerce` |
-| POST | `/api/v1/connectors/stripe/import` | Fetch successful charges from `Stripe` |
-| POST | `/api/v1/connectors/odoo/import` | Fetch purchase orders (costs) from `Odoo` ERP |
+| POST | [`/api/v1/keys`](api/keys.py) | Mint a key for a client; returns the plaintext once |
+| GET | [`/api/v1/keys`](api/keys.py) | List keys (metadata only, never the secret) |
+| DELETE | [`/api/v1/keys/{id}`](api/keys.py) | Revoke a key |
+
+These endpoints ingest exposure automatically (ETL) from e-commerce and ERP platforms through [`api/routers/connectors.py`](api/routers/connectors.py):
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | [`/api/v1/connectors/shopify/import`](api/routers/connectors.py) | Fetch sales/revenue from [`Shopify`](core/connectors/shopify.py) |
+| POST | [`/api/v1/connectors/woocommerce/import`](api/routers/connectors.py) | Fetch orders from [`WooCommerce`](core/connectors/woocommerce.py) |
+| POST | [`/api/v1/connectors/stripe/import`](api/routers/connectors.py) | Fetch successful charges from [`Stripe`](core/connectors/stripe.py) |
+| POST | [`/api/v1/connectors/odoo/import`](api/routers/connectors.py) | Fetch purchase orders (costs) from [`Odoo`](core/connectors/odoo.py) ERP |
 
 These endpoints cover portfolio risk, hedging tools, stress testing, compliance, and backtesting:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/v1/portfolio/simulations` | Multi-currency portfolio risk with per-currency `CVaR` attribution |
-| POST | `/api/v1/ladder/simulations` | Cashflow ladder: multi-date exposure and layered hedging |
-| POST | `/api/v1/hedge/greeks` | Closed-form FX option Greeks (`Garman-Kohlhagen`) |
-| POST | `/api/v1/stress-tests` | Deterministic and historical stress tests |
-| POST | `/api/v1/compliance` | Office des Changes assessment (indicative) |
-| POST | `/api/v1/backtests/var` | `VaR` model backtesting with the `Kupiec` test |
-| POST | `/api/v1/backtests/es` | Expected Shortfall backtest (`Acerbi-Szekely`) |
+| POST | [`/api/v1/portfolio/simulations`](api/routes.py) | Multi-currency portfolio risk with per-currency `CVaR` attribution in [`core/models/portfolio.py`](core/models/portfolio.py) |
+| POST | [`/api/v1/ladder/simulations`](api/routes.py) | Cashflow ladder: multi-date exposure and layered hedging in [`core/models/ladder.py`](core/models/ladder.py) |
+| POST | [`/api/v1/hedge/greeks`](api/routes.py) | Closed-form FX option Greeks ([`Garman-Kohlhagen`](core/models/instruments.py)) |
+| POST | [`/api/v1/stress-tests`](api/routes.py) | Deterministic and historical stress tests with [`core/models/stress.py`](core/models/stress.py) |
+| POST | [`/api/v1/compliance`](api/routes.py) | Office des Changes assessment ([`core/models/compliance.py`](core/models/compliance.py)) |
+| POST | [`/api/v1/backtests/var`](api/routes.py) | `VaR` model backtesting with the `Kupiec` test in [`core/models/backtesting.py`](core/models/backtesting.py) |
+| POST | [`/api/v1/backtests/es`](api/routes.py) | Expected Shortfall backtest ([`Acerbi-Székely`](core/models/backtesting.py)) |
 
 ### Options
 
-The `options` block of `POST /simulations` selects the modeling method. All fields are optional and default to the fastest baseline.
+The `options` block of `POST /api/v1/simulations` selects the modeling method. All fields are optional and default to the fastest baseline.
 
 | Option | Values | Default |
 |---|---|---|
@@ -237,7 +248,7 @@ The `options` block of `POST /simulations` selects the modeling method. All fiel
 
 ## Observability
 
-Every request carries an `X-Request-ID` (echoed from the caller or generated) bound to structured `JSON` logs, so a single request can be traced end to end. `Prometheus` metrics such as request counts and latency histograms, labelled by method, route template, and status, are served at `GET /metrics`, which should be restricted to an internal network in production.
+Production monitoring is enabled out of the box: inbound requests carry an `X-Request-ID` (echoed from the caller or generated) bound to structured `JSON` logs, so a single request can be traced end to end. `Prometheus` metrics such as request counts and latency histograms, labelled by method, route template, and status, are served at [`GET /metrics`](api/observability.py), which should be restricted to an internal network in production.
 
 ## Settings
 
@@ -245,7 +256,7 @@ These variables are all optional and share the `XI_` prefix. The complete refere
 
 | Variable | Default | Description |
 |---|---|---|
-| `XI_API_KEY` | | Master key; when set, the `X-API-Key` header becomes mandatory |
+| `XI_API_KEY` | | Master key; when set, the `X-API-Key` header becomes mandatory ([`core/licensing.py`](core/licensing.py)) |
 | `XI_API_KEY_PEPPER` | | Secret pepper for per-client API-key hashing (set in production) |
 | `XI_ENV` | `development` | Environment mode (`development`, `production`) |
 | `XI_API_RATE_LIMIT_PER_SECOND` | `25` | Inbound per-client rate limit |
@@ -268,7 +279,7 @@ These variables are all optional and share the `XI_` prefix. The complete refere
 | `XI_NEO4J_URI` | | Neo4j URI for the exposure graph |
 | `XI_NEO4J_USERNAME`, `XI_NEO4J_PASSWORD` | | Neo4j credentials |
 | `XI_NEO4J_DATABASE` | `neo4j` | Neo4j database (the instance ID on Aura) |
-| `XI_GROQ_API_KEY` | | Groq key for the AI narrative |
+| `XI_GROQ_API_KEY` | | Groq key for the AI narrative ([`ai/groq_narrator.py`](ai/groq_narrator.py)) |
 | `XI_GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model |
 | `XI_REDIS_URL` | | Shared FX cache + rate limiter (also used by the full-stack deployment) |
 | `XI_AUTH0_DOMAIN` | | Auth0 tenant domain (e.g. `dev-xxx.eu.auth0.com`) |

@@ -6,8 +6,6 @@
 * A middleware records request count and latency; ``GET /metrics`` exposes them
   in Prometheus text format. Metric labels use the **route template** (not the
   raw path) to avoid high-cardinality series.
-
-``/metrics`` should be network-restricted (internal scrape) in production.
 """
 
 from __future__ import annotations

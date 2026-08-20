@@ -2,8 +2,8 @@
 # Deploy the Parity backend stack (API + Redis + MLflow + Spark) to a remote
 # host over SSH. Databases stay in the cloud (configured in .env).
 #
-#   ./scripts/deploy_vm.sh <ssh-user> [host]
-#   e.g.  ./scripts/deploy_vm.sh ubuntu 10.10.10.150
+#   ./scripts/ops/deploy_vm.sh <ssh-user> [host]
+#   e.g.  ./scripts/ops/deploy_vm.sh ubuntu 10.10.10.150
 #
 # Requires: ssh access to the VM, and sudo on the VM (to install Docker if it
 # is not already present). Reads secrets from .env (must exist).
@@ -14,7 +14,7 @@ VM_HOST="${2:-10.10.10.150}"
 TARGET="parity"
 REMOTE="${VM_USER}@${VM_HOST}"
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
 if [ ! -f .env ]; then
   echo "ERROR: .env not found (API config/secrets). Aborting." >&2

@@ -1,7 +1,7 @@
 -- Supabase security fix: enable Row Level Security on all public tables.
 --
 -- These tables are owned by `postgres` and accessed server-side by the Parity
--- API (and sibling services) using that owner role, which BYPASSES RLS — so the
+-- API (and sibling services) using that owner role, which BYPASSES RLS, so the
 -- application is unaffected. Enabling RLS with no permissive policy denies the
 -- PostgREST `anon` / `authenticated` roles, closing the Data-API exposure the
 -- Supabase Advisor flags ("RLS disabled in public").

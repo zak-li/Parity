@@ -5,8 +5,8 @@ tries them in turn: on a provider/data error it moves to the next source and
 trips that provider's circuit breaker after repeated failures, so a persistently
 down source is skipped (until a cooldown) instead of being retried every call.
 
-Caller errors (e.g. :class:`InvalidOrderError`) are *not* caught — they would
-fail identically on every provider — and propagate immediately.
+Caller errors (e.g. :class:`InvalidOrderError`) are *not* caught: they would
+fail identically on every provider, and propagate immediately.
 """
 
 from __future__ import annotations

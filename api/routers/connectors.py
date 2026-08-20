@@ -9,7 +9,9 @@ from core.connectors.stripe import StripeConnector
 from core.connectors.woocommerce import WooCommerceConnector
 from db.records import ApiKeyRecord
 
-router = APIRouter(prefix="/api/v1/connectors", tags=["connectors"])
+router = APIRouter(
+    prefix="/api/v1/connectors", tags=["connectors"], dependencies=[Depends(require_api_key)]
+)
 
 
 class ShopifyCredentials(BaseModel):

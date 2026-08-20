@@ -1,7 +1,7 @@
 # Parity backend stack. Host networking, but every service binds to 127.0.0.1
 # only: nothing is reachable from outside the host. The frontend (reverse proxy)
 # is the sole public entrypoint; a firewall (ufw) is the second layer.
-# Databases stay in the cloud (configured via .env).
+# Databases stay in the cloud (configured with .env).
 services:
   # ---- API (FastAPI engines) ----
   api:
@@ -42,11 +42,14 @@ services:
 
   # ---- MLflow tracking server ----
   mlflow:
-    build: ./xmlflow
-    image: parity-mlflow
+    image: ghcr.io/mlflow/mlflow:v2.17.2
     network_mode: host
-    environment:
-      MLFLOW_HOST: 127.0.0.1
+    command: >
+      mlflow server
+      --host 127.0.0.1
+      --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
     volumes:
       - mlflowdata:/mlflow
     healthcheck:

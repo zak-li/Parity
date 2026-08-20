@@ -3,9 +3,9 @@ requires = ["setuptools>=84.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "parity-fx"
-version = "0.9.2"
-description = "Open-source currency risk simulation decision engine for importers and e-commerce merchants"
+name = "Parity"
+version = "1.0.0"
+description = "Institutional FX risk simulation and hedging decision engine for corporate finance and importers"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]
@@ -35,6 +35,7 @@ Documentation = "https://github.com/zak-li/Parity#readme"
 
 [project.scripts]
 parity = "core.cli:main"
+Parity = "core.cli:main"
 
 [project.optional-dependencies]
 dotenv = [
@@ -92,7 +93,7 @@ pythonpath = ["."]
 addopts = "--strict-markers"
 
 [tool.setuptools.packages.find]
-include = ["core*", "api*", "db*", "ai*"]
+include = ["sdk*", "parity*", "Parity*", "core*", "api*", "db*", "ai*"]
 exclude = ["*.tests", "*.tests.*"]
 
 [tool.ruff]

@@ -31,19 +31,19 @@ versus pseudo-random at the same sample count.
 - `GARCH uses variance targeting`: `ω` is constrained so the long-run variance
   equals the sample variance and only `(α, β)` are optimized, a much
   better-conditioned problem than the joint `(ω, α, β)` search.
-- `Portfolio correlations` via dynamic `DCC-GARCH`.
+- `Portfolio correlations` with dynamic `DCC-GARCH`.
 
 `Limits.` Single-regime; no jumps in the volatility estimate itself.
 
 `Validation.` On a constant-volatility series all estimators recover the true
 σ within a few percent (regression test guards the GARCH variance-targeting fix,
-which previously overstated volatility 2–5×).
+which previously overstated volatility 2x to 5x).
 
 ## 3. Risk metrics
 
 From the simulated margin distribution: percentiles, loss probability,
 `Expected Shortfall (CVaR)` at α = 5% (mean of the worst-α tail, always ≤ the
-expected margin), and a 0–100 `Vulnerability Score` combining loss probability
+expected margin), and a 0-100 `Vulnerability Score` combining loss probability
 and tail severity.
 
 ## 4. Hedging instruments

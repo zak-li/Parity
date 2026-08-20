@@ -1,7 +1,7 @@
 """API-key hashing and minting.
 
 API keys are high-entropy random tokens, so a **fast keyed hash** (HMAC-SHA256
-with a secret pepper) is both sufficient and correct — unlike a slow per-request
+with a secret pepper) is both sufficient and correct, unlike a slow per-request
 password KDF, which needlessly burns CPU on every call, and unlike a hard-coded
 public salt, which lets a leaked key table be brute-forced offline. The hash is
 deterministic so the store can index by it.

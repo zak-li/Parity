@@ -13,16 +13,16 @@ from core.models.models import OrderInput
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="parity",
-        description="Parity (Xi) — Currency risk decision engine CLI",
+        prog="Parity",
+        description="Parity: Institutional FX risk and decision engine CLI",
     )
-    parser.add_argument("--version", "-v", action="version", version=f"parity {__version__}")
+    parser.add_argument("--version", "-v", action="version", version=f"Parity {__version__}")
 
     subparsers = parser.add_subparsers(dest="command", help="Subcommand to execute")
 
     # Command: simulate
     sim_parser = subparsers.add_parser(
-        "simulate", help="Run a currency risk simulation for an order"
+        "simulate", aliases=["sim"], help="Run a currency risk simulation for an order"
     )
     sim_parser.add_argument(
         "--amount", "-a", type=float, required=True, help="Amount in foreign currency"
@@ -31,18 +31,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--foreign", "-f", type=str, required=True, help="Foreign currency code (e.g. USD)"
     )
     sim_parser.add_argument(
-        "--domestic", "-d", type=str, required=True, help="Domestic currency code (e.g. EUR)"
+        "--domestic", "-d", type=str, default="EUR", help="Domestic currency code (default: EUR)"
     )
     sim_parser.add_argument(
-        "--delivery", type=str, required=True, help="Delivery date (YYYY-MM-DD)"
+        "--delivery", "-t", type=str, required=True, help="Delivery date (YYYY-MM-DD)"
     )
     sim_parser.add_argument(
-        "--target-margin", type=float, default=0.15, help="Target profit margin (default: 0.15)"
+        "--target-margin",
+        "-m",
+        type=float,
+        default=0.15,
+        help="Target profit margin (default: 0.15)",
     )
     sim_parser.add_argument(
         "--simulations", "-n", type=int, default=10000, help="Number of Monte Carlo paths"
     )
-    sim_parser.add_argument("--json", action="store_true", help="Output result as raw JSON")
+    sim_parser.add_argument("--json", "-j", action="store_true", help="Output result as raw JSON")
 
     # Command: health
     subparsers.add_parser("health", help="Check system environment and runtime configuration")
@@ -115,7 +119,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    if args.command == "simulate":
+    if args.command in ("simulate", "sim"):
         return run_simulate(args)
     elif args.command == "health":
         return run_health()
