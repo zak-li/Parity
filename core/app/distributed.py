@@ -1,4 +1,4 @@
-"""Distributed batch simulation with Apache Spark — an engine capability.
+"""Distributed batch simulation with Apache Spark: an engine capability.
 
 Runs the :class:`~core.app.risk_engine.MarginRiskEngine` over many orders in
 parallel so a whole book of exposures can be scored across a Spark cluster (or
@@ -71,7 +71,7 @@ def _build_provider() -> FxDataProvider:
 
 
 def simulate_order(order_dict: dict[str, Any]) -> dict[str, Any]:
-    """Simulate a single order — the function distributed across Spark tasks."""
+    """Simulate a single order: the function distributed across Spark tasks."""
     order = order_from_dict(order_dict)
     engine = MarginRiskEngine(fx_provider=_build_provider())
     return summarize(engine.run(order))

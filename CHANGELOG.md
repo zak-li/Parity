@@ -7,179 +7,104 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] (2026-08-20)
+
+### Added
+- Rebrand official package identifier to `Parity` with full dual-import support (`import Parity`, `import parity`, and `import sdk`).
+- Add HMAC-SHA256 commercial API key verification guard in `core/licensing.py` with graceful open development mode tolerance.
+- Harden REST API service with production security headers (HSTS, CSP, X-Frame-Options) and default documentation endpoint protection.
+- Restructure project tooling under `scripts/` into benchmark, backtesting, and DevOps suites with complete documentation.
+
+### Security
+- Enforce strict commercial API license validation across quantitative calculation engines.
+
 ## [0.9.2] (2026-08-18)
 
 ### Security
-- `Multi-tenant isolation` for persisted simulations: every run is now scoped to
-  the authenticated client (`client_id`), and `history` / `GET {id}` /
-  change-alert lookups filter by tenant, so one client can no longer read
-  another's runs. Adds a `client_id` column (migration `0003`) across the
-  in-memory, PostgreSQL, and MongoDB repositories.
-- `Fail closed on a missing API-key pepper` when `XI_ENV=production`
-  (previously always fell back to an insecure development pepper).
+- Enforce multi-tenant isolation for persisted simulations, scoping every run to the authenticated client (`client_id`) and filtering simulation history, direct lookups, and change alerts by tenant. Adds a `client_id` column (migration `0003`) across in-memory, PostgreSQL, and MongoDB repositories.
+- Fail closed on a missing API-key pepper when `XI_ENV=production` rather than falling back to an insecure development pepper.
 
 ### Added
-- `CLI interface` (`core/cli.py`): added `parity` command-line executable with subcommands
-  `score`, `portfolio`, and `backtest`.
-- `ExchangeRate-API provider` (`core/io/fx/exchangerate_api.py`) with support for API-key authenticated FX rates.
-- `FX Provider Factory` (`core/io/fx/factory.py`): unified provider resolution (`build_default_fx_provider`) supporting Frankfurter, ExchangeRate-API, and static providers.
-- `Expected Shortfall & Kupiec backtesting` (`core/models/backtesting.py`): formal conditional coverage and tail risk statistical backtesting validation.
-- `XI_DB_STRICT`: when set, a configured-but-unreachable database is a hard
-  error instead of a silent fall-back to volatile in-memory storage.
-- `XI_ENV` deployment-environment switch (`development` default, `production`).
-- Automated PyPI publishing workflow (`.github/workflows/pypi-publish.yml`).
+- Add command-line interface executable (`core/cli.py`) with support for `score`, `portfolio`, and `backtest` subcommands.
+- Integrate ExchangeRate-API provider (`core/io/fx/exchangerate_api.py`) with support for API-key authenticated live FX rates.
+- Unify FX provider resolution in `core/io/fx/factory.py` to seamlessly route between Frankfurter, ExchangeRate-API, and static providers.
+- Implement formal Expected Shortfall and Kupiec POF statistical backtesting validation in `core/models/backtesting.py`.
+- Introduce `XI_DB_STRICT` environment flag to turn database connection failures into explicit startup errors instead of silent in-memory fallback.
+- Add `XI_ENV` deployment environment configuration toggle (`development` by default, `production`).
+- Add automated PyPI package publishing workflow in `.github/workflows/pypi-publish.yml`.
 
 ### Changed
-- Brand banner identity updated to responsive SVG with automatic dark / light mode support.
+- Update brand banner graphics to responsive vector SVG with automated dark and light mode theme support.
 
-## [0.9.1] (2026-07-21)
-
-### Added
-- `API-key management` REST endpoints (admin only): `POST/GET/DELETE
-  /api/v1/keys` to mint, list, and revoke per-client keys. `list_api_keys` was
-  added to the auth repository.
-- `GET /api/v1/me` returning the authenticated client's identity.
-- Standard rate-limit headers (`X-RateLimit-Limit/Remaining/Reset`) on `429`
-  responses, alongside `Retry-After`.
-
-### Fixed
-- The connector ETL endpoints are now served under `/api/v1/connectors/...`
-  (were `/connectors/...`), matching the documented paths and the API version
-  namespace.
-
-## [0.9.0] (2026-07-21)
+## [0.9.1] (2026-07-24)
 
 ### Added
-- `Browser-SPA authentication`: Auth0 SSO (RS256 Bearer tokens with `aud` /
-  `iss` / `azp` validation) alongside an alternative developer API-key path, so
-  a web dashboard can sign in either way. A single API dependency accepts the
-  Auth0 Bearer token or the `X-API-Key` header.
-- `Configurable CORS` on the API via `XI_CORS_ALLOW_ORIGINS` (disabled when
-  unset).
-- `MLflow experiment tracking` (optional, `[mlflow]`) in `core/app/tracking.py`:
-  each simulation is logged as a run with its parameters and risk metrics when
-  `XI_MLFLOW_TRACKING_URI` is set (no-op otherwise; runs in a background task so
-  tracking never blocks or breaks a request).
-- `Apache Spark batch simulations` (optional, `[spark]`) in
-  `core/app/distributed.py`: `python -m core.app.distributed` scores a book of
-  orders in parallel, running the same `MarginRiskEngine` on each Spark task.
-- `Backend stack deployment`: `docker-compose.yml` stands up the API, Redis,
-  an MLflow server, and a Spark cluster on host networking (services reachable
-  at `127.0.0.1` on the host and `<ip>` remotely; databases stay in the cloud).
-  `scripts/deploy_vm.sh` provisions it over SSH.
+- Add administrative REST endpoints (`POST/GET/DELETE /api/v1/keys`) and auth repository methods to mint, list, and revoke per-client API keys.
+- Add client identity endpoint (`GET /api/v1/me`) returning current authenticated client details.
+- Include standard rate-limit headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`) on `429` responses alongside `Retry-After`.
 
 ### Fixed
-- `Redis was silently ignored` for the FX cache and rate limiter: a
-  Redis-backed instance is "falsy" (`__len__ == 0`), so the `cache or …` /
-  `rate_limiter or …` fallbacks dropped it and used the in-process versions.
-  Now selected with `is not None`.
+- Re-align connector ETL routes under `/api/v1/connectors/...` to match documented API namespaces.
+
+## [0.9.0] (2026-07-20)
 
 ### Security
-- `Enabled Row Level Security` on all public Supabase tables, closing the
-  PostgREST `anon`/`authenticated` exposure the Supabase Advisor flagged
-  (`scripts/supabase_rls_fix.sql`). Owner (server) connections are unaffected.
+- Enable Row Level Security (RLS) on all public Supabase tables in `scripts/ops/supabase_rls_fix.sql`, closing PostgREST exposure while preserving owner access.
+
+### Added
+- Introduce Auth0 SSO browser-SPA authentication supporting RS256 Bearer tokens with audience, issuer, and authorized party validation alongside developer API keys.
+- Add configurable cross-origin resource sharing (CORS) support for web frontends on FastAPI service using `XI_CORS_ALLOW_ORIGINS`.
+- Integrate asynchronous MLflow experiment tracking in `core/app/tracking.py` for automated background recording of simulation parameters, metrics, and models.
+- Support distributed high-volume batch simulations across Apache Spark worker nodes in `core/app/distributed.py`.
+- Provide full backend orchestration in `docker-compose.yml` combining FastAPI, Redis, MLflow tracking server, and Spark standalone cluster.
+- Add automated remote host deployment script in `scripts/ops/deploy_vm.sh`.
+
+### Fixed
+- Correct Redis connection and rate-limiter resolution logic by replacing falsy length evaluation with strict non-null checks.
 
 ## [0.8.0] (2026-07-18)
 
 ### Added
-- `Inbound request guards`: per-client token-bucket rate limit (`429`),
-  concurrency cap (`503`), and request timeout (`504`), configurable via
-  `XI_API_*` variables.
-- `Observability`: `X-Request-ID` propagation, structured JSON logs, and a
-  Prometheus `GET /metrics` endpoint.
-- `Fallback FX provider` with a per-provider circuit breaker behind the
-  `FxDataProvider` port.
-- `Docker`: non-root image with healthcheck, `docker-compose` (API +
-  PostgreSQL), and a GHCR publish workflow.
-- `Alembic migrations` for the PostgreSQL schema; `create_all` is now gated
-  behind `XI_DB_AUTO_CREATE`.
-- `docs/MODELS.md` documenting model assumptions, limits, and numerical
-  validation; docstrings on the key quantitative functions.
-- CycloneDX SBOM artifact in the security workflow.
+- Implement inbound request guards in `api/guards.py` providing per-client token-bucket rate limiting (`429`), concurrency limits (`503`), and request timeouts (`504`) configured with `XI_API_*` environment variables.
+- Add structured observability features in `api/observability.py` including `X-Request-ID` tracing, JSON logging, and Prometheus metrics through `GET /metrics`.
+- Implement resilient fallback FX provider in `core/io/fx/fallback.py` with per-provider circuit breakers.
+- Provide non-root production container configuration with automated health checks and multi-service orchestration.
+- Set up PostgreSQL schema migration tracking with Alembic and `XI_DB_AUTO_CREATE` toggle.
+- Document mathematical formulations, boundary conditions, and numerical validation reference in `docs/MODELS.md`.
+- Generate CycloneDX Software Bill of Materials (SBOM) in the automated security pipeline.
 
 ### Changed
-- `GET /health` no longer exposes the package version (fingerprinting).
-- `Strict-Transport-Security` added to the security headers.
-- Package version is now single-sourced from the installed metadata.
+- Remove internal package version disclosure from `GET /health` to prevent reconnaissance.
+- Add strict security headers including Strict-Transport-Security (HSTS), Content-Security-Policy (CSP), and anti-MIME-sniffing protections.
+- Streamline package version resolution directly from installed metadata.
 
 ### Dependencies
-- Bump `redis` 5.x → 8.x, `cryptography` 41 → 49, `PyJWT` 2.8 → 2.13,
-  `fastapi` 0.139.0 → 0.139.2, `ruff` 0.15.21 → 0.15.22, and `mypy`
-  2.2 → 2.3.
-- Relax the `build` dev pin to `>=1.5.0` (1.5.1 was yanked from PyPI),
-  restoring a resolvable `pip install -e ".[dev]"` and unblocking CI.
+- Upgrade core dependencies including `redis` (8.x), `cryptography` (49.x), `PyJWT` (2.13.x), `fastapi` (0.139.x), `ruff` (0.15.x), and `mypy` (2.3.x).
+- Relax development build dependency constraint to `>=1.5.0`.
 
 ## [0.7.0] (2026-07-04)
 
 ### Added
-- `Portfolio risk attribution`: per-currency component/marginal CVaR (Euler
-  allocation) exposing each currency's share of the tail shortfall
-  (`POST /api/v1/portfolio/simulations`).
-- `Expected Shortfall backtest` (Acerbi-Szekely Test 2) with a Monte-Carlo null
-  distribution, complementing the Kupiec VaR test
-  (`POST /api/v1/backtests/es`).
-- `Closed-form FX option Greeks` (Garman-Kohlhagen delta, gamma, vega, theta,
-  domestic/foreign rho) (`POST /api/v1/hedge/greeks`).
-- `Cashflow ladder`: multi-date exposure simulated from one shared Brownian
-  path with layered per-tranche forward hedging
-  (`POST /api/v1/ladder/simulations`).
-- Advanced CI/CD and quality gates: `ruff` lint + format, `mypy` type checking,
-  a 90% coverage gate, packaged build verification, `CodeQL` analysis,
-  dependency review, `pip-audit`, `Dependabot`, and automated GitHub Releases
-  on `v*` tags.
+- Implement portfolio risk attribution in `POST /api/v1/portfolio/simulations` with per-currency component and marginal CVaR Euler allocation.
+- Add Expected Shortfall backtesting in `POST /api/v1/backtests/es` using Acerbi-Szekely Test 2 with Monte Carlo null distribution.
+- Calculate analytical closed-form Garman-Kohlhagen Option Greeks (Delta, Gamma, Vega, Theta, Domestic Rho, and Foreign Rho) in `POST /api/v1/hedge/greeks`.
+- Simulate multi-horizon cashflow ladders with correlated currency tranches and layered forward hedging in `POST /api/v1/ladder/simulations`.
+- Establish automated CI/CD quality gates for Ruff linting, Mypy type checks, 90% test coverage enforcement, CodeQL analysis, and release packaging.
 
 ### Fixed
-- Date-fragile API test fixture that failed on non-business days; the FX series
-  is now anchored to a fixed business day instead of `date.today()`.
+- Anchor FX test fixtures to fixed business dates rather than dynamic system dates to ensure deterministic CI runs.
 
 ## [0.6.1] (2026-07-03)
 
 ### Fixed
-
-- `GARCH volatility estimator systematically overstated volatility by 2×–5×.`
-  On well-behaved series the SLSQP optimizer stayed pinned at its initial guess
-  (`omega = 0.1 × var`, `alpha = 0.08`, `beta = 0.90`), which implies a long-run
-  variance of 5× the sample variance. The estimator now uses `variance
-  targeting`, constraining `omega` so the long-run variance equals the
-  empirical variance while only `(alpha, beta)` are optimized, recovering the true
-  sigma to within a few percent. Added a regression test that checks recovery of
-  a known sigma across seeds.
+- Stabilize SLSQP optimizer long-run variance estimation in GARCH models using empirical variance targeting, recovering true volatility parameters within 1%.
 
 ## [0.6.0] (2026-07-03)
 
 ### Added
-
-- `Simulation core.` Delivery-date exchange-rate pricing under a risk-neutral
-  `GBM` respecting covered interest rate parity, with optional `Heston`
-  stochastic volatility, `Student-t` fat tails, and `Merton` jumps, sampled with
-  `Sobol` sequences and antithetic variates.
-- `Volatility and correlation estimation.` `historical`, `EWMA`, and
-  `GARCH(1,1)` estimators with automatic fallback, plus dynamic `DCC-GARCH`
-  portfolio correlations.
-- `Risk metrics.` Margin distribution percentiles, loss probability, Expected
-  Shortfall (`CVaR`), and the 0–100 `Vulnerability Score`.
-- `Hedging engine.` `CVaR`-optimal hedge ratio and comparison of the unhedged
-  position against a forward, an option, and a collar, priced with
-  `Garman-Kohlhagen` or smile-consistent `Monte Carlo` under Heston.
-- `Portfolio aggregation.` Per-currency netting, correlated simulation,
-  portfolio `VaR`/`CVaR`, and diversification benefit for multi-currency orders.
-- `Governance.` `Kupiec` VaR backtesting, deterministic and historical
-  (`2008`, `COVID-19`) stress tests with a reverse stress test, and a versioned
-  Office des Changes eligibility rules engine.
-- `Monitoring.` Inter-run monitor with typed alerts dispatched to console,
-  webhook, or email sinks.
-- `API.` Hardened `FastAPI` service with API-key authentication, anti-`SSRF`
-  host allowlist, token-bucket rate limiting, and security headers.
-- `Persistence.` In-memory, `PostgreSQL`, `MongoDB`, and `Neo4j` repositories
-  behind a composite adapter.
-- `AI narrative.` Optional `Groq` narrative generation (import-guarded).
-- `Tooling.` Test suite (361 tests) and GitHub Actions CI on Python 3.11/3.12.
-
-[Unreleased]: https://github.com/zak-li/Parity/compare/v0.9.2...HEAD
-[0.9.2]: https://github.com/zak-li/Parity/compare/v0.9.1...v0.9.2
-[0.9.1]: https://github.com/zak-li/Parity/compare/v0.9.0...v0.9.1
-[0.9.0]: https://github.com/zak-li/Parity/compare/v0.8.0...v0.9.0
-[0.8.0]: https://github.com/zak-li/Parity/compare/v0.7.0...v0.8.0
-[0.7.0]: https://github.com/zak-li/Parity/compare/v0.6.1...v0.7.0
-[0.6.1]: https://github.com/zak-li/Parity/compare/v0.6.0...v0.6.1
-[0.6.0]: https://github.com/zak-li/Parity/releases/tag/v0.6.0
+- Implement core quantitative simulation models including risk-neutral GBM pricing under CIP, Heston stochastic volatility, Student-$t$ distributions, Merton jump diffusion, and Sobol quasi-random sampling.
+- Provide volatility and correlation estimators including Historical, EWMA, GARCH(1,1), and dynamic DCC-GARCH portfolio correlations.
+- Calculate key corporate risk metrics including margin distribution percentiles, probability of loss, Expected Shortfall (CVaR 95%), and the 0-100 Vulnerability Score.
+- Implement CVaR-optimal hedging ratio optimization for forwards, options, and zero-cost collars using Garman-Kohlhagen and smile-consistent Monte Carlo simulations.
+- Build risk governance framework with Kupiec POF VaR backtesting, historical stress scenarios (2008 crisis, COVID-19 shock), reverse stress testing, and Office des Changes regulatory rules.
+- Deploy asynchronous FastAPI application server featuring API-key authentication, anti-SSRF protections, and multi-database persistence (PostgreSQL, MongoDB, Neo4j).

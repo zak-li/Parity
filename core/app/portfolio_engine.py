@@ -24,12 +24,20 @@ class PortfolioRiskEngine:
         fx_provider: FxDataProvider | None = None,
         volatility_model: VolatilityModel = VolatilityModel.HISTORICAL,
         dynamic_correlation: bool = False,
+        api_key: str | None = None,
     ) -> None:
+        from core.licensing import verify_license
+
+        verify_license(api_key)
+        self._api_key = api_key
         self._fx_provider = fx_provider or build_default_fx_provider()
         self._volatility_model = VolatilityModel(volatility_model)
         self._dynamic_correlation = dynamic_correlation
 
     def run(self, orders: list[OrderInput], seed: int | None = None) -> PortfolioResult:
+        from core.licensing import verify_license
+
+        verify_license(self._api_key)
         if not orders:
             raise InvalidOrderError("The portfolio must contain at least one order.")
         domestic = orders[0].domestic_currency

@@ -55,7 +55,7 @@ def test_build_tracker_without_uri_is_null(monkeypatch):
 
 def test_build_tracker_with_uri_returns_tracker(monkeypatch):
     # With a URI set, build_tracker either returns MlflowTracker (extra present)
-    # or falls back to NullTracker (extra missing) — never raises.
+    # or falls back to NullTracker (extra missing): never raises.
     monkeypatch.setenv("XI_MLFLOW_TRACKING_URI", "http://127.0.0.1:5000")
     tracker = build_tracker()
     assert hasattr(tracker, "track")

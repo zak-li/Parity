@@ -3,7 +3,7 @@
     python -m api.keys create --client acme [--days 90]
     python -m api.keys revoke --id <key-id>
 
-Keys are stored (hashed) in the configured auth repository — set
+Keys are stored (hashed) in the configured auth repository; set
 ``XI_POSTGRES_DSN`` so they survive process restarts. The plaintext key is
 printed once on creation and never again.
 """
@@ -23,7 +23,7 @@ def _create(client: str, days: int | None) -> None:
     build_auth_repository().save_api_key(record)
     print(f"Created API key for '{client}' (id={record.id}, prefix={record.prefix}).")
     print(f"  {plaintext}")
-    print("Store it now — it will not be shown again.")
+    print("Store it now: it will not be shown again.")
 
 
 def _revoke(key_id: str) -> None:

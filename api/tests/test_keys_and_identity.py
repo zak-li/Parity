@@ -12,7 +12,7 @@ from db.memory import InMemoryAuthRepository
 @pytest.fixture
 def admin_client(monkeypatch):
     # Empty XI_API_KEY -> open dev mode, which require_admin permits. (Set empty
-    # rather than delete so a local .env value can't leak back in via dotenv.)
+    # rather than delete so a local .env value can't leak back in from dotenv.)
     monkeypatch.setenv("XI_API_KEY", "")
     monkeypatch.setenv("XI_API_KEY_PEPPER", "test-pepper")
     auth_repo = InMemoryAuthRepository()

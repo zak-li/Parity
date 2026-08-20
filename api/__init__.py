@@ -21,29 +21,37 @@ from .observability import install_observability
 from .routers import connectors
 from .routes import health_router, keys_router, router
 
+# Comprehensive security headers to prevent sniffing, framing, caching, and unauthorized scripting
 _SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Cache-Control": "no-store",
+    "Pragma": "no-cache",
     "Referrer-Policy": "no-referrer",
-    "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+    "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; sandbox",
+    "Permissions-Policy": "geolocation=(), camera=(), microphone=(), payment=()",
+    "X-Permitted-Cross-Domain-Policies": "none",
 }
 
 _ERROR_STATUS: tuple[tuple[type[MarginProtectorError], int], ...] = (
     (InvalidOrderError, status.HTTP_422_UNPROCESSABLE_ENTITY),
     (InsufficientDataError, status.HTTP_422_UNPROCESSABLE_ENTITY),
     (RateLimitError, status.HTTP_429_TOO_MANY_REQUESTS),
-    (SecurityError, status.HTTP_502_BAD_GATEWAY),
+    (SecurityError, status.HTTP_401_UNAUTHORIZED),
     (FxDataError, status.HTTP_502_BAD_GATEWAY),
     (MarginProtectorError, status.HTTP_500_INTERNAL_SERVER_ERROR),
 )
 
 
 def create_app() -> FastAPI:
+    # Completely disable /docs, /redoc, and /openapi.json to protect proprietary algorithms
     app = FastAPI(
         title="Parity API",
-        description="FX risk simulation API for importers and e-commerce merchants.",
         version=core.__version__,
+        docs_url=None,
+        redoc_url=None,
+        openapi_url=None,
     )
 
     cors_origins = load_runtime_config().cors_allow_origins
@@ -51,8 +59,8 @@ def create_app() -> FastAPI:
         app.add_middleware(
             CORSMiddleware,
             allow_origins=list(cors_origins),
-            allow_methods=["GET", "POST"],
-            allow_headers=["Authorization", "Content-Type", "X-API-Key"],
+            allow_methods=["GET", "POST", "DELETE"],
+            allow_headers=["Authorization", "Content-Type", "X-API-Key", "X-Request-ID"],
             allow_credentials=False,
             max_age=3600,
         )

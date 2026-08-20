@@ -15,6 +15,8 @@ COPY core ./core
 COPY api ./api
 COPY db ./db
 COPY ai ./ai
+COPY parity ./parity
+COPY Parity.py ./
 # mlflow-skinny is the lightweight tracking client (no server deps) used by the
 # engines to log runs; the MLflow server runs in its own container.
 RUN --mount=type=cache,target=/root/.cache/pip \

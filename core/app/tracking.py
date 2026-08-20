@@ -1,4 +1,4 @@
-"""MLflow experiment tracking — an engine capability.
+"""MLflow experiment tracking: an engine capability.
 
 Any engine run that yields a :class:`SimulationResult` can be logged as an
 MLflow run (order/engine parameters + risk metrics) for comparison and audit.

@@ -46,7 +46,12 @@ class MarginRiskEngine:
         jumps: JumpParams | None = None,
         market_model: MarketModel = MarketModel.GBM,
         heston_params: HestonParams | None = None,
+        api_key: str | None = None,
     ) -> None:
+        from core.licensing import verify_license
+
+        verify_license(api_key)
+        self._api_key = api_key
         self._fx_provider = fx_provider or build_default_fx_provider()
         self._sampling_method = SamplingMethod(sampling_method)
         self._volatility_model = VolatilityModel(volatility_model)
@@ -57,6 +62,9 @@ class MarginRiskEngine:
         self._heston_params = heston_params
 
     def run(self, order: OrderInput) -> SimulationResult:
+        from core.licensing import verify_license
+
+        verify_license(self._api_key)
         lookback_start = order.order_date - dt.timedelta(days=order.lookback_days)
         history = self._fx_provider.get_historical_series(
             order.foreign_currency, order.domestic_currency, lookback_start, order.order_date

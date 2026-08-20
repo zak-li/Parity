@@ -120,7 +120,7 @@ def require_api_key(
         except SecurityError as exc:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
 
-    # 2. API Key Auth
+    # 2. Master API Key Auth
     if expected and api_key and secrets.compare_digest(api_key, expected):
         request.state.client_id = "master"
         return ApiKeyRecord(
@@ -131,7 +131,9 @@ def require_api_key(
             created_at=dt.datetime.now(dt.UTC),
         )
 
+    # 3. Open dev / test mode when no master key is set and no client key is provided
     if not expected and not api_key:
+        request.state.client_id = "open_dev"
         return None
 
     if not api_key:
@@ -162,8 +164,9 @@ def require_admin(
 ) -> ApiKeyRecord | None:
     """Gate admin-only operations (API-key management).
 
-    Allowed for the master key (``XI_API_KEY``) or when no auth is configured at
-    all (open development mode). Per-client keys and Auth0 users are rejected.
+    Permitted in two cases:
+      1. Open dev mode: no master key configured in the environment (principal is None).
+      2. The caller presented the configured master key (principal.client_id == 'master').
     """
     if principal is None or principal.client_id == "master":
         return principal

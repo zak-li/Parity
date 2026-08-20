@@ -1,24 +1,23 @@
+"""Parity: Institutional Quantitative FX Risk & Decision Engine.
+
+Open-source & commercial currency risk decision engine for importers,
+treasurers, corporate finance desks, and e-commerce merchants.
+"""
+
 from __future__ import annotations
 
-from importlib.metadata import PackageNotFoundError
-from importlib.metadata import version as _package_version
+import sys
 
-from .app import MarginRiskEngine, PortfolioRiskEngine
-from .config import RuntimeConfig, load_runtime_config
-from .io import (
-    ExchangeRateApiFxDataProvider,
-    FrankfurterFxDataProvider,
-    FxDataProvider,
-    StaticFxDataProvider,
-    build_default_fx_provider,
-)
-from .licensing import ParityLicenseError, init, verify_license
-from .models import (
+import core
+from core import (
     Alert,
     AlertSeverity,
     ComplianceReport,
     DisallowedHostError,
+    ExchangeRateApiFxDataProvider,
+    FrankfurterFxDataProvider,
     FxDataError,
+    FxDataProvider,
     HedgeAnalysis,
     HedgeInstrument,
     InstrumentOutcome,
@@ -27,25 +26,69 @@ from .models import (
     JumpParams,
     KupiecResult,
     MarginProtectorError,
+    MarginRiskEngine,
     MonitoringThresholds,
     OrderInput,
+    ParityLicenseError,
     PortfolioPosition,
     PortfolioResult,
+    PortfolioRiskEngine,
     RateLimitError,
     ReturnDistribution,
     RiskLevel,
+    RuntimeConfig,
     SamplingMethod,
     SecurityError,
     SimulationError,
     SimulationResult,
+    StaticFxDataProvider,
     StressReport,
     VolatilityModel,
+    app,
     backtest_parametric_var,
+    build_default_fx_provider,
+    cli,
+    config,
+    connectors,
     evaluate_change_alerts,
     evaluate_compliance,
     evaluate_result_alerts,
+    init,
+    io,
     kupiec_pof_test,
+    load_runtime_config,
+    models,
+    verify_license,
 )
+
+# Register subpackages into sys.modules for direct dotted imports (e.g. from sdk.models import ...)
+sys.modules["sdk.app"] = app
+sys.modules["sdk.models"] = models
+sys.modules["sdk.connectors"] = connectors
+sys.modules["sdk.io"] = io
+sys.modules["sdk.config"] = config
+sys.modules["sdk.cli"] = cli
+
+# Also register parity and Parity aliases
+sys.modules["parity"] = sys.modules[__name__]
+sys.modules["parity.app"] = app
+sys.modules["parity.models"] = models
+sys.modules["parity.connectors"] = connectors
+sys.modules["parity.io"] = io
+sys.modules["parity.config"] = config
+sys.modules["parity.cli"] = cli
+
+sys.modules["Parity"] = sys.modules[__name__]
+sys.modules["Parity.app"] = app
+sys.modules["Parity.models"] = models
+sys.modules["Parity.connectors"] = connectors
+sys.modules["Parity.io"] = io
+sys.modules["Parity.config"] = config
+sys.modules["Parity.cli"] = cli
+
+__version__ = "1.0.0"
+
+ParityEngine = MarginRiskEngine
 
 __all__ = [
     "Alert",
@@ -67,6 +110,7 @@ __all__ = [
     "MarginRiskEngine",
     "MonitoringThresholds",
     "OrderInput",
+    "ParityEngine",
     "ParityLicenseError",
     "PortfolioPosition",
     "PortfolioResult",
@@ -82,21 +126,20 @@ __all__ = [
     "StaticFxDataProvider",
     "StressReport",
     "VolatilityModel",
+    "app",
     "backtest_parametric_var",
     "build_default_fx_provider",
+    "cli",
+    "config",
+    "connectors",
+    "core",
     "evaluate_change_alerts",
     "evaluate_compliance",
     "evaluate_result_alerts",
     "init",
+    "io",
     "kupiec_pof_test",
     "load_runtime_config",
+    "models",
     "verify_license",
 ]
-
-try:
-    __version__ = _package_version("Parity")
-except PackageNotFoundError:
-    try:
-        __version__ = _package_version("xi")
-    except PackageNotFoundError:
-        __version__ = "1.0.0"

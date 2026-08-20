@@ -37,7 +37,7 @@ def test_cors_rejects_unlisted_origin(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_cors_disabled_when_unset(monkeypatch: pytest.MonkeyPatch) -> None:
     # Empty (or unset) disables CORS. Set empty explicitly so a local .env with
-    # a value doesn't leak in via dotenv (CI has no .env; the result is the same).
+    # a value doesn't leak in through dotenv (CI has no .env; the result is the same).
     monkeypatch.setenv("XI_CORS_ALLOW_ORIGINS", "")
     client = TestClient(create_app())
 
