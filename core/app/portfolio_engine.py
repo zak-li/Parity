@@ -10,7 +10,7 @@ from ..config import settings
 from ..io.fx import FxDataProvider, build_default_fx_provider
 from ..models import market_stats, rates, volatility
 from ..models.dcc import estimate_dcc
-from ..models.enums import VolatilityModel
+from ..models.enums import CopulaType, VolatilityModel
 from ..models.exceptions import InsufficientDataError, InvalidOrderError
 from ..models.models import OrderInput
 from ..models.portfolio import PortfolioPosition, PortfolioResult, simulate_portfolio
@@ -24,6 +24,8 @@ class PortfolioRiskEngine:
         fx_provider: FxDataProvider | None = None,
         volatility_model: VolatilityModel = VolatilityModel.HISTORICAL,
         dynamic_correlation: bool = False,
+        copula: CopulaType = CopulaType.GAUSSIAN,
+        copula_dof: float = 5.0,
         api_key: str | None = None,
     ) -> None:
         from core.licensing import verify_license
@@ -33,6 +35,8 @@ class PortfolioRiskEngine:
         self._fx_provider = fx_provider or build_default_fx_provider()
         self._volatility_model = VolatilityModel(volatility_model)
         self._dynamic_correlation = dynamic_correlation
+        self._copula = CopulaType(copula)
+        self._copula_dof = copula_dof
 
     def run(self, orders: list[OrderInput], seed: int | None = None) -> PortfolioResult:
         from core.licensing import verify_license
@@ -77,7 +81,15 @@ class PortfolioRiskEngine:
         correlation = self._correlation_matrix(return_series, currencies)
         max_sims = max(order.n_simulations for order in orders)
 
-        result = simulate_portfolio(positions, correlation, currencies, max_sims, seed)
+        result = simulate_portfolio(
+            positions,
+            correlation,
+            currencies,
+            max_sims,
+            seed,
+            copula=self._copula,
+            copula_dof=self._copula_dof,
+        )
         logger.info(
             "portfolio_simulation_completed",
             extra={

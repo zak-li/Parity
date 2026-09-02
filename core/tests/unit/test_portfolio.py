@@ -94,3 +94,28 @@ def test_non_psd_correlation_falls_back_to_eigen_clipping():
     result = simulate_portfolio(positions, non_psd, ["EUR", "GBP", "USD"], 20_000, 4)
     assert np.isfinite(result.cvar_margin_pct)
     assert 0 <= result.vulnerability_score <= 100
+
+
+def test_student_t_copula_amplifies_tail_risk():
+    from core.models.enums import CopulaType
+
+    positions = [_position("USD"), _position("EUR")]
+    corr = np.array([[1.0, 0.5], [0.5, 1.0]])
+    n_sims = 40_000
+
+    gauss = simulate_portfolio(
+        positions, corr, ["EUR", "USD"], n_sims=n_sims, seed=42, copula=CopulaType.GAUSSIAN
+    )
+    student = simulate_portfolio(
+        positions,
+        corr,
+        ["EUR", "USD"],
+        n_sims=n_sims,
+        seed=42,
+        copula=CopulaType.STUDENT_T,
+        copula_dof=3.0,
+    )
+
+    # Student-t copula produces heavier joint tails, hence more severe tail losses
+    assert student.cvar_margin_pct < gauss.cvar_margin_pct
+    assert student.cvar_margin_domestic < gauss.cvar_margin_domestic

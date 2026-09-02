@@ -48,6 +48,12 @@ class HedgeInstrument(StrEnum):
     FORWARD = "forward"
     OPTION = "option"
     COLLAR = "collar"
+    PARTICIPATING_FORWARD = "participating_forward"
+
+
+class CopulaType(StrEnum):
+    GAUSSIAN = "gaussian"
+    STUDENT_T = "student_t"
 
 
 class AlertSeverity(StrEnum):

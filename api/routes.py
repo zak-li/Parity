@@ -21,6 +21,7 @@ from core.models.ladder import CashflowTranche, simulate_ladder
 from core.models.models import OrderInput, SimulationResult
 from core.models.monitoring import change_alerts, evaluate_result_alerts
 from core.models.monte_carlo import JumpParams
+from core.reporting import generate_portfolio_excel, generate_simulation_excel
 from db import (
     AuthRepository,
     JobRepository,
@@ -512,4 +513,42 @@ def run_ladder(
         risk_level=result.risk_level,
         margin_pct_percentiles=result.margin_pct_percentiles,
         tranches=list(result.tranches),
+    )
+
+
+@router.post("/export/excel/simulation")
+def export_simulation_excel(
+    request: SimulationRequest,
+    provider: FxDataProvider = Depends(get_fx_provider),
+    principal: ApiKeyRecord | None = Depends(require_api_key),
+) -> Response:
+    order = _to_order(request.order)
+    engine = _build_engine(request.options, provider)
+    result = engine.run(order)
+    excel_bytes = generate_simulation_excel(result)
+    filename = f"parity_simulation_{order.foreign_currency}_{order.domestic_currency}.xlsx"
+    return Response(
+        content=excel_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@router.post("/export/excel/portfolio")
+def export_portfolio_excel(
+    request: PortfolioRequest,
+    provider: FxDataProvider = Depends(get_fx_provider),
+    principal: ApiKeyRecord | None = Depends(require_api_key),
+) -> Response:
+    orders = [_to_order(item) for item in request.orders]
+    engine = PortfolioRiskEngine(
+        fx_provider=provider,
+        volatility_model=request.volatility_model,
+    )
+    result = engine.run(orders, seed=request.seed)
+    excel_bytes = generate_portfolio_excel(result)
+    return Response(
+        content=excel_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=parity_portfolio_risk.xlsx"},
     )

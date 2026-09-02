@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from ..config import settings
-from .enums import RiskLevel
+from .enums import CopulaType, RiskLevel
 from .exceptions import InvalidOrderError
 from .scoring import (
     conditional_value_at_risk,
@@ -118,11 +118,23 @@ def _correlation_factor(correlation: np.ndarray) -> np.ndarray:
         return eigenvectors * np.sqrt(np.clip(eigenvalues, 0.0, None))
 
 
-def _correlated_normals(correlation: np.ndarray, n_sims: int, seed: int | None) -> np.ndarray:
+def _correlated_normals(
+    correlation: np.ndarray,
+    n_sims: int,
+    seed: int | None,
+    copula: CopulaType = CopulaType.GAUSSIAN,
+    copula_dof: float = 5.0,
+) -> np.ndarray:
     factor = _correlation_factor(correlation)
     rng = np.random.default_rng(seed)
     independent = rng.standard_normal((n_sims, correlation.shape[0]))
-    return independent @ factor.T
+    correlated = independent @ factor.T
+    if CopulaType(copula) is CopulaType.STUDENT_T:
+        dof = max(float(copula_dof), 2.1)
+        chi2_samples = rng.chisquare(dof, size=(n_sims, 1))
+        scaling = np.sqrt(dof / np.maximum(chi2_samples, 1e-8)) * np.sqrt((dof - 2.0) / dof)
+        correlated = correlated * scaling
+    return correlated
 
 
 def simulate_portfolio(
@@ -131,6 +143,8 @@ def simulate_portfolio(
     currencies: list[str],
     n_sims: int,
     seed: int | None = None,
+    copula: CopulaType = CopulaType.GAUSSIAN,
+    copula_dof: float = 5.0,
 ) -> PortfolioResult:
     if not positions:
         raise InvalidOrderError("The portfolio must contain at least one position.")
@@ -143,7 +157,7 @@ def simulate_portfolio(
         raise InvalidOrderError("The correlation matrix does not match the provided currencies.")
 
     index_of = {currency: i for i, currency in enumerate(currencies)}
-    shocks = _correlated_normals(correlation, n_sims, seed)
+    shocks = _correlated_normals(correlation, n_sims, seed, copula=copula, copula_dof=copula_dof)
 
     total_revenue = float(sum(p.revenue_domestic for p in positions))
     total_budgeted_cost = 0.0

@@ -6,7 +6,8 @@ from functools import partial
 from typing import Any
 
 import numpy as np
-from scipy.stats import norm, qmc
+from scipy.special import ndtri
+from scipy.stats import qmc
 from scipy.stats import t as student_t
 
 from ..config import settings
@@ -68,7 +69,7 @@ def _sobol_shocks(
     uniforms = sampler.random_base2(m=exponent)[:n_sims, 0]
     np.clip(uniforms, np.finfo(float).tiny, 1.0 - np.finfo(float).eps, out=uniforms)
     if distribution is ReturnDistribution.NORMAL:
-        return norm.ppf(uniforms)
+        return ndtri(uniforms)
     if dof is None or dof <= settings.MIN_STUDENT_T_DOF:
         raise SimulationError(
             f"Student-t degrees of freedom must be > {settings.MIN_STUDENT_T_DOF}."

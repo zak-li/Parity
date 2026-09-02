@@ -10,6 +10,7 @@ from .compliance import (
 from .dcc import DccResult, estimate_dcc
 from .enums import (
     AlertSeverity,
+    CopulaType,
     HedgeInstrument,
     MarketModel,
     ReturnDistribution,
@@ -40,6 +41,8 @@ from .instruments import (
     garman_kohlhagen_put,
     gk_option_pricer,
     mc_option_pricer,
+    participating_forward_alpha,
+    participating_forward_strike,
     zero_cost_collar_cap,
 )
 from .market_stats import annualized_volatility, spot_rate_on_or_before
@@ -65,6 +68,7 @@ from .scoring import (
     probability_below_threshold,
     vulnerability_score,
 )
+from .smile import FxVolatilitySmile
 from .stress import (
     ReverseStressResult,
     StressOutcome,
@@ -89,9 +93,11 @@ __all__ = [
     "ComplianceCheck",
     "ComplianceConfig",
     "ComplianceReport",
+    "CopulaType",
     "DccResult",
     "DisallowedHostError",
     "FxDataError",
+    "FxVolatilitySmile",
     "HedgeAnalysis",
     "HedgeInstrument",
     "HestonParams",
@@ -146,6 +152,8 @@ __all__ = [
     "net_exposures",
     "normalize_currency_code",
     "optimal_hedge_ratio",
+    "participating_forward_alpha",
+    "participating_forward_strike",
     "percentiles",
     "probability_below_threshold",
     "reverse_stress_test",

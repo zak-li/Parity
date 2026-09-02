@@ -25,6 +25,8 @@ dependencies = [
     "pandas>=3.0.5,<4",
     "scipy>=1.17.1,<2",
     "requests>=2.34.2,<3",
+    "openpyxl>=3.1.5,<4",
+    "defusedxml>=0.7.1,<1",
 ]
 
 [project.urls]
@@ -85,6 +87,8 @@ dev = [
     "build>=1.5.0",
     "PyJWT>=2.13.0,<3",
     "cryptography>=50.0.1",
+    "openpyxl>=3.1.5,<4",
+    "defusedxml>=0.7.1,<1",
 ]
 
 [tool.pytest.ini_options]

@@ -57,13 +57,14 @@ def _comparison(sigma=0.25, seed=0, n=40000):
     )
 
 
-def test_comparison_returns_all_four_instruments():
+def test_comparison_returns_all_five_instruments():
     outcomes = _comparison()
     assert tuple(o.instrument for o in outcomes) == (
         HedgeInstrument.NONE,
         HedgeInstrument.FORWARD,
         HedgeInstrument.OPTION,
         HedgeInstrument.COLLAR,
+        HedgeInstrument.PARTICIPATING_FORWARD,
     )
 
 
@@ -77,7 +78,12 @@ def test_forward_is_deterministic():
 def test_hedges_improve_tail_over_unhedged():
     outcomes = {o.instrument: o for o in _comparison()}
     unhedged = outcomes[HedgeInstrument.NONE]
-    for instrument in (HedgeInstrument.FORWARD, HedgeInstrument.OPTION, HedgeInstrument.COLLAR):
+    for instrument in (
+        HedgeInstrument.FORWARD,
+        HedgeInstrument.OPTION,
+        HedgeInstrument.COLLAR,
+        HedgeInstrument.PARTICIPATING_FORWARD,
+    ):
         assert outcomes[instrument].cvar_margin_pct > unhedged.cvar_margin_pct
 
 

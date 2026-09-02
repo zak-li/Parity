@@ -7,16 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] (2026-08-20)
+## [1.0.0] (2026-09-02)
 
 ### Added
 - Rebrand official package identifier to `Parity` with full dual-import support (`import Parity`, `import parity`, and `import sdk`).
+- Add zero-cost Participating Forward structured instrument (`participating_forward_strike`, `participating_forward_alpha`) integrated into 5-instrument comparative benchmark.
+- Implement Malz (1997) 3-point FX Volatility Smile interpolation (`FxVolatilitySmile`) with delta and strike implied volatility smile-adjusted option pricing.
+- Add multivariate fat-tail dependency modeling using Student-t Copula (`CopulaType.STUDENT_T`) in multi-currency portfolio risk engine.
+- Implement institutional multi-tab Excel reporting engine (`core/reporting/excel.py`) generating formatted `.xlsx` workbooks with KRI summaries, 5-instrument comparative matrix, and margin/rate distribution percentiles.
+- Implement standard ISO 20022 banking format connectors (`core/connectors/iso20022.py`) with `camt.053` multi-account statement parsing (`parse_all`, balance extraction, credit/debit transaction mapping) and `pain.001.001.03` credit transfer initiation generator.
+- Introduce dedicated REST API export endpoints (`POST /api/v1/export/excel/simulation`, `POST /api/v1/export/excel/portfolio`) and ISO 20022 endpoints (`POST /api/v1/connectors/iso20022/camt053/import`, `POST /api/v1/connectors/iso20022/pain001/generate`).
 - Add HMAC-SHA256 commercial API key verification guard in `core/licensing.py` with graceful open development mode tolerance.
-- Harden REST API service with production security headers (HSTS, CSP, X-Frame-Options) and default documentation endpoint protection.
 - Restructure project tooling under `scripts/` into benchmark, backtesting, and DevOps suites with complete documentation.
 
+### Performance
+- Accelerate quasi-Monte Carlo Sobol sequence generation by ~3x replacing `scipy.stats.norm.ppf` with vector UFunc C kernel `scipy.special.ndtri`.
+- Optimize Heston stochastic volatility path simulation via contiguous batch tensor generation and vectorized volatility shock evaluation.
+- Implement deterministic LRU simulation cache (< 0.1 ms) in `MarginRiskEngine` for seeded repeat runs.
+
 ### Security
+- Harden REST API service with production security headers (HSTS, CSP, X-Frame-Options) and default documentation endpoint protection.
 - Enforce strict commercial API license validation across quantitative calculation engines.
+- Add strict validation on ISO 20022 credit transfer messages (rejection of non-positive amounts and malformed IBAN structures).
 
 ## [0.9.2] (2026-08-18)
 

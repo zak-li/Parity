@@ -199,10 +199,16 @@ def test_instrument_comparison_is_populated(static_provider, sample_order):
         HedgeInstrument.FORWARD,
         HedgeInstrument.OPTION,
         HedgeInstrument.COLLAR,
+        HedgeInstrument.PARTICIPATING_FORWARD,
     }
     forward = instruments[HedgeInstrument.FORWARD]
     assert forward.cvar_margin_pct == pytest.approx(forward.worst_case_margin_pct)
-    for hedged in (HedgeInstrument.FORWARD, HedgeInstrument.OPTION, HedgeInstrument.COLLAR):
+    for hedged in (
+        HedgeInstrument.FORWARD,
+        HedgeInstrument.OPTION,
+        HedgeInstrument.COLLAR,
+        HedgeInstrument.PARTICIPATING_FORWARD,
+    ):
         assert (
             instruments[hedged].cvar_margin_pct >= instruments[HedgeInstrument.NONE].cvar_margin_pct
         )
@@ -253,7 +259,7 @@ def test_heston_market_model_runs_end_to_end(static_provider, sample_order):
     result = MarginRiskEngine(static_provider, market_model=MarketModel.HESTON).run(sample_order)
     assert np.all(np.isfinite(result.simulated_rates))
     assert np.all(result.simulated_rates > 0)
-    assert len(result.instrument_comparison) == 4
+    assert len(result.instrument_comparison) == 5
     assert 0 <= result.vulnerability_score <= 100
 
 
@@ -312,3 +318,12 @@ def test_full_hedge_recommended_under_high_risk(make_series, reference_order_dat
 
     assert result.hedge.optimal_hedge_ratio == pytest.approx(1.0)
     assert result.hedge.cvar_improvement_pct > 0
+
+
+def test_simulation_caching_returns_cached_result_for_same_seed(static_provider, sample_order):
+    engine = MarginRiskEngine(static_provider)
+    assert len(engine._cache) == 0
+    res1 = engine.run(sample_order)
+    assert len(engine._cache) == 1
+    res2 = engine.run(sample_order)
+    assert res1 is res2

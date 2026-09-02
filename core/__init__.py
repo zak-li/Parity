@@ -5,6 +5,10 @@ from importlib.metadata import version as _package_version
 
 from .app import MarginRiskEngine, PortfolioRiskEngine
 from .config import RuntimeConfig, load_runtime_config
+from .connectors import (
+    Camt053Parser,
+    Pain001Generator,
+)
 from .io import (
     ExchangeRateApiFxDataProvider,
     FrankfurterFxDataProvider,
@@ -17,8 +21,10 @@ from .models import (
     Alert,
     AlertSeverity,
     ComplianceReport,
+    CopulaType,
     DisallowedHostError,
     FxDataError,
+    FxVolatilitySmile,
     HedgeAnalysis,
     HedgeInstrument,
     InstrumentOutcome,
@@ -45,17 +51,23 @@ from .models import (
     evaluate_compliance,
     evaluate_result_alerts,
     kupiec_pof_test,
+    participating_forward_alpha,
+    participating_forward_strike,
 )
+from .reporting import generate_portfolio_excel, generate_simulation_excel
 
 __all__ = [
     "Alert",
     "AlertSeverity",
+    "Camt053Parser",
     "ComplianceReport",
+    "CopulaType",
     "DisallowedHostError",
     "ExchangeRateApiFxDataProvider",
     "FrankfurterFxDataProvider",
     "FxDataError",
     "FxDataProvider",
+    "FxVolatilitySmile",
     "HedgeAnalysis",
     "HedgeInstrument",
     "InstrumentOutcome",
@@ -67,6 +79,7 @@ __all__ = [
     "MarginRiskEngine",
     "MonitoringThresholds",
     "OrderInput",
+    "Pain001Generator",
     "ParityLicenseError",
     "PortfolioPosition",
     "PortfolioResult",
@@ -87,9 +100,13 @@ __all__ = [
     "evaluate_change_alerts",
     "evaluate_compliance",
     "evaluate_result_alerts",
+    "generate_portfolio_excel",
+    "generate_simulation_excel",
     "init",
     "kupiec_pof_test",
     "load_runtime_config",
+    "participating_forward_alpha",
+    "participating_forward_strike",
     "verify_license",
 ]
 
