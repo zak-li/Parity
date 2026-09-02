@@ -42,15 +42,15 @@ Parity quantifies FX exposure by [`Monte Carlo`](core/models/monte_carlo.py) sim
 
 Parity simulates currency market uncertainty across hundreds of thousands of stochastic market scenarios to quantify downside margin risk and automate hedging decisions before transactions settle.
 
-To generate these forward paths, the engine pairs [Geometric Brownian Motion (GBM)](core/models/monte_carlo.py) with Covered Interest Parity (`CIP`) drift, [Heston stochastic volatility](core/models/heston.py), and [Merton jump-diffusion](core/models/monte_carlo.py) processes, while calibrating dynamic [GARCH(1,1)](core/models/volatility.py) volatility clustering, fat-tailed `Student-t` return distributions, and [Dynamic Conditional Correlation (DCC-GARCH)](core/models/dcc.py) for multi-currency portfolios.
+To generate these forward paths, the engine pairs [Geometric Brownian Motion (GBM)](core/models/monte_carlo.py) with Covered Interest Parity (`CIP`) drift, [Heston stochastic volatility](core/models/heston.py), and [Merton jump-diffusion](core/models/monte_carlo.py) processes, accelerated by vector UFunc C kernels (`scipy.special.ndtri`). It calibrates dynamic [GARCH(1,1)](core/models/volatility.py) volatility clustering, fat-tailed `Student-t` return distributions, [Dynamic Conditional Correlation (DCC-GARCH)](core/models/dcc.py), and multivariate `Student-t Copulas` for systemic joint currency crash modeling.
 
 The platform automates derivative valuation and trade-off analysis to determine optimal hedging structures for commercial transactions and corporate portfolios:
-- Prices and ranks Forwards, European Vanilla Options, and Zero-Cost Collars with closed-form [Garman-Kohlhagen](core/models/instruments.py) models with exact numerical cap solving (`brentq`).
+- Prices and ranks Forwards, European Vanilla Options, Zero-Cost Collars, and Participating Forwards (Par-Forwards) with closed-form [Garman-Kohlhagen](core/models/instruments.py) and [Malz (1997) FX Volatility Smile](core/models/smile.py) models with exact numerical root solving (`brentq`).
 - Provides full analytical Greeks ($\Delta$, $\Gamma$, $\nu$, $\Theta$, $\rho_d$, $\rho_f$) for precise hedging desk risk management in [`core/models/instruments.py`](core/models/instruments.py).
 
 For corporate treasuries managing multi-date currency commitments, Parity delivers layered [cashflow ladder hedging](core/models/ladder.py), deterministic macroeconomic [stress testing](core/models/stress.py), and [reverse stress testing](core/models/stress.py) to identify exact breakeven exchange rates ($S^*$). Model accuracy is formally certified under Basel III regulatory standards using the [Kupiec LR test](core/models/backtesting.py) on `VaR 95%` ($p\text{-value} = 0.8214$) and [Acerbi-Székely](core/models/backtesting.py) Expected Shortfall backtests.
 
-The platform connects seamlessly to enterprise workflows by ingesting foreign sales and purchase orders through native ETL connectors ([`Shopify`](core/connectors/shopify.py), [`WooCommerce`](core/connectors/woocommerce.py), [`Stripe`](core/connectors/stripe.py), [`Odoo`](core/connectors/odoo.py)) while delivering real-time [drift alerts](core/models/monitoring.py), regulatory compliance checks ([`Office des Changes / IGOC`](core/models/compliance.py)), and executive AI risk commentary with [Groq / LLaMA 3.3](ai/groq_narrator.py).
+The platform connects seamlessly to enterprise workflows by ingesting foreign sales and purchase orders through native ETL connectors ([`Shopify`](core/connectors/shopify.py), [`WooCommerce`](core/connectors/woocommerce.py), [`Stripe`](core/connectors/stripe.py), [`Odoo`](core/connectors/odoo.py)), parsing ISO 20022 bank statements ([`camt.053`](core/connectors/iso20022.py)), and generating payment execution files ([`pain.001`](core/connectors/iso20022.py)). It delivers institutional multi-tab Excel audit workbooks ([`core/reporting/excel.py`](core/reporting/excel.py)), real-time [drift alerts](core/models/monitoring.py), regulatory compliance checks ([`Office des Changes / IGOC`](core/models/compliance.py)), and executive AI risk commentary with [Groq / LLaMA 3.3](ai/groq_narrator.py).
 
 ## Quick Start
 
@@ -104,6 +104,11 @@ print(f"Theoretical Forward (CIP)    : {result.hedge.theoretical_forward_rate:.4
 print(f"Annualized Volatility        : {result.annualized_volatility * 100:.2f}%")
 print(f"Expected Shortfall (CVaR 5%) : {result.expected_shortfall_margin_pct * 100:.2f}%")
 print(f"Recommended Instrument       : {result.hedge.recommended_instrument.value}")
+
+# 5. Export institutional multi-tab Excel audit report (.xlsx)
+excel_bytes = Parity.reporting.generate_simulation_excel(result)
+with open("hedge_audit_report.xlsx", "wb") as f:
+    f.write(excel_bytes)
 ```
 
 Price FX options and retrieve analytical Greek sensitivities instantly:
@@ -213,7 +218,7 @@ These admin endpoints manage per-client API keys (master key or open dev mode on
 | GET | [`/api/v1/keys`](api/keys.py) | List keys (metadata only, never the secret) |
 | DELETE | [`/api/v1/keys/{id}`](api/keys.py) | Revoke a key |
 
-These endpoints ingest exposure automatically (ETL) from e-commerce and ERP platforms through [`api/routers/connectors.py`](api/routers/connectors.py):
+These endpoints ingest exposure automatically (ETL) from e-commerce, ERP platforms, and banking files through [`api/routers/connectors.py`](api/routers/connectors.py):
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -221,6 +226,15 @@ These endpoints ingest exposure automatically (ETL) from e-commerce and ERP plat
 | POST | [`/api/v1/connectors/woocommerce/import`](api/routers/connectors.py) | Fetch orders from [`WooCommerce`](core/connectors/woocommerce.py) |
 | POST | [`/api/v1/connectors/stripe/import`](api/routers/connectors.py) | Fetch successful charges from [`Stripe`](core/connectors/stripe.py) |
 | POST | [`/api/v1/connectors/odoo/import`](api/routers/connectors.py) | Fetch purchase orders (costs) from [`Odoo`](core/connectors/odoo.py) ERP |
+| POST | [`/api/v1/connectors/iso20022/camt053/import`](api/routers/connectors.py) | Ingest ISO 20022 bank statement (`camt.053`) to extract multi-currency balances and flows |
+| POST | [`/api/v1/connectors/iso20022/pain001/generate`](api/routers/connectors.py) | Generate ISO 20022 credit transfer initiation (`pain.001.001.03`) XML file |
+
+These reporting endpoints export audit-ready institutional Excel workbooks through [`core/reporting/excel.py`](core/reporting/excel.py):
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | [`/api/v1/export/excel/simulation`](api/routes.py) | Generate multi-tab styled Excel workbook (`.xlsx`) for order simulation and 5-hedge matrix |
+| POST | [`/api/v1/export/excel/portfolio`](api/routes.py) | Generate multi-tab styled Excel workbook (`.xlsx`) for portfolio risk and Euler CVaR breakdown |
 
 These endpoints cover portfolio risk, hedging tools, stress testing, compliance, and backtesting:
 
@@ -244,6 +258,7 @@ The `options` block of `POST /api/v1/simulations` selects the modeling method. A
 | `volatility_model` | `historical`, `ewma`, `garch` | `historical` |
 | `return_distribution` | `normal`, `student_t` | `normal` |
 | `sampling_method` | `pseudo_random`, `sobol` | `pseudo_random` |
+| `copula` | `gaussian`, `student_t` | `gaussian` |
 | `jumps` | object with `intensity_annual`, `mean_log_jump`, `std_log_jump` | none |
 
 ## Observability

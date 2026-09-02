@@ -15,7 +15,8 @@ measure.
 - `Optional extensions.` Heston stochastic volatility, Student-t fat tails,
   and Merton log-normal jumps (with drift compensator so the mean is preserved).
 - `Sampling.` Pseudo-random with antithetic variates, or scrambled `Sobol`
-  quasi-random sequences for faster convergence.
+  quasi-random sequences for faster convergence, inverted using high-performance
+  C kernels (`scipy.special.ndtri`).
 
 `Limits.` Volatility is constant per order (no term structure); jumps and
 Heston parameters are user-supplied, not calibrated to a live option surface.
@@ -32,12 +33,16 @@ versus pseudo-random at the same sample count.
   equals the sample variance and only `(α, β)` are optimized, a much
   better-conditioned problem than the joint `(ω, α, β)` search.
 - `Portfolio correlations` with dynamic `DCC-GARCH`.
+- `Tail-dependence copulas`: Gaussian copula and multivariate `Student-t Copula`
+  (`CopulaType.STUDENT_T`), scaling correlated Gaussian vectors by $\sqrt{\nu / \chi^2(\nu)}$
+  to capture systemic currency market crises and simultaneous devaluations.
 
 `Limits.` Single-regime; no jumps in the volatility estimate itself.
 
 `Validation.` On a constant-volatility series all estimators recover the true
 σ within a few percent (regression test guards the GARCH variance-targeting fix,
-which previously overstated volatility 2x to 5x).
+which previously overstated volatility 2x to 5x). Multi-currency stress tests
+certify higher Expected Shortfall under Student-t copulas than under Gaussian copulas.
 
 ## 3. Risk metrics
 
@@ -48,17 +53,28 @@ and tail severity.
 
 ## 4. Hedging instruments
 
-- `Forward` priced at the CIP forward rate; `option` and `zero-cost collar`
-  priced with `Garman-Kohlhagen` (1983) or smile-consistent Monte Carlo.
+- `Forward` priced at the CIP forward rate.
+- `Vanilla Options` and `Zero-Cost Collars` priced with `Garman-Kohlhagen` (1983)
+  or smile-consistent Monte Carlo.
+- `Participating Forward (Par-Forward)`: A zero-cost structured derivative guaranteeing
+  a maximum ceiling rate $K^*$ while preserving participation $\alpha \in (0, 1)$ in
+  favorable exchange rate declines. The zero-cost strike is solved using Brent's method
+  (`brentq`) enforcing $\text{Call}(K^*) = (1 - \alpha) \cdot \text{Put}(K^*)$.
+- `Malz (1997) FX Volatility Smile`: Quadratic delta-based OTC smile parametrization
+  calibrated on $\sigma_{\text{ATM}}$, 25-Delta Risk Reversal ($RR_{25}$), and
+  25-Delta Butterfly ($BF_{25}$):
+  $$\sigma(\Delta) = \sigma_{\text{ATM}} - 2 \cdot RR_{25} \cdot (\Delta - 0.5) + 16 \cdot BF_{25} \cdot (\Delta - 0.5)^2$$
+  Yields strike-dependent implied volatilities injected directly into Garman-Kohlhagen.
 - `Greeks` (delta, gamma, vega, theta, ρ_domestic, ρ_foreign) in closed form.
-- `CVaR-optimal hedge ratio` by grid search plus local refinement.
+- `CVaR-optimal hedge ratio` by grid search plus local refinement across all 5 strategies.
 
-`Limits.` Option pricing uses a `flat volatility` (no smile); collars assume
-frictionless, mid-market execution (no bid-ask spread).
+`Limits.` Collars and participating forwards assume frictionless, mid-market
+execution (no bid-ask spread).
 
 `Validation.` Garman-Kohlhagen matches the Black-Scholes reference values and
 put-call parity to 1e-9; every Greek matches a finite-difference check; the
-Monte-Carlo option price matches the closed form within ~0.04%.
+Monte-Carlo option price matches the closed form within ~0.04%; participating
+forward strikes satisfy the zero-premium condition to $|C - (1-\alpha)P| < 10^{-6}$.
 
 ## 5. Multi-date exposure (cashflow ladder)
 
