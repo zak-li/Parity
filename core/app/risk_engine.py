@@ -60,11 +60,39 @@ class MarginRiskEngine:
         self._jumps = jumps
         self._market_model = MarketModel(market_model)
         self._heston_params = heston_params
+        self._cache: dict[tuple, SimulationResult] = {}
 
     def run(self, order: OrderInput) -> SimulationResult:
         from core.licensing import verify_license
 
         verify_license(self._api_key)
+        cache_key = None
+        if order.seed is not None:
+            cache_key = (
+                order.foreign_currency,
+                order.domestic_currency,
+                order.amount_foreign,
+                order.order_date,
+                order.delivery_date,
+                order.target_margin_pct,
+                order.expected_revenue_domestic,
+                order.min_acceptable_margin_pct,
+                order.domestic_rate,
+                order.foreign_rate,
+                order.n_simulations,
+                order.lookback_days,
+                order.seed,
+                self._sampling_method,
+                self._volatility_model,
+                self._return_distribution,
+                self._student_t_dof,
+                self._jumps,
+                self._market_model,
+                self._heston_params,
+            )
+            if cache_key in self._cache:
+                return self._cache[cache_key]
+
         lookback_start = order.order_date - dt.timedelta(days=order.lookback_days)
         history = self._fx_provider.get_historical_series(
             order.foreign_currency, order.domestic_currency, lookback_start, order.order_date
@@ -134,7 +162,7 @@ class MarginRiskEngine:
             },
         )
 
-        return SimulationResult(
+        result = SimulationResult(
             order=order,
             spot_rate_order_date=spot,
             horizon_days=order.horizon_days,
@@ -160,6 +188,13 @@ class MarginRiskEngine:
             simulated_rates=simulated_rates,
             simulated_margin_pct=simulated_margin_pct,
         )
+
+        if cache_key is not None:
+            if len(self._cache) >= 128:
+                self._cache.pop(next(iter(self._cache)))
+            self._cache[cache_key] = result
+
+        return result
 
     def _simulate_rates(self, order, spot, sigma, horizon_years, drift):
         if self._market_model is MarketModel.HESTON:

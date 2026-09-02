@@ -94,7 +94,8 @@ def test_simulation_returns_full_analysis(client):
     assert 0 <= body["vulnerability_score"] <= 100
     assert body["risk_level"] in ("Low", "Moderate", "High", "Critical")
     assert body["expected_terminal_rate"] < body["spot_rate_order_date"]
-    assert len(body["instruments"]) == 4
+    assert len(body["instruments"]) == 5
+    assert "participating_forward" in [i["instrument"] for i in body["instruments"]]
     assert 0.0 <= body["hedge"]["optimal_hedge_ratio"] <= 1.0
     assert body["compliance"]["applicable"] is True
     assert "Office des Changes" in body["recommendation"]

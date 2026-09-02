@@ -136,6 +136,51 @@ def zero_cost_collar_cap(spot, floor, rd, rf, sigma, t):
     return float(brentq(objective, lower, upper, maxiter=200))
 
 
+def participating_forward_strike(
+    spot: float,
+    forward: float,
+    rd: float,
+    rf: float,
+    sigma: float,
+    t: float,
+    participation_rate: float = 0.5,
+) -> float:
+    """Solve for the guaranteed ceiling strike K* of a zero-cost participating forward.
+
+    For an importer buying foreign currency, purchasing a Call(K*) on 100% of notional
+    is fully funded by selling a Put(K*) on (1 - alpha) of notional:
+        Call(K*) - (1 - alpha) * Put(K*) = 0.
+    """
+    if not (0.0 < participation_rate < 1.0):
+        raise ValueError("Participation rate must be strictly between 0 and 1.")
+
+    def objective(k: float) -> float:
+        call = garman_kohlhagen_call(spot, k, rd, rf, sigma, t)
+        put = garman_kohlhagen_put(spot, k, rd, rf, sigma, t)
+        return call - (1.0 - participation_rate) * put
+
+    lower, upper = forward, forward * 5.0
+    if objective(lower) * objective(upper) > 0:
+        raise ValueError("Unable to construct a zero-cost participating forward within the bounds.")
+    return float(brentq(objective, lower, upper, maxiter=200))
+
+
+def participating_forward_alpha(
+    spot: float,
+    strike: float,
+    rd: float,
+    rf: float,
+    sigma: float,
+    t: float,
+) -> float:
+    """Compute the zero-cost participation rate alpha for a given protection strike K >= Forward."""
+    put = garman_kohlhagen_put(spot, strike, rd, rf, sigma, t)
+    if put <= 0.0:
+        return 0.0
+    call = garman_kohlhagen_call(spot, strike, rd, rf, sigma, t)
+    return float(np.clip(1.0 - (call / put), 0.0, 1.0))
+
+
 def _summarize(instrument, description, premium, margin_pct, threshold):
     return InstrumentOutcome(
         instrument=instrument,
@@ -162,6 +207,7 @@ def compare_instruments(
     min_acceptable_margin_pct: float = 0.0,
     collar_floor_width: float = settings.COLLAR_FLOOR_WIDTH,
     option_pricer: OptionPricer | None = None,
+    participation_rate: float = 0.50,
 ) -> tuple[InstrumentOutcome, ...]:
     pricer = option_pricer or gk_option_pricer(
         spot, domestic_rate, foreign_rate, sigma_annual, horizon_years
@@ -212,4 +258,31 @@ def compare_instruments(
         min_acceptable_margin_pct,
     )
 
-    return (unhedged, forward_outcome, option_outcome, collar_outcome)
+    try:
+        par_strike = participating_forward_strike(
+            spot,
+            forward,
+            domestic_rate,
+            foreign_rate,
+            sigma_annual,
+            horizon_years,
+            participation_rate,
+        )
+    except ValueError:
+        par_strike = forward * 1.02
+
+    par_effective_rates = np.where(
+        simulated_rates > par_strike,
+        par_strike,
+        (1.0 - participation_rate) * par_strike + participation_rate * simulated_rates,
+    )
+    par_cost = amount_foreign * par_effective_rates
+    par_outcome = _summarize(
+        HedgeInstrument.PARTICIPATING_FORWARD,
+        f"Participating forward ({int(participation_rate * 100)}% participation, cap {par_strike:.4f}): guaranteed ceiling, zero net premium.",
+        0.0,
+        margin_pct(par_cost, 0.0),
+        min_acceptable_margin_pct,
+    )
+
+    return (unhedged, forward_outcome, option_outcome, collar_outcome, par_outcome)

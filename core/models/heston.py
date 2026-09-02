@@ -82,9 +82,13 @@ def simulate_heston_terminal_rates(
     log_spot_anti = np.full(half, np.log(spot)) if antithetic else None
     variance_anti = np.full(half, params.v0) if antithetic else None
 
-    for _ in range(steps):
-        z1 = rng.standard_normal(half)
-        z2 = params.rho * z1 + rho_comp * rng.standard_normal(half)
+    shocks = rng.standard_normal((steps, 2, half))
+    z1_all = shocks[:, 0, :]
+    z2_all = params.rho * z1_all + rho_comp * shocks[:, 1, :]
+
+    for s in range(steps):
+        z1 = z1_all[s]
+        z2 = z2_all[s]
         log_spot, variance = _euler_step(log_spot, variance, z1, z2, mu_annual, params, dt, sqrt_dt)
         if antithetic:
             log_spot_anti, variance_anti = _euler_step(
@@ -101,9 +105,9 @@ def simulate_heston_terminal_rates(
 
 def _euler_step(log_spot, variance, z1, z2, mu_annual, params, dt, sqrt_dt):
     v_plus = np.maximum(variance, 0.0)
-    sqrt_v = np.sqrt(v_plus)
+    vol_shock = np.sqrt(v_plus) * sqrt_dt
     next_variance = (
-        variance + params.kappa * (params.theta - v_plus) * dt + params.xi * sqrt_v * sqrt_dt * z2
+        variance + params.kappa * (params.theta - v_plus) * dt + params.xi * vol_shock * z2
     )
-    next_log_spot = log_spot + (mu_annual - 0.5 * v_plus) * dt + sqrt_v * sqrt_dt * z1
+    next_log_spot = log_spot + (mu_annual - 0.5 * v_plus) * dt + vol_shock * z1
     return next_log_spot, next_variance
