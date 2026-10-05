@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 900 900" width="900" height="900" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="pality-tiles-title">
+  <title id="pality-tiles-title">Pality Square Tile Composition</title>
+  <defs>
+    <path id="pality-tile-icon" d="M90 45.5H60.864l20.603-20.603-6.364-6.364L54.5 39.135V10h-9.001v29.135L24.897 18.534l-6.364 6.364L39.135 45.5H10v9h29.135L18.533 75.101l6.364 6.364 20.602-20.601V90H54.5V60.864l20.603 20.602 6.364-6.364L60.864 54.5H90z"/>
+    <clipPath id="pality-clip-canvas"><rect width="900" height="900"/></clipPath>
+    <clipPath id="pality-clip-tile-2-0"><rect x="600" y="0" width="300" height="300"/></clipPath>
+    <clipPath id="pality-clip-tile-0-2"><rect x="0" y="600" width="300" height="300"/></clipPath>
+    <clipPath id="pality-clip-tile-2-2"><rect x="600" y="600" width="300" height="300"/></clipPath>
+  </defs>
+  <g clip-path="url(#pality-clip-canvas)">
+    <g shape-rendering="crispEdges">
+      <rect x="0" y="0" width="300" height="300" fill="#0009B5"/>
+      <rect x="300" y="0" width="300" height="300" fill="#CFF6FF"/>
+      <rect x="600" y="0" width="300" height="300" fill="#CFF6FF"/>
+      <rect x="0" y="300" width="300" height="300" fill="#0009B5"/>
+      <rect x="300" y="300" width="300" height="300" fill="#0009B5"/>
+      <rect x="600" y="300" width="300" height="300" fill="#3FDFFF"/>
+      <rect x="0" y="600" width="300" height="300" fill="#CFF6FF"/>
+      <rect x="300" y="600" width="300" height="300" fill="#CFF6FF"/>
+      <rect x="600" y="600" width="300" height="300" fill="#3FDFFF"/>
+    </g>
+    <g shape-rendering="geometricPrecision">
+      <use href="#pality-tile-icon" xlink:href="#pality-tile-icon" transform="translate(40 40)" fill="#FFFFFF"/>
+      <g clip-path="url(#pality-clip-tile-2-0)">
+        <use href="#pality-tile-icon" xlink:href="#pality-tile-icon" transform="translate(736.5 0) scale(3)" fill="#0009B5"/>
+      </g>
+      <g clip-path="url(#pality-clip-tile-0-2)">
+        <use href="#pality-tile-icon" xlink:href="#pality-tile-icon" transform="translate(-136.5 600) scale(3)" fill="#0009B5"/>
+      </g>
+      <g clip-path="url(#pality-clip-tile-2-2)">
+        <use href="#pality-tile-icon" xlink:href="#pality-tile-icon" transform="translate(600 736.5) scale(3)" fill="#FFFFFF"/>
+      </g>
+    </g>
+  </g>
+</svg>

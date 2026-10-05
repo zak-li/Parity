@@ -2,10 +2,7 @@
 
 <p align="center">
   <a>
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/svg/parity_brand_banner_dark.svg">
-      <img src=".github/assets/svg/parity_brand_banner_light.svg" alt="Parity" width="100%">
-    </picture>
+    <img src=".github/assets/svg/brand-tile-grid.svg" alt="Parity" width="380">
   </a>
 </p>
 
