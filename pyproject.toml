@@ -41,20 +41,20 @@ Parity = "core.cli:main"
 
 [project.optional-dependencies]
 dotenv = [
-    "python-dotenv>=1.2.3,<2",
+    "python-dotenv>=1.2.4,<2",
 ]
 api = [
-    "fastapi>=0.141.1,<1",
-    "uvicorn>=0.53.0,<1",
+    "fastapi>=0.142.2,<1",
+    "uvicorn>=0.54.0,<1",
     "prometheus-client>=0.26.0,<1",
     "redis>=8.1.0,<9",
-    "PyJWT>=2.14.0,<3",
-    "cryptography>=50.0.1",
+    "PyJWT>=2.15.1,<3",
+    "cryptography>=50.0.2",
 ]
 db = [
-    "sqlalchemy>=2.0.54,<3",
+    "sqlalchemy>=2.1.2,<3",
     "psycopg2-binary>=2.9.13,<3",
-    "pymongo>=4.18.1,<5",
+    "pymongo>=4.18.2,<5",
     "neo4j>=6.3.1,<7",
     "alembic>=1.20.0,<2",
 ]
@@ -70,23 +70,23 @@ spark = [
 dev = [
     "pytest>=9.1.1,<10",
     "pytest-cov>=7.1.0,<8",
-    "python-dotenv>=1.2.3,<2",
-    "fastapi>=0.141.1,<1",
-    "uvicorn>=0.53.0,<1",
+    "python-dotenv>=1.2.4,<2",
+    "fastapi>=0.142.2,<1",
+    "uvicorn>=0.54.0,<1",
     "prometheus-client>=0.26.0,<1",
     "httpx>=0.28.1,<1",
-    "sqlalchemy>=2.0.54,<3",
+    "sqlalchemy>=2.1.2,<3",
     "psycopg2-binary>=2.9.13,<3",
-    "pymongo>=4.18.1,<5",
+    "pymongo>=4.18.2,<5",
     "neo4j>=6.3.1,<7",
     "alembic>=1.20.0,<2",
     "groq>=1.7.0,<2",
-    "ruff==0.16.8",
-    "mypy>=2.3.1",
+    "ruff==0.16.10",
+    "mypy>=2.4.0",
     "pip-audit>=2.10.1",
     "build>=1.6.1",
-    "PyJWT>=2.14.0,<3",
-    "cryptography>=50.0.1",
+    "PyJWT>=2.15.1,<3",
+    "cryptography>=50.0.2",
     "openpyxl>=3.1.5,<4",
     "defusedxml>=0.7.1,<1",
 ]
